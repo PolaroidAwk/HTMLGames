@@ -4,101 +4,270 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Game Hub</title>
+    <title>GAME TERMINAL</title>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            background: #0d1117;
-            color: #e6edf3;
-            min-height: 100vh;
-        }
-
         /* =====================================================
-           TOPO
+           CONFIGURAÇÕES
         ===================================================== */
 
-        .topbar {
-            height: 64px;
-
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
-
-            display: flex;
-            align-items: center;
-
-            padding: 0 30px;
-            gap: 15px;
+        :root {
+            --green: #39ff88;
+            --green-dark: #0c7a3d;
+            --green-darker: #062b18;
+            --black: #020604;
         }
 
-        .logo {
-            width: 36px;
-            height: 36px;
 
-            background: #f0f6fc;
-            color: #0d1117;
+        /* =====================================================
+           CORPO
+        ===================================================== */
 
-            border-radius: 50%;
+        body {
+            background: #000;
+
+            color: var(--green);
+
+            font-family: "VT323", monospace;
+
+            min-height: 100vh;
+
+            overflow-x: hidden;
+        }
+
+
+        /* =====================================================
+           EFEITO CRT
+        ===================================================== */
+
+        body::before {
+            content: "";
+
+            position: fixed;
+
+            inset: 0;
+
+            pointer-events: none;
+
+            z-index: 999;
+
+            background:
+                repeating-linear-gradient(
+                    to bottom,
+                    rgba(255,255,255,0.025) 0px,
+                    rgba(255,255,255,0.025) 1px,
+                    rgba(0,0,0,0.08) 2px,
+                    rgba(0,0,0,0.08) 4px
+                );
+
+            mix-blend-mode: screen;
+        }
+
+
+        /* =====================================================
+           VINHETA / CURVATURA
+        ===================================================== */
+
+        body::after {
+            content: "";
+
+            position: fixed;
+
+            inset: 0;
+
+            pointer-events: none;
+
+            z-index: 998;
+
+            box-shadow:
+                inset 0 0 100px rgba(0,0,0,0.95),
+                inset 0 0 220px rgba(0,0,0,0.8);
+
+            border-radius: 4%;
+        }
+
+
+        /* =====================================================
+           MONITOR
+        ===================================================== */
+
+        .monitor {
+            min-height: 100vh;
+
+            padding: 35px;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
-            font-size: 20px;
-        }
-
-        .title {
-            font-size: 19px;
-            font-weight: 600;
-        }
-
-        .subtitle {
-            color: #8b949e;
-            font-size: 13px;
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    #06170d 0%,
+                    #020704 60%,
+                    #000 100%
+                );
         }
 
 
         /* =====================================================
-           CONTAINER
+           TELA
         ===================================================== */
 
-        .container {
-            max-width: 1100px;
+        .screen {
+            width: min(1100px, 95vw);
 
-            margin: 40px auto;
+            min-height: 700px;
 
-            padding: 0 25px;
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    #071d10 0%,
+                    #031008 65%,
+                    #010503 100%
+                );
+
+            border:
+
+                2px solid #174f2d;
+
+            border-radius: 25px;
+
+            padding: 30px;
+
+            box-shadow:
+
+                0 0 20px rgba(57,255,136,0.15),
+
+                0 0 70px rgba(57,255,136,0.08),
+
+                inset 0 0 50px rgba(0,0,0,0.8);
+
+            position: relative;
+
+            overflow: hidden;
         }
 
 
         /* =====================================================
-           CABEÇALHO
+           BRILHO DA TELA
         ===================================================== */
 
-        .repo-header {
-            display: flex;
+        .screen::before {
+            content: "";
 
-            justify-content: space-between;
-            align-items: center;
+            position: absolute;
 
-            gap: 20px;
+            inset: 0;
+
+            pointer-events: none;
+
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    rgba(57,255,136,0.05),
+                    transparent 70%
+                );
+        }
+
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        .header {
+            position: relative;
+
+            border-bottom: 1px solid var(--green-dark);
+
+            padding-bottom: 18px;
 
             margin-bottom: 25px;
         }
 
-        .repo-name {
-            font-size: 24px;
-            font-weight: 600;
+        .header-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
         }
 
-        .repo-name span {
-            color: #58a6ff;
+
+        .system-name {
+            font-size: 38px;
+
+            text-shadow:
+                0 0 5px var(--green),
+                0 0 15px rgba(57,255,136,0.5);
+
+            letter-spacing: 2px;
+        }
+
+
+        .status {
+            font-size: 20px;
+
+            color: var(--green);
+
+            text-shadow:
+                0 0 8px var(--green);
+        }
+
+
+        .status::before {
+            content: "● ";
+
+            animation: blink 1s infinite;
+        }
+
+
+        @keyframes blink {
+
+            0%, 45% {
+                opacity: 1;
+            }
+
+            46%, 100% {
+                opacity: 0;
+            }
+
+        }
+
+
+        .subtitle {
+            font-size: 20px;
+
+            color: #1ebc62;
+
+            margin-top: 5px;
+        }
+
+
+        /* =====================================================
+           TERMINAL
+        ===================================================== */
+
+        .terminal-line {
+            font-size: 20px;
+
+            margin-bottom: 20px;
+
+            color: #1ebc62;
+        }
+
+        .terminal-line span {
+            color: var(--green);
         }
 
 
@@ -106,64 +275,69 @@
            PESQUISA
         ===================================================== */
 
+        .search-container {
+            margin-bottom: 25px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+
+        .prompt {
+            font-size: 23px;
+
+            color: var(--green);
+        }
+
+
         .search {
-            width: 280px;
+            flex: 1;
 
-            background: #0d1117;
+            max-width: 450px;
 
-            border: 1px solid #30363d;
+            background: rgba(0,0,0,0.45);
 
-            border-radius: 6px;
+            border: 1px solid var(--green-dark);
 
-            padding: 10px 13px;
+            color: var(--green);
 
-            color: white;
+            font-family: "VT323", monospace;
+
+            font-size: 22px;
+
+            padding: 7px 10px;
 
             outline: none;
 
-            font-size: 14px;
+            text-shadow:
+                0 0 5px var(--green);
         }
+
+
+        .search::placeholder {
+            color: #176b3b;
+        }
+
 
         .search:focus {
-            border-color: #58a6ff;
+            border-color: var(--green);
+
+            box-shadow:
+                0 0 10px rgba(57,255,136,0.2);
         }
 
 
         /* =====================================================
-           BREADCRUMB
-        ===================================================== */
-
-        .breadcrumb {
-            background: #161b22;
-
-            border: 1px solid #30363d;
-
-            padding: 13px 16px;
-
-            border-radius: 6px 6px 0 0;
-
-            color: #8b949e;
-
-            font-size: 14px;
-        }
-
-        .breadcrumb strong {
-            color: #e6edf3;
-        }
-
-
-        /* =====================================================
-           LISTA DE JOGOS
+           LISTA
         ===================================================== */
 
         .file-list {
-            border: 1px solid #30363d;
+            border: 1px solid var(--green-dark);
 
-            border-top: none;
-
-            border-radius: 0 0 6px 6px;
-
-            overflow: hidden;
+            position: relative;
         }
 
 
@@ -172,35 +346,43 @@
         ===================================================== */
 
         .file {
-            min-height: 70px;
+            min-height: 72px;
 
             display: flex;
 
             align-items: center;
 
-            padding: 0 18px;
+            padding: 10px 18px;
 
-            background: #0d1117;
-
-            border-bottom: 1px solid #21262d;
+            border-bottom: 1px solid #0b4225;
 
             cursor: pointer;
 
+            background: rgba(0,20,10,0.25);
+
             transition:
-                background 0.15s,
-                transform 0.1s;
+                background 0.1s,
+                padding-left 0.1s;
         }
+
 
         .file:last-child {
             border-bottom: none;
         }
 
+
         .file:hover {
-            background: #161b22;
+            background: rgba(57,255,136,0.08);
+
+            padding-left: 27px;
+
+            text-shadow:
+                0 0 8px var(--green);
         }
 
-        .file:active {
-            transform: scale(0.995);
+
+        .file:hover .arrow {
+            opacity: 1;
         }
 
 
@@ -209,15 +391,17 @@
         ===================================================== */
 
         .icon {
-            width: 42px;
+            width: 50px;
 
-            font-size: 25px;
+            font-size: 28px;
 
-            margin-right: 14px;
+            filter:
+                grayscale(1)
+                sepia(1)
+                hue-rotate(70deg)
+                saturate(3);
 
-            display: flex;
-
-            justify-content: center;
+            margin-right: 10px;
         }
 
 
@@ -226,13 +410,13 @@
         ===================================================== */
 
         .filename {
-            color: #58a6ff;
-
-            font-size: 15px;
-
-            font-weight: 500;
-
             flex: 1;
+
+            font-size: 26px;
+
+            color: var(--green);
+
+            letter-spacing: 1px;
         }
 
 
@@ -241,11 +425,11 @@
         ===================================================== */
 
         .description {
-            color: #8b949e;
+            font-size: 19px;
 
-            font-size: 13px;
+            color: #168d4c;
 
-            margin-right: 20px;
+            margin-right: 25px;
         }
 
 
@@ -254,88 +438,131 @@
         ===================================================== */
 
         .arrow {
-            color: #8b949e;
+            font-size: 28px;
 
-            font-size: 20px;
+            color: var(--green);
 
-            transition: transform 0.15s;
-        }
+            opacity: 0.4;
 
-        .file:hover .arrow {
-            transform: translateX(4px);
-
-            color: #e6edf3;
+            transition: 0.1s;
         }
 
 
         /* =====================================================
-           NENHUM RESULTADO
+           NENHUM JOGO
         ===================================================== */
 
         .empty {
             display: none;
 
-            padding: 50px;
-
-            text-align: center;
-
-            color: #8b949e;
-
-            border: 1px solid #30363d;
+            border: 1px solid var(--green-dark);
 
             border-top: none;
-        }
 
-
-        /* =====================================================
-           RODAPÉ
-        ===================================================== */
-
-        .info {
-            margin-top: 25px;
-
-            color: #8b949e;
-
-            font-size: 13px;
+            padding: 40px;
 
             text-align: center;
+
+            font-size: 25px;
+
+            color: #168d4c;
         }
 
 
         /* =====================================================
-           CELULAR
+           FOOTER
+        ===================================================== */
+
+        .footer {
+            margin-top: 25px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            border-top: 1px solid var(--green-dark);
+
+            padding-top: 12px;
+
+            color: #126b3a;
+
+            font-size: 18px;
+        }
+
+
+        /* =====================================================
+           CURSOR
+        ===================================================== */
+
+        .cursor {
+            display: inline-block;
+
+            width: 10px;
+
+            height: 20px;
+
+            background: var(--green);
+
+            margin-left: 5px;
+
+            animation: cursorBlink 0.8s infinite;
+        }
+
+
+        @keyframes cursorBlink {
+
+            0%, 50% {
+                opacity: 1;
+            }
+
+            51%, 100% {
+                opacity: 0;
+            }
+
+        }
+
+
+        /* =====================================================
+           RESPONSIVO
         ===================================================== */
 
         @media (max-width: 700px) {
 
-            .topbar {
-                padding: 0 15px;
+            .monitor {
+                padding: 10px;
             }
 
-            .container {
-                margin-top: 25px;
+            .screen {
+                padding: 18px;
 
-                padding: 0 12px;
+                min-height: 95vh;
+
+                border-radius: 15px;
             }
 
-            .repo-header {
-                flex-direction: column;
-
-                align-items: stretch;
+            .system-name {
+                font-size: 28px;
             }
 
-            .search {
-                width: 100%;
+            .status {
+                font-size: 16px;
             }
 
             .description {
                 display: none;
             }
 
-            .file {
-                min-height: 65px;
+            .filename {
+                font-size: 23px;
+            }
+
+            .footer {
+                flex-direction: column;
+
+                gap: 5px;
             }
         }
+
     </style>
 </head>
 
@@ -343,247 +570,229 @@
 <body>
 
 
-    <!-- =====================================================
-         TOPO
-    ===================================================== -->
+    <div class="monitor">
 
-    <header class="topbar">
-
-        <div class="logo">
-            🎮
-        </div>
-
-        <div>
-
-            <div class="title">
-                Game Hub
-            </div>
-
-            <div class="subtitle">
-                Meus jogos HTML
-            </div>
-
-        </div>
-
-    </header>
-
-
-    <!-- =====================================================
-         CONTEÚDO
-    ===================================================== -->
-
-    <main class="container">
-
-
-        <!-- CABEÇALHO -->
-
-        <div class="repo-header">
-
-            <div class="repo-name">
-                <span>games</span> / arquivos
-            </div>
-
-            <input
-                id="search"
-                class="search"
-                type="text"
-                placeholder="🔍 Procurar jogo..."
-            >
-
-        </div>
-
-
-        <!-- CAMINHO -->
-
-        <div class="breadcrumb">
-
-            📁
-
-            <strong>
-                games
-            </strong>
-
-        </div>
-
-
-        <!-- =================================================
-             LISTA
-        ================================================= -->
-
-        <div
-            class="file-list"
-            id="fileList"
-        >
+        <div class="screen">
 
 
             <!-- =================================================
-                 FNAF
-            ================================================= -->
+                 HEADER
+            ================================================== -->
 
-            <div
-                class="file"
-                data-name="fnaf five nights at freddys"
-                onclick="abrirJogo('FNAF/index.html')"
-            >
+            <header class="header">
 
-                <div class="icon">
-                    🐻
+                <div class="header-top">
+
+                    <div class="system-name">
+                        GAME_TERMINAL
+                    </div>
+
+                    <div class="status">
+                        ONLINE
+                    </div>
+
                 </div>
 
-                <div class="filename">
-                    fnaf
+                <div class="subtitle">
+                    GAME LIBRARY SYSTEM v1.0
                 </div>
 
-                <div class="description">
-                    Five Nights at Freddy's
+            </header>
+
+
+            <!-- =================================================
+                 TERMINAL
+            ================================================== -->
+
+            <div class="terminal-line">
+                C:\GAMES&gt; <span>ACCESSING GAME DATABASE...</span>
+            </div>
+
+            <div class="terminal-line">
+                C:\GAMES&gt; <span>SELECT A GAME TO EXECUTE</span>
+            </div>
+
+
+            <!-- =================================================
+                 PESQUISA
+            ================================================== -->
+
+            <div class="search-container">
+
+                <div class="prompt">
+                    C:\GAMES&gt;
                 </div>
 
-                <div class="arrow">
-                    →
-                </div>
+                <input
+                    id="search"
+                    class="search"
+                    type="text"
+                    placeholder="SEARCH..."
+                    autocomplete="off"
+                >
+
+                <span class="cursor"></span>
 
             </div>
 
 
             <!-- =================================================
-                 AGAR.IO
-            ================================================= -->
+                 LISTA
+            ================================================== -->
 
             <div
-                class="file"
-                data-name="agar agar io"
-                onclick="abrirJogo('agar/index.html')"
+                class="file-list"
+                id="fileList"
             >
 
-                <div class="icon">
-                    🟢
+
+                <!-- FNAF -->
+
+                <div
+                    class="file"
+                    data-name="fnaf five nights at freddys"
+                    onclick="abrirJogo('fnaf/index.html')"
+                >
+
+                    <div class="icon">
+                        🐻
+                    </div>
+
+                    <div class="filename">
+                        FNAF
+                    </div>
+
+                    <div class="description">
+                        FIVE NIGHTS AT FREDDY'S
+                    </div>
+
+                    <div class="arrow">
+                        &gt;
+                    </div>
+
                 </div>
 
-                <div class="filename">
-                    agar
+
+                <!-- AGAR -->
+
+                <div
+                    class="file"
+                    data-name="agar agar io"
+                    onclick="abrirJogo('agar/index.html')"
+                >
+
+                    <div class="icon">
+                        🟢
+                    </div>
+
+                    <div class="filename">
+                        AGAR
+                    </div>
+
+                    <div class="description">
+                        AGAR.IO
+                    </div>
+
+                    <div class="arrow">
+                        &gt;
+                    </div>
+
                 </div>
 
-                <div class="description">
-                    Agar.io
+
+                <!-- FLAPPY -->
+
+                <div
+                    class="file"
+                    data-name="flappy flappy bird"
+                    onclick="abrirJogo('flappy/index.html')"
+                >
+
+                    <div class="icon">
+                        🐦
+                    </div>
+
+                    <div class="filename">
+                        FLAPPY
+                    </div>
+
+                    <div class="description">
+                        FLAPPY BIRD
+                    </div>
+
+                    <div class="arrow">
+                        &gt;
+                    </div>
+
                 </div>
 
-                <div class="arrow">
-                    →
+
+                <!-- TIGRINHO -->
+
+                <div
+                    class="file"
+                    data-name="tigrinho fortune tiger"
+                    onclick="abrirJogo('tigre/index.html')"
+                >
+
+                    <div class="icon">
+                        🎰
+                    </div>
+
+                    <div class="filename">
+                        TIGRINHO
+                    </div>
+
+                    <div class="description">
+                        FORTUNE TIGER
+                    </div>
+
+                    <div class="arrow">
+                        &gt;
+                    </div>
+
                 </div>
+
 
             </div>
 
 
             <!-- =================================================
-                 FLAPPY BIRD
-            ================================================= -->
+                 VAZIO
+            ================================================== -->
 
             <div
-                class="file"
-                data-name="flappy flappy bird"
-                onclick="abrirJogo('flappy/index.html')"
+                class="empty"
+                id="empty"
             >
-
-                <div class="icon">
-                    🐦
-                </div>
-
-                <div class="filename">
-                    flappy
-                </div>
-
-                <div class="description">
-                    Flappy Bird
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
+                NO GAMES FOUND.
             </div>
 
 
             <!-- =================================================
-                 TIGRINHO
-            ================================================= -->
+                 FOOTER
+            ================================================== -->
 
-            <div
-                class="file"
-                data-name="tigrinho fortune tiger"
-                onclick="abrirJogo('tigre/index.html')"
-            >
+            <footer class="footer">
 
-                <div class="icon">
-                    🎰
+                <div>
+                    SYSTEM READY.
                 </div>
 
-                <div class="filename">
-                    tigrinho
+                <div>
+                    [ ENTER ] SELECT GAME
                 </div>
 
-                <div class="description">
-                    Fortune Tiger
+                <div>
+                    [ ESC ] EXIT
                 </div>
 
-                <div class="arrow">
-                    →
-                </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 ADICIONE MAIS JOGOS AQUI
-            =================================================
-
-            <div
-                class="file"
-                data-name="nome do jogo"
-                onclick="abrirJogo('nome-da-pasta/index.html')"
-            >
-
-                <div class="icon">
-                    🎮
-                </div>
-
-                <div class="filename">
-                    nome-do-jogo
-                </div>
-
-                <div class="description">
-                    Descrição do jogo
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-            </div>
-
-            -->
+            </footer>
 
 
         </div>
 
-
-        <!-- =================================================
-             VAZIO
-        ================================================= -->
-
-        <div
-            class="empty"
-            id="empty"
-        >
-            Nenhum jogo encontrado 😔
-        </div>
-
-
-        <div class="info">
-            Clique em um jogo para começar.
-        </div>
-
-
-    </main>
+    </div>
 
 
     <!-- =====================================================
@@ -660,8 +869,33 @@
 
         });
 
-    </script>
 
+        /* =====================================================
+           ENTER NA PESQUISA
+        ===================================================== */
+
+        search.addEventListener("keydown", function (event) {
+
+            if (event.key === "Enter") {
+
+                const visiveis =
+                    Array.from(files)
+                        .filter(file =>
+                            file.style.display !== "none"
+                        );
+
+
+                if (visiveis.length > 0) {
+
+                    visiveis[0].click();
+
+                }
+
+            }
+
+        });
+
+    </script>
 
 </body>
 </html>
