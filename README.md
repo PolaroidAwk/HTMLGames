@@ -1,8 +1,9 @@
-Welcome to HTMLGames! Want to play some cool games? RIGHT PLACE!!
+Bem vindo(a) ao HTMLGames. Quer jogar algum jogo daora mas tua internet bloqueia? Lugar certo krl!
 
-How to Use: Open the link below and choose som cool as fuck game u want babe
-https://polaroidawk.github.io/HTMLGames/
+Como Usar: 
+1- Simplesmente abra o link abaixo e escolha um jogo foda
+[https://polaroidawk.github.io/HTMLGames/]
+2 - Eeeee... Isso é tudo na real
 
-Aaaand, that's all!
 
-All made with help of Gemini and ChatGPT!
+Tudo feito com IA, se divirta!
