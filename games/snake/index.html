@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>SNAKE - Ultimate Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #00ff88;
+      --primary-glow: rgba(0, 255, 136, 0.4);
+      --secondary: #00e1ff;
+      --secondary-glow: rgba(0, 225, 255, 0.4);
+      --accent: #ff0055;
+      --accent-glow: rgba(255, 0, 85, 0.4);
+      --text: #f1f5f9;
+      --text-dim: #64748b;
+      --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --secondary: #0284c7;
+      --secondary-glow: rgba(2, 132, 199, 0.25);
+      --accent: #ef4444;
+      --accent-glow: rgba(239, 68, 68, 0.25);
+      --text: #0f172a;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Background Glow Effects */
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.15;
+    }
+    body::before { background: var(--primary); top: -100px; left: -100px; }
+    body::after { background: var(--secondary); bottom: -100px; right: -100px; }
+
+    #app-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: 900px;
+      max-height: 950px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 1;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      background: var(--bg-color);
+      padding: 24px;
+      overflow-y: auto;
+      animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    h1.title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      letter-spacing: 6px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      filter: drop-shadow(0 0 25px var(--primary-glow));
+    }
+
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .menu-box {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 28px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      position: relative;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 16px 24px;
+      font-family: var(--font-family);
+      font-size: 0.95rem;
+      font-weight: 800;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      background: var(--primary);
+      color: #0b0f19;
+      border-color: var(--primary);
+      box-shadow: 0 0 25px var(--primary-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text-dim);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--secondary);
+      color: var(--secondary);
+      background: transparent;
+      box-shadow: 0 0 20px var(--secondary-glow);
+    }
+
+    .btn-danger {
+      background: rgba(255, 0, 85, 0.05);
+      border-color: rgba(255, 0, 85, 0.3);
+      color: var(--accent);
+    }
+
+    .btn-danger:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 0 25px var(--accent-glow);
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .info-card span {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    /* GAME SCREEN */
+    #game-screen {
+      padding: 0;
+      justify-content: space-between;
+      background: transparent;
+    }
+
+    .hud {
+      width: 100%;
+      max-width: 600px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 12px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-top: none;
+      border-radius: 0 0 20px 20px;
+      z-index: 5;
+    }
+
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .hud-label {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 800;
+    }
+
+    .hud-val {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .event-banner {
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      color: #0b0f19;
+      font-weight: 900;
+      text-align: center;
+      padding: 6px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      display: none;
+      border-radius: 8px;
+      margin-top: 8px;
+      box-shadow: 0 0 20px var(--secondary-glow);
+    }
+
+    .canvas-container {
+      position: relative;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      padding: 10px 0;
+    }
+
+    canvas {
+      background: #060911;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      max-width: 100%;
+      max-height: 100%;
+      aspect-ratio: 1/1;
+    }
+
+    /* CONTROLES MOBILE */
+    .mobile-controls {
+      display: none;
+      width: 100%;
+      max-width: 260px;
+      height: 160px;
+      margin: 10px auto;
+      position: relative;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      color: var(--text);
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.15s ease;
+    }
+
+    .dpad-btn:active {
+      background: var(--primary);
+      color: #0b0f19;
+      transform: scale(0.95);
+    }
+
+    .dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
+    .dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .dpad-left { top: 50%; left: 0; transform: translateY(-50%); }
+    .dpad-right { top: 50%; right: 0; transform: translateY(-50%); }
+
+    /* MODAL OVERLAYS */
+    .overlay-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .overlay-modal.active {
+      display: flex;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    /* CONFIGURAÇÕES / LEADERBOARD */
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .setting-row label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    select, input[type="checkbox"] {
+      background: var(--bg-color);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 8px 12px;
+      border-radius: 8px;
+      outline: none;
+      font-family: var(--font-family);
+      font-weight: 600;
+    }
+
+    .leader-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-controls {
+        display: block;
+      }
+      h1.title { font-size: 2.5rem; }
+      .hud-val { font-size: 1.05rem; }
+      .hud-label { font-size: 0.55rem; }
+      .menu-box { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+
+  <!-- MENU PRINCIPAL -->
+  <div id="screen-main-menu" class="screen active">
+    <h1 class="title">SNAKE</h1>
+    <p class="subtitle">Escolha seu modo de jogo</p>
+
+    <div class="menu-box">
+      <div class="info-card" id="last-played-card" style="display:none;">
+        Último Modo: <span id="last-mode-val">-</span>
+      </div>
+
+      <button class="btn" onclick="app.startGame('classic')">Classic</button>
+      <button class="btn" onclick="app.startGame('time_attack')">Time Attack</button>
+      <button class="btn" onclick="app.startGame('survival')">Survival</button>
+      <button class="btn" onclick="app.startGame('portals')">Portals</button>
+      <button class="btn" onclick="app.startGame('chaos')">Chaos</button>
+      <button class="btn" onclick="app.startGame('pvp')">2 Players</button>
+      
+      <div style="display: flex; gap: 10px; margin-top: 6px;">
+        <button class="btn btn-secondary" style="flex:1" onclick="app.showScreen('screen-leaderboard')">Recordes</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="app.showScreen('screen-settings')">Opções</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div id="screen-leaderboard" class="screen">
+    <h1 class="title">RECORDES</h1>
+    <div class="menu-box" id="leaderboard-list">
+      <!-- Inserido dinamicamente via JS -->
+    </div>
+    <button class="btn btn-secondary" style="margin-top: 15px; width: 100%; max-width: 440px;" onclick="app.showScreen('screen-main-menu')">Voltar</button>
+  </div>
+
+  <!-- CONFIGURAÇÕES -->
+  <div id="screen-settings" class="screen">
+    <h1 class="title">OPÇÕES</h1>
+    <div class="menu-box">
+      <div class="setting-row">
+        <label>Efeitos Sonoros (SFX)</label>
+        <input type="checkbox" id="cfg-sfx" onchange="app.saveConfig()">
+      </div>
+      <div class="setting-row">
+        <label>Vibração (Mobile)</label>
+        <input type="checkbox" id="cfg-vibe" onchange="app.saveConfig()">
+      </div>
+      <div class="setting-row">
+        <label>Exibir Grade</label>
+        <input type="checkbox" id="cfg-grid" onchange="app.saveConfig()">
+      </div>
+      <div class="setting-row">
+        <label>Tema Visual</label>
+        <select id="cfg-theme" onchange="app.saveConfig()">
+          <option value="dark">Escuro</option>
+          <option value="light">Claro</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>Velocidade Inicial</label>
+        <select id="cfg-speed" onchange="app.saveConfig()">
+          <option value="slow">Lento</option>
+          <option value="normal" selected>Normal</option>
+          <option value="fast">Rápido</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top: 15px; width: 100%; max-width: 440px;" onclick="app.showScreen('screen-main-menu')">Voltar</button>
+  </div>
+
+  <!-- TELA DE JOGO -->
+  <div id="game-screen" class="screen">
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-label">SCORE</span>
+        <span class="hud-val" id="hud-score">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label" id="hud-sec-label">HIGH</span>
+        <span class="hud-val" id="hud-sec-val">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">COMBO</span>
+        <span class="hud-val" id="hud-combo">x1</span>
+      </div>
+      <div class="hud-item" onclick="app.togglePause()" style="cursor:pointer;">
+        <span class="hud-label">MENU</span>
+        <span class="hud-val" style="color:var(--text-dim)">PAUSE</span>
+      </div>
+    </div>
+
+    <div class="event-banner" id="event-banner">EVENTO ATIVO</div>
+
+    <div class="canvas-container">
+      <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <div class="mobile-controls">
+      <div class="dpad-btn dpad-up" onclick="app.handleTouchInput('UP')">▲</div>
+      <div class="dpad-btn dpad-down" onclick="app.handleTouchInput('DOWN')">▼</div>
+      <div class="dpad-btn dpad-left" onclick="app.handleTouchInput('LEFT')">◄</div>
+      <div class="dpad-btn dpad-right" onclick="app.handleTouchInput('RIGHT')">►</div>
+    </div>
+  </div>
+
+  <!-- OVERLAY DE PAUSA -->
+  <div id="modal-pause" class="overlay-modal">
+    <h1 class="title">PAUSADO</h1>
+    <div class="menu-box">
+      <button class="btn" onclick="app.togglePause()">Continuar</button>
+      <button class="btn btn-secondary" onclick="app.restartGame()">Reiniciar</button>
+      <button class="btn btn-danger" onclick="app.exitToMenu()">Sair para o Menu</button>
+    </div>
+  </div>
+
+  <!-- OVERLAY DE GAME OVER -->
+  <div id="modal-gameover" class="overlay-modal">
+    <h1 class="title" style="color:var(--accent); -webkit-text-fill-color: var(--accent);" id="go-title">GAME OVER</h1>
+    <p id="go-subtitle" style="color:var(--primary); font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;"></p>
+    
+    <div class="menu-box">
+      <div class="stats-grid">
+        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
+          <span style="font-size:0.65rem; color:var(--text-dim);">PONTUAÇÃO</span>
+          <span id="go-score" style="font-size:1.4rem; color:var(--text)">0</span>
+        </div>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
+          <span style="font-size:0.65rem; color:var(--text-dim);">RECORDE</span>
+          <span id="go-high" style="font-size:1.4rem; color:var(--primary)">0</span>
+        </div>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
+          <span style="font-size:0.65rem; color:var(--text-dim);">TAMANHO</span>
+          <span id="go-length" style="font-size:1.4rem; color:var(--text)">0</span>
+        </div>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
+          <span style="font-size:0.65rem; color:var(--text-dim);">MAX COMBO</span>
+          <span id="go-combo" style="font-size:1.4rem; color:var(--text)">x1</span>
+        </div>
+      </div>
+
+      <button class="btn" onclick="app.restartGame()">Jogar Novamente</button>
+      <button class="btn btn-danger" onclick="app.exitToMenu()">Menu Principal</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/**
+ * SNAKE ULTIMATE ENGINE
+ * JS Puro (ES6)
+ */
+
+class SoundEffects {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+  playEat() {
+    if (!app.config.sfx || !this.ctx) return;
+    let osc = this.ctx.createOscillator();
+    let gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.1);
+  }
+  playDie() {
+    if (!app.config.sfx || !this.ctx) return;
+    let osc = this.ctx.createOscillator();
+    let gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.3);
+  }
+  playPowerup() {
+    if (!app.config.sfx || !this.ctx) return;
+    let osc = this.ctx.createOscillator();
+    let gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(800, this.ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.2);
+  }
+}
+
+const sfx = new SoundEffects();
+
+const FOOD_TYPES = {
+  NORMAL: { type: 'NORMAL', score: 10, grow: 1, color: '#ff0055', chance: 0.7 },
+  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, color: '#ffb703', chance: 0.1 },
+  SPEED:  { type: 'SPEED',  score: 20, grow: 1, color: '#00e1ff', chance: 0.07 },
+  SLOW:   { type: 'SLOW',   score: 20, grow: 1, color: '#8a2be2', chance: 0.07 },
+  RARE:   { type: 'RARE',   score: 100, grow: 3, color: '#00ff88', chance: 0.06 }
+};
+
+const POWERUPS = {
+  SHIELD: { type: 'SHIELD', color: '#00e1ff', duration: 8000 },
+  MAGNET: { type: 'MAGNET', color: '#ff0055', duration: 7000 },
+  GHOST:  { type: 'GHOST',  color: '#94a3b8', duration: 6000 },
+  MULT2:  { type: 'MULT2',  color: '#ffb703', duration: 10000 }
+};
+
+class Engine {
+  constructor() {
+    this.canvas = document.getElementById('gameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.gridSize = 20;
+    this.tileCount = 30;
+    
+    this.config = {
+      sfx: true,
+      vibe: true,
+      grid: true,
+      theme: 'dark',
+      speed: 'normal'
+    };
+
+    this.records = {
+      classic: 0,
+      time_attack: 0,
+      survival: 0,
+      portals: 0,
+      chaos: 0,
+      pvp: 0
+    };
+
+    this.lastMode = null;
+    this.mode = 'classic';
+    this.isPaused = false;
+    this.isGameOver = false;
+    
+    this.loopId = null;
+    this.lastTime = 0;
+    this.accumulatedTime = 0;
+    this.stepInterval = 90;
+
+    this.resetGameState();
+    this.loadLocalStorage();
+    this.bindEvents();
+  }
+
+  resetGameState() {
+    this.snakes = [];
+    this.foods = [];
+    this.powerupsOnGrid = [];
+    this.obstacles = [];
+    this.portals = [];
+    this.particles = [];
+    
+    this.score = 0;
+    this.combo = 1;
+    this.comboTimer = 0;
+    this.maxCombo = 1;
+    this.gameTime = 0;
+    this.survivalTimer = 0;
+    this.timeAttackLeft = 60;
+    
+    this.activeEvent = null;
+    this.eventTimer = 0;
+    
+    this.activePowerups = {};
+  }
+
+  loadLocalStorage() {
+    let cfg = localStorage.getItem('snake_cfg');
+    if (cfg) this.config = Object.assign(this.config, JSON.parse(cfg));
+    
+    let rec = localStorage.getItem('snake_records');
+    if (rec) this.records = Object.assign(this.records, JSON.parse(rec));
+
+    this.lastMode = localStorage.getItem('snake_last_mode');
+
+    document.getElementById('cfg-sfx').checked = this.config.sfx;
+    document.getElementById('cfg-vibe').checked = this.config.vibe;
+    document.getElementById('cfg-grid').checked = this.config.grid;
+    document.getElementById('cfg-theme').value = this.config.theme;
+    document.getElementById('cfg-speed').value = this.config.speed;
+
+    if (this.lastMode) {
+      document.getElementById('last-played-card').style.display = 'flex';
+      document.getElementById('last-mode-val').innerText = this.lastMode.toUpperCase();
+    }
+
+    document.documentElement.setAttribute('data-theme', this.config.theme);
+  }
+
+  saveConfig() {
+    this.config.sfx = document.getElementById('cfg-sfx').checked;
+    this.config.vibe = document.getElementById('cfg-vibe').checked;
+    this.config.grid = document.getElementById('cfg-grid').checked;
+    this.config.theme = document.getElementById('cfg-theme').value;
+    this.config.speed = document.getElementById('cfg-speed').value;
+
+    document.documentElement.setAttribute('data-theme', this.config.theme);
+    localStorage.setItem('snake_cfg', JSON.stringify(this.config));
+  }
+
+  saveRecord(mode, score) {
+    if (score > (this.records[mode] || 0)) {
+      this.records[mode] = score;
+      localStorage.setItem('snake_records', JSON.stringify(this.records));
+      return true;
+    }
+    return false;
+  }
+
+  showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    
+    if (id === 'screen-leaderboard') {
+      this.renderLeaderboard();
+    }
+  }
+
+  renderLeaderboard() {
+    let container = document.getElementById('leaderboard-list');
+    container.innerHTML = '';
+    
+    let labels = {
+      classic: 'Classic',
+      time_attack: 'Time Attack',
+      survival: 'Survival',
+      portals: 'Portals',
+      chaos: 'Chaos',
+      pvp: '2 Players'
+    };
+
+    for (let key in this.records) {
+      let div = document.createElement('div');
+      div.className = 'leader-item';
+      let val = key === 'survival' ? this.formatTime(this.records[key]) : this.records[key];
+      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--primary); font-weight:800;">${val}</span>`;
+      container.appendChild(div);
+    }
+  }
+
+  formatTime(ms) {
+    let totalSec = Math.floor(ms / 1000);
+    let m = Math.floor(totalSec / 60);
+    let s = totalSec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  bindEvents() {
+    window.addEventListener('keydown', (e) => {
+      sfx.init();
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (document.getElementById('game-screen').classList.contains('active')) {
+          this.togglePause();
+        }
+      }
+      if (e.key === 'r' || e.key === 'R') {
+        if (document.getElementById('game-screen').classList.contains('active')) {
+          this.restartGame();
+        }
+      }
+
+      if (this.isPaused || this.isGameOver) return;
+
+      let reverse = (this.activeEvent === 'REVERSE CONTROLS');
+
+      let p1 = this.snakes[0];
+      if (p1) {
+        let dir = null;
+        if (e.key === 'w' || e.key === 'W') dir = reverse ? 'DOWN' : 'UP';
+        if (e.key === 's' || e.key === 'S') dir = reverse ? 'UP' : 'DOWN';
+        if (e.key === 'a' || e.key === 'A') dir = reverse ? 'RIGHT' : 'LEFT';
+        if (e.key === 'd' || e.key === 'D') dir = reverse ? 'LEFT' : 'RIGHT';
+        if (dir) this.setSnakeDirection(p1, dir);
+      }
+
+      if (this.mode === 'pvp') {
+        let p2 = this.snakes[1];
+        if (p2) {
+          let dir = null;
+          if (e.key === 'ArrowUp') dir = reverse ? 'DOWN' : 'UP';
+          if (e.key === 'ArrowDown') dir = reverse ? 'UP' : 'DOWN';
+          if (e.key === 'ArrowLeft') dir = reverse ? 'RIGHT' : 'LEFT';
+          if (e.key === 'ArrowRight') dir = reverse ? 'LEFT' : 'RIGHT';
+          if (dir) this.setSnakeDirection(p2, dir);
+        }
+      } else if (p1) {
+        let dir = null;
+        if (e.key === 'ArrowUp') dir = reverse ? 'DOWN' : 'UP';
+        if (e.key === 'ArrowDown') dir = reverse ? 'UP' : 'DOWN';
+        if (e.key === 'ArrowLeft') dir = reverse ? 'RIGHT' : 'LEFT';
+        if (e.key === 'ArrowRight') dir = reverse ? 'LEFT' : 'RIGHT';
+        if (dir) this.setSnakeDirection(p1, dir);
+      }
+    });
+  }
+
+  handleTouchInput(dir) {
+    sfx.init();
+    if (this.isPaused || this.isGameOver) return;
+    let p1 = this.snakes[0];
+    if (!p1) return;
+    let reverse = (this.activeEvent === 'REVERSE CONTROLS');
+    let finalDir = dir;
+    if (reverse) {
+      if (dir === 'UP') finalDir = 'DOWN';
+      else if (dir === 'DOWN') finalDir = 'UP';
+      else if (dir === 'LEFT') finalDir = 'RIGHT';
+      else if (dir === 'RIGHT') finalDir = 'LEFT';
+    }
+    this.setSnakeDirection(p1, finalDir);
+  }
+
+  setSnakeDirection(snake, dir) {
+    const opp = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+    let lastDir = snake.inputBuffer.length > 0 ? snake.inputBuffer[snake.inputBuffer.length - 1] : snake.direction;
+    if (dir !== opp[lastDir] && dir !== lastDir && snake.inputBuffer.length < 2) {
+      snake.inputBuffer.push(dir);
+    }
+  }
+
+  startGame(mode) {
+    sfx.init();
+    this.mode = mode;
+    this.lastMode = mode;
+    localStorage.setItem('snake_last_mode', mode);
+
+    this.resetGameState();
+    this.isPaused = false;
+    this.isGameOver = false;
+
+    let baseSpeeds = { slow: 120, normal: 90, fast: 65 };
+    this.stepInterval = baseSpeeds[this.config.speed] || 90;
+
+    if (mode === 'pvp') {
+      this.snakes.push(this.createSnake(5, 15, 'RIGHT', '#00ff88', 'Player 1'));
+      this.snakes.push(this.createSnake(25, 15, 'LEFT', '#00e1ff', 'Player 2'));
+    } else {
+      this.snakes.push(this.createSnake(15, 15, 'RIGHT', '#00ff88', 'Player 1'));
+    }
+
+    if (mode === 'portals') {
+      this.spawnPortals();
+    }
+
+    this.spawnFood();
+    this.showScreen('game-screen');
+    
+    document.getElementById('modal-pause').classList.remove('active');
+    document.getElementById('modal-gameover').classList.remove('active');
+
+    this.lastTime = performance.now();
+    this.accumulatedTime = 0;
+    
+    if (this.loopId) cancelAnimationFrame(this.loopId);
+    this.loopId = requestAnimationFrame((t) => this.gameLoop(t));
+  }
+
+  createSnake(x, y, dir, color, name) {
+    return {
+      body: [
+        { x: x, y: y },
+        { x: x - (dir === 'RIGHT' ? 1 : dir === 'LEFT' ? -1 : 0), y: y - (dir === 'DOWN' ? 1 : dir === 'UP' ? -1 : 0) },
+        { x: x - (dir === 'RIGHT' ? 2 : dir === 'LEFT' ? -2 : 0), y: y - (dir === 'DOWN' ? 2 : dir === 'UP' ? -2 : 0) }
+      ],
+      direction: dir,
+      inputBuffer: [],
+      color: color,
+      name: name,
+      score: 0,
+      isDead: false
+    };
+  }
+
+  gameLoop(currentTime) {
+    if (this.isPaused || this.isGameOver) return;
+
+    let dt = currentTime - this.lastTime;
+    this.lastTime = currentTime;
+    this.accumulatedTime += dt;
+
+    this.updateTimers(dt);
+
+    let currentInterval = this.stepInterval;
+    if (this.activeEvent === 'SPEED UP') currentInterval *= 0.5;
+    if (this.activeEvent === 'SLOW MOTION') currentInterval *= 1.6;
+    if (this.activePowerups['SLOW']) currentInterval *= 1.4;
+
+    while (this.accumulatedTime >= currentInterval) {
+      this.updateLogic();
+      this.accumulatedTime -= currentInterval;
+    }
+
+    this.render();
+    this.loopId = requestAnimationFrame((t) => this.gameLoop(t));
+  }
+
+  updateTimers(dt) {
+    this.gameTime += dt;
+
+    if (this.combo > 1) {
+      this.comboTimer -= dt;
+      if (this.comboTimer <= 0) {
+        this.combo = 1;
+      }
+    }
+
+    for (let p in this.activePowerups) {
+      this.activePowerups[p] -= dt;
+      if (this.activePowerups[p] <= 0) {
+        delete this.activePowerups[p];
+      }
+    }
+
+    if (this.mode === 'time_attack') {
+      this.timeAttackLeft -= dt / 1000;
+      if (this.timeAttackLeft <= 0) {
+        this.timeAttackLeft = 0;
+        this.triggerGameOver('Tempo Esgotado!');
+      }
+    } else if (this.mode === 'survival') {
+      this.survivalTimer += dt;
+      if (Math.floor(this.survivalTimer / 20000) > this.obstacles.length / 3) {
+        this.spawnObstacle();
+      }
+    } else if (this.mode === 'chaos') {
+      this.eventTimer -= dt;
+      if (this.eventTimer <= 0) {
+        this.triggerChaosEvent();
+        this.eventTimer = 8000 + Math.random() * 5000;
+      }
+    }
+
+    if (Math.random() < 0.001 && this.powerupsOnGrid.length < 1) {
+      this.spawnPowerup();
+    }
+  }
+
+  updateLogic() {
+    this.snakes.forEach(s => {
+      if (s.inputBuffer.length > 0) {
+        s.direction = s.inputBuffer.shift();
+      }
+    });
+
+    this.snakes.forEach(s => {
+      if (s.isDead) return;
+
+      let head = { ...s.body[0] };
+      switch (s.direction) {
+        case 'UP': head.y -= 1; break;
+        case 'DOWN': head.y += 1; break;
+        case 'LEFT': head.x -= 1; break;
+        case 'RIGHT': head.x += 1; break;
+      }
+
+      let allowsWallPass = (this.mode === 'time_attack' || this.mode === 'portals' || this.activeEvent === 'GHOST');
+      if (allowsWallPass) {
+        if (head.x < 0) head.x = this.tileCount - 1;
+        if (head.x >= this.tileCount) head.x = 0;
+        if (head.y < 0) head.y = this.tileCount - 1;
+        if (head.y >= this.tileCount) head.y = 0;
+      }
+
+      if (this.mode === 'portals' && this.portals.length === 2) {
+        let p1 = this.portals[0];
+        let p2 = this.portals[1];
+        if (head.x === p1.x && head.y === p1.y) {
+          head = { x: p2.x, y: p2.y };
+        } else if (head.x === p2.x && head.y === p2.y) {
+          head = { x: p1.x, y: p1.y };
+        }
+      }
+
+      s.body.unshift(head);
+      s.shouldShrink = true;
+    });
+
+    if (this.activePowerups['MAGNET'] && this.snakes[0]) {
+      let head = this.snakes[0].body[0];
+      this.foods.forEach(f => {
+        if (Math.abs(f.x - head.x) <= 3 && Math.abs(f.y - head.y) <= 3) {
+          if (f.x < head.x) f.x++;
+          else if (f.x > head.x) f.x--;
+          if (f.y < head.y) f.y++;
+          else if (f.y > head.y) f.y--;
+        }
+      });
+    }
+
+    this.snakes.forEach(s => {
+      if (s.isDead) return;
+      let head = s.body[0];
+
+      for (let i = this.foods.length - 1; i >= 0; i--) {
+        let f = this.foods[i];
+        if (head.x === f.x && head.y === f.y) {
+          sfx.playEat();
+          s.shouldShrink = false;
+
+          this.combo++;
+          this.comboTimer = 3000;
+          if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+          let mult = (this.activePowerups['MULT2'] ? 2 : 1) * this.combo;
+          let earned = f.typeInfo.score * mult;
+          s.score += earned;
+          this.score += earned;
+
+          if (this.mode === 'time_attack') {
+            this.timeAttackLeft += 1.5;
+          }
+
+          this.createParticles(head.x, head.y, f.typeInfo.color);
+          this.foods.splice(i, 1);
+          this.spawnFood();
+
+          if (this.mode === 'portals' && Math.random() < 0.4) {
+            this.spawnPortals();
+          }
+
+          if (this.activeEvent === 'SHRINK' && s.body.length > 3) {
+            s.body.pop();
+            s.body.pop();
+          }
+        }
+      }
+
+      for (let i = this.powerupsOnGrid.length - 1; i >= 0; i--) {
+        let pw = this.powerupsOnGrid[i];
+        if (head.x === pw.x && head.y === pw.y) {
+          sfx.playPowerup();
+          this.activePowerups[pw.info.type] = pw.info.duration;
+          this.powerupsOnGrid.splice(i, 1);
+        }
+      }
+    });
+
+    this.snakes.forEach(s => {
+      if (!s.isDead && s.shouldShrink) {
+        s.body.pop();
+      }
+    });
+
+    this.snakes.forEach((s, idx) => {
+      if (s.isDead) return;
+      let head = s.body[0];
+
+      let allowsWallPass = (this.mode === 'time_attack' || this.mode === 'portals' || this.activeEvent === 'GHOST');
+      if (!allowsWallPass) {
+        if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount) {
+          this.handleSnakeDeath(s);
+          return;
+        }
+      }
+
+      if (this.activeEvent !== 'GHOST') {
+        for (let obs of this.obstacles) {
+          if (head.x === obs.x && head.y === obs.y) {
+            this.handleSnakeDeath(s);
+            return;
+          }
+        }
+      }
+
+      let canGhostSelf = (this.activePowerups['GHOST'] || this.activeEvent === 'GHOST');
+      if (!canGhostSelf) {
+        for (let i = 1; i < s.body.length; i++) {
+          if (head.x === s.body[i].x && head.y === s.body[i].y) {
+            this.handleSnakeDeath(s);
+            return;
+          }
+        }
+      }
+
+      if (this.mode === 'pvp') {
+        let other = this.snakes[1 - idx];
+        if (other && !other.isDead) {
+          if (head.x === other.body[0].x && head.y === other.body[0].y) {
+            this.handleSnakeDeath(s);
+            this.handleSnakeDeath(other);
+            return;
+          }
+          for (let part of other.body) {
+            if (head.x === part.x && head.y === part.y) {
+              this.handleSnakeDeath(s);
+              return;
+            }
+          }
+        }
+      }
+    });
+
+    this.particles.forEach((p, idx) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.05;
+      if (p.life <= 0) this.particles.splice(idx, 1);
+    });
+
+    if (this.mode === 'pvp') {
+      let deadCount = this.snakes.filter(s => s.isDead).length;
+      if (deadCount > 0) {
+        let p1 = this.snakes[0];
+        let p2 = this.snakes[1];
+        let txt = "EMPATE!";
+        if (p1.isDead && !p2.isDead) txt = "PLAYER 2 VENCEU!";
+        if (!p1.isDead && p2.isDead) txt = "PLAYER 1 VENCEU!";
+        this.triggerGameOver(txt);
+      }
+    }
+  }
+
+  handleSnakeDeath(snake) {
+    if (this.activePowerups['SHIELD']) {
+      delete this.activePowerups['SHIELD'];
+      return;
+    }
+
+    snake.isDead = true;
+    sfx.playDie();
+    this.createParticles(snake.body[0].x, snake.body[0].y, '#ff0055', 20);
+
+    if (this.mode !== 'pvp') {
+      this.triggerGameOver('GAME OVER');
+    }
+  }
+
+  isPositionOccupied(x, y) {
+    for (let s of this.snakes) {
+      for (let b of s.body) {
+        if (b.x === x && b.y === y) return true;
+      }
+    }
+    for (let obs of this.obstacles) {
+      if (obs.x === x && obs.y === y) return true;
+    }
+    for (let p of this.portals) {
+      if (p.x === x && p.y === y) return true;
+    }
+    return false;
+  }
+
+  getFreePosition() {
+    let x, y, tries = 0;
+    do {
+      x = Math.floor(Math.random() * this.tileCount);
+      y = Math.floor(Math.random() * this.tileCount);
+      tries++;
+    } while (this.isPositionOccupied(x, y) && tries < 500);
+    return { x, y };
+  }
+
+  spawnFood() {
+    let count = (this.activeEvent === 'DOUBLE FOOD' || this.activeEvent === 'RAIN') ? 3 : 1;
+    while (this.foods.length < count) {
+      let pos = this.getFreePosition();
+      let rand = Math.random();
+      let selectedType = FOOD_TYPES.NORMAL;
+
+      if (this.activeEvent === 'GOLDEN FOOD') {
+        selectedType = FOOD_TYPES.GOLDEN;
+      } else {
+        let cum = 0;
+        for (let k in FOOD_TYPES) {
+          cum += FOOD_TYPES[k].chance;
+          if (rand <= cum) {
+            selectedType = FOOD_TYPES[k];
+            break;
+          }
+        }
+      }
+
+      this.foods.push({ x: pos.x, y: pos.y, typeInfo: selectedType });
+    }
+  }
+
+  spawnPowerup() {
+    let pos = this.getFreePosition();
+    let keys = Object.keys(POWERUPS);
+    let chosen = POWERUPS[keys[Math.floor(Math.random() * keys.length)]];
+    this.powerupsOnGrid.push({ x: pos.x, y: pos.y, info: chosen });
+  }
+
+  spawnPortals() {
+    let p1 = this.getFreePosition();
+    let p2 = this.getFreePosition();
+    this.portals = [
+      { x: p1.x, y: p1.y, color: '#00e1ff' },
+      { x: p2.x, y: p2.y, color: '#ff00e1' }
+    ];
+  }
+
+  spawnObstacle() {
+    let pos = this.getFreePosition();
+    this.obstacles.push(pos);
+  }
+
+  triggerChaosEvent() {
+    const events = [
+      'SPEED UP', 'SLOW MOTION', 'DOUBLE FOOD', 
+      'GOLDEN FOOD', 'SHRINK', 'GHOST', 
+      'REVERSE CONTROLS', 'RAIN'
+    ];
+    this.activeEvent = events[Math.floor(Math.random() * events.length)];
+    let banner = document.getElementById('event-banner');
+    banner.innerText = `EVENTO: ${this.activeEvent}`;
+    banner.style.display = 'block';
+
+    if (this.activeEvent === 'RAIN' || this.activeEvent === 'DOUBLE FOOD') {
+      this.spawnFood();
+    }
+
+    setTimeout(() => {
+      this.activeEvent = null;
+      banner.style.display = 'none';
+    }, 5000);
+  }
+
+  createParticles(tileX, tileY, color, count = 8) {
+    let px = tileX * this.gridSize + this.gridSize / 2;
+    let py = tileY * this.gridSize + this.gridSize / 2;
+    for (let i = 0; i < count; i++) {
+      let angle = Math.random() * Math.PI * 2;
+      let speed = Math.random() * 3 + 1;
+      this.particles.push({
+        x: px, y: py,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color: color,
+        life: 1.0
+      });
+    }
+  }
+
+  render() {
+    let sz = this.gridSize;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    if (this.config.grid) {
+      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.03)';
+      this.ctx.lineWidth = 1;
+      for (let i = 0; i <= this.tileCount; i++) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(i * sz, 0);
+        this.ctx.lineTo(i * sz, this.canvas.height);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, i * sz);
+        this.ctx.lineTo(this.canvas.width, i * sz);
+        this.ctx.stroke();
+      }
+    }
+
+    this.obstacles.forEach(o => {
+      this.ctx.fillStyle = '#334155';
+      this.ctx.beginPath();
+      this.ctx.roundRect(o.x * sz + 1, o.y * sz + 1, sz - 2, sz - 2, 4);
+      this.ctx.fill();
+    });
+
+    this.portals.forEach(p => {
+      this.ctx.fillStyle = p.color;
+      this.ctx.shadowColor = p.color;
+      this.ctx.shadowBlur = 12;
+      this.ctx.beginPath();
+      this.ctx.arc(p.x * sz + sz / 2, p.y * sz + sz / 2, sz / 2 - 2, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    });
+
+    this.foods.forEach(f => {
+      this.ctx.fillStyle = f.typeInfo.color;
+      this.ctx.shadowColor = f.typeInfo.color;
+      this.ctx.shadowBlur = 12;
+      this.ctx.beginPath();
+      this.ctx.arc(f.x * sz + sz / 2, f.y * sz + sz / 2, sz / 2 - 3, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    });
+
+    this.powerupsOnGrid.forEach(pw => {
+      this.ctx.fillStyle = pw.info.color;
+      this.ctx.shadowColor = pw.info.color;
+      this.ctx.shadowBlur = 10;
+      this.ctx.beginPath();
+      this.ctx.roundRect(pw.x * sz + 3, pw.y * sz + 3, sz - 6, sz - 6, 4);
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    });
+
+    this.snakes.forEach(s => {
+      if (s.isDead) return;
+      s.body.forEach((b, idx) => {
+        if (idx === 0) {
+          this.ctx.fillStyle = s.color;
+          this.ctx.shadowColor = s.color;
+          this.ctx.shadowBlur = 14;
+          this.ctx.beginPath();
+          this.ctx.roundRect(b.x * sz + 1, b.y * sz + 1, sz - 2, sz - 2, 6);
+          this.ctx.fill();
+          this.ctx.shadowBlur = 0;
+        } else {
+          this.ctx.fillStyle = s.color;
+          this.ctx.globalAlpha = Math.max(0.2, 1 - (idx / s.body.length) * 0.7);
+          this.ctx.beginPath();
+          this.ctx.roundRect(b.x * sz + 2, b.y * sz + 2, sz - 4, sz - 4, 4);
+          this.ctx.fill();
+          this.ctx.globalAlpha = 1.0;
+        }
+      });
+    });
+
+    this.particles.forEach(p => {
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = p.life;
+      this.ctx.fillRect(p.x, p.y, 4, 4);
+      this.ctx.globalAlpha = 1.0;
+    });
+
+    this.updateHUD();
+  }
+
+  updateHUD() {
+    document.getElementById('hud-score').innerText = this.score;
+    document.getElementById('hud-combo').innerText = `x${this.combo}`;
+
+    let secLabel = document.getElementById('hud-sec-label');
+    let secVal = document.getElementById('hud-sec-val');
+
+    if (this.mode === 'time_attack') {
+      secLabel.innerText = 'TEMPO';
+      secVal.innerText = `${Math.ceil(this.timeAttackLeft)}s`;
+    } else if (this.mode === 'survival') {
+      secLabel.innerText = 'TEMPO';
+      secVal.innerText = this.formatTime(this.survivalTimer);
+    } else {
+      secLabel.innerText = 'HIGH';
+      secVal.innerText = this.records[this.mode] || 0;
+    }
+  }
+
+  togglePause() {
+    if (this.isGameOver) return;
+    this.isPaused = !this.isPaused;
+    let modal = document.getElementById('modal-pause');
+    if (this.isPaused) {
+      modal.classList.add('active');
+    } else {
+      modal.classList.remove('active');
+      this.lastTime = performance.now();
+      this.loopId = requestAnimationFrame((t) => this.gameLoop(t));
+    }
+  }
+
+  restartGame() {
+    this.startGame(this.mode);
+  }
+
+  exitToMenu() {
+    if (this.loopId) cancelAnimationFrame(this.loopId);
+    document.getElementById('modal-pause').classList.remove('active');
+    document.getElementById('modal-gameover').classList.remove('active');
+    this.showScreen('screen-main-menu');
+    this.loadLocalStorage();
+  }
+
+  triggerGameOver(titleText) {
+    this.isGameOver = true;
+    if (this.loopId) cancelAnimationFrame(this.loopId);
+
+    let evalScore = (this.mode === 'survival') ? this.survivalTimer : this.score;
+    let isNewRecord = this.saveRecord(this.mode, evalScore);
+
+    document.getElementById('go-title').innerText = titleText;
+    document.getElementById('go-subtitle').innerText = isNewRecord ? 'NOVO RECORDE!' : '';
+    document.getElementById('go-score').innerText = this.mode === 'survival' ? this.formatTime(this.survivalTimer) : this.score;
+    document.getElementById('go-high').innerText = this.mode === 'survival' ? this.formatTime(this.records.survival) : this.records[this.mode];
+    document.getElementById('go-length').innerText = this.snakes[0] ? this.snakes[0].body.length : 0;
+    document.getElementById('go-combo').innerText = `x${this.maxCombo}`;
+
+    document.getElementById('modal-gameover').classList.add('active');
+  }
+}
+
+const app = new Engine();
+</script>
+</body>
+</html>
