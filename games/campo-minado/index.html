@@ -1,1539 +1,576 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Campo Minado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campo Minado Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            /* Tema Escuro (Padrão) */
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --panel-bg: rgba(15, 23, 42, 0.6);
+            --cell-bg: #334155;
+            --cell-hover: #475569;
+            --cell-revealed: #1e293b;
+            --cell-border: rgba(255, 255, 255, 0.05);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --display-bg: #020617;
+            --display-text: #38bdf8;
+        }
+
+        [data-theme="light"] {
+            /* Tema Claro */
+            --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(255, 255, 255, 0.6);
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --panel-bg: rgba(241, 245, 249, 0.8);
+            --cell-bg: #cbd5e1;
+            --cell-hover: #94a3b8;
+            --cell-revealed: #f1f5f9;
+            --cell-border: rgba(255, 255, 255, 0.4);
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --display-bg: #0f172a;
+            --display-text: #38bdf8;
+        }
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.1s ease;
         }
 
         body {
-            margin: 0;
-
             min-height: 100vh;
-
             display: flex;
             justify-content: center;
             align-items: center;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #e8edf3,
-                    #cfd6df
-                );
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            color: #1f2937;
+            background: var(--bg-gradient);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            padding: 20px;
         }
-
-
-        /* =====================================================
-           CONTAINER
-        ===================================================== */
 
         .game-container {
-
-            width: min(95vw, 850px);
-
-            background: #f8fafc;
-
-            border-radius: 16px;
-
-            padding: 24px;
-
-            box-shadow:
-                0 20px 50px rgba(0, 0, 0, 0.18);
-
+            width: min(100%, 900px);
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: var(--shadow);
         }
-
-
-        /* =====================================================
-           HEADER
-        ===================================================== */
 
         .header {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             gap: 20px;
-
-            margin-bottom: 20px;
-
+            margin-bottom: 24px;
+            flex-wrap: wrap;
         }
 
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-icon {
+            font-size: 32px;
+            background: rgba(99, 102, 241, 0.2);
+            padding: 8px 12px;
+            border-radius: 16px;
+        }
 
         .title {
-
-            font-size: 32px;
-
+            font-size: 26px;
             font-weight: 800;
-
-            color: #111827;
-
+            letter-spacing: -0.5px;
         }
-
 
         .subtitle {
-
-            margin-top: 4px;
-
-            color: #6b7280;
-
-            font-size: 14px;
-
+            color: var(--text-sub);
+            font-size: 13px;
+            margin-top: 2px;
         }
-
-
-        /* =====================================================
-           CONTROLES
-        ===================================================== */
 
         .controls {
-
             display: flex;
-
             align-items: center;
-
             gap: 10px;
-
-            flex-wrap: wrap;
-
         }
 
-
-        select,
-        .reset-button {
-
-            height: 40px;
-
-            padding:
-                0 13px;
-
-            border-radius: 8px;
-
-            border: 1px solid #d1d5db;
-
-            background: white;
-
-            color: #374151;
-
+        select, .btn-action {
+            height: 42px;
+            padding: 0 16px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: var(--panel-bg);
+            color: var(--text-main);
             font-size: 14px;
-
+            font-weight: 600;
             cursor: pointer;
-
+            outline: none;
         }
 
+        select:hover, .btn-action:hover {
+            border-color: var(--accent);
+        }
 
-        .reset-button {
-
-            background: #2563eb;
-
-            border-color: #2563eb;
-
+        .btn-primary {
+            background: var(--accent);
             color: white;
-
-            font-weight: 700;
-
+            border: none;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
-
-        .reset-button:hover {
-
-            background: #1d4ed8;
-
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
         }
 
-
-        /* =====================================================
-           STATUS
-        ===================================================== */
-
-        .status {
-
-            display: grid;
-
-            grid-template-columns:
-                1fr
-                80px
-                1fr;
-
-            align-items: center;
-
-            gap: 12px;
-
-            margin-bottom: 16px;
-
-        }
-
-
-        .counter,
-        .timer {
-
-            background: #111827;
-
-            color: #f9fafb;
-
-            border-radius: 8px;
-
-            padding: 10px 14px;
-
-            font-family:
-                "Courier New",
-                monospace;
-
-            font-size: 20px;
-
-            font-weight: bold;
-
-            text-align: center;
-
-        }
-
-
-        .face {
-
-            width: 56px;
-
-            height: 56px;
-
-            border-radius: 10px;
-
-            border: 1px solid #d1d5db;
-
-            background: white;
-
-            cursor: pointer;
-
-            font-size: 27px;
-
+        .btn-theme {
+            width: 42px;
+            padding: 0;
             display: flex;
-
             align-items: center;
-
             justify-content: center;
+            font-size: 18px;
+        }
 
+        .status-panel {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 16px;
+            background: var(--panel-bg);
+            padding: 12px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 20px;
+        }
+
+        .counter, .timer {
+            background: var(--display-bg);
+            color: var(--display-text);
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 2px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            width: fit-content;
+        }
+
+        .timer {
+            justify-self: end;
+        }
+
+        .face-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--card-border);
+            background: var(--panel-bg);
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             justify-self: center;
-
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
-
-        .face:hover {
-
-            background: #f3f4f6;
-
+        .face-btn:hover {
+            transform: scale(1.08);
         }
 
-
-        /* =====================================================
-           TABULEIRO
-        ===================================================== */
+        .face-btn:active {
+            transform: scale(0.95);
+        }
 
         .board-wrapper {
-
             width: 100%;
-
             overflow: auto;
-
-            background: #cbd5e1;
-
-            border-radius: 10px;
-
-            padding: 12px;
-
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            justify-content: center;
         }
-
 
         .board {
-
             display: grid;
-
-            width: max-content;
-
-            margin: auto;
-
-            gap: 2px;
-
-            background: #94a3b8;
-
-            border: 3px solid #94a3b8;
-
+            gap: 4px;
+            user-select: none;
         }
-
-
-        /* =====================================================
-           CÉLULA
-        ===================================================== */
 
         .cell {
-
-            width: 32px;
-
-            height: 32px;
-
-            border-radius: 4px;
-
-            background: #e5e7eb;
-
-            border: 2px solid #f9fafb;
-
-            box-shadow:
-                inset -1px -1px 0 #9ca3af;
-
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--cell-bg);
+            border: 1px solid var(--cell-border);
             display: flex;
-
             justify-content: center;
-
             align-items: center;
-
-            font-size: 18px;
-
-            font-weight: 900;
-
+            font-size: 16px;
+            font-weight: 800;
             cursor: pointer;
-
-            user-select: none;
-
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-
-        .cell:hover {
-
-            background: #dbeafe;
-
+        .cell:hover:not(.revealed) {
+            background: var(--cell-hover);
+            transform: translateY(-2px);
         }
-
 
         .cell.revealed {
-
-            background: #cbd5e1;
-
-            border: 1px solid #94a3b8;
-
-            box-shadow: none;
-
+            background: var(--cell-revealed);
+            border-color: transparent;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
             cursor: default;
-
         }
-
-
-        .cell.flagged {
-
-            color: #dc2626;
-
-            font-size: 20px;
-
-        }
-
 
         .cell.mine {
-
-            background: #ef4444;
-
+            background: #ef4444 !important;
             color: white;
-
+            animation: pulse 0.3s ease;
         }
-
 
         .cell.exploded {
-
-            background: #991b1b;
-
+            background: #991b1b !important;
         }
 
-
-        /* =====================================================
-           CORES DOS NÚMEROS
-        ===================================================== */
-
-        .number-1 {
-            color: #2563eb;
+        @keyframes pulse {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
-        .number-2 {
-            color: #16a34a;
-        }
-
-        .number-3 {
-            color: #dc2626;
-        }
-
-        .number-4 {
-            color: #7c3aed;
-        }
-
-        .number-5 {
-            color: #b45309;
-        }
-
-        .number-6 {
-            color: #0891b2;
-        }
-
-        .number-7 {
-            color: #111827;
-        }
-
-        .number-8 {
-            color: #6b7280;
-        }
-
-
-        /* =====================================================
-           MENSAGEM
-        ===================================================== */
+        /* Cores vibrantes para números */
+        .number-1 { color: #38bdf8; }
+        .number-2 { color: #4ade80; }
+        .number-3 { color: #f87171; }
+        .number-4 { color: #c084fc; }
+        .number-5 { color: #fbbf24; }
+        .number-6 { color: #2dd4bf; }
+        .number-7 { color: #f472b6; }
+        .number-8 { color: #94a3b8; }
 
         .message {
-
             text-align: center;
-
-            min-height: 24px;
-
-            margin-top: 15px;
-
-            font-size: 15px;
-
+            margin-top: 16px;
+            font-size: 14px;
             font-weight: 600;
-
-            color: #6b7280;
-
+            color: var(--text-sub);
+            min-height: 20px;
         }
-
-
-        /* =====================================================
-           REGRAS
-        ===================================================== */
 
         .rules {
-
-            margin-top: 18px;
-
-            padding-top: 15px;
-
-            border-top: 1px solid #e5e7eb;
-
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--card-border);
             display: flex;
-
             justify-content: center;
-
-            gap: 25px;
-
-            color: #6b7280;
-
-            font-size: 13px;
-
+            gap: 20px;
+            color: var(--text-sub);
+            font-size: 12px;
+            flex-wrap: wrap;
         }
-
-
-        /* =====================================================
-           RESPONSIVO
-        ===================================================== */
 
         @media (max-width: 650px) {
-
-            .game-container {
-
-                width: 100%;
-
-                min-height: 100vh;
-
-                border-radius: 0;
-
-                padding: 15px;
-
-            }
-
-
-            .header {
-
-                flex-direction: column;
-
-                align-items: stretch;
-
-            }
-
-
-            .title {
-
-                font-size: 27px;
-
-            }
-
-
-            .controls {
-
-                justify-content: space-between;
-
-            }
-
-
-            .status {
-
-                grid-template-columns:
-                    1fr
-                    60px
-                    1fr;
-
-            }
-
-
-            .cell {
-
-                width: 29px;
-
-                height: 29px;
-
-                font-size: 16px;
-
-            }
-
-
-            .rules {
-
-                flex-direction: column;
-
-                gap: 5px;
-
-                text-align: center;
-
-            }
-
+            .game-container { padding: 16px; border-radius: 0; min-height: 100vh; }
+            .header { flex-direction: column; align-items: stretch; }
+            .controls { justify-content: space-between; }
+            .cell { width: 30px; height: 30px; font-size: 14px; }
         }
-
     </style>
-
 </head>
-
 
 <body>
 
-
 <div class="game-container">
-
-
-    <!-- =====================================================
-         CABEÇALHO
-    ====================================================== -->
-
     <div class="header">
-
-        <div>
-
-            <div class="title">
-                💣 Campo Minado
+        <div class="title-group">
+            <span class="title-icon">💣</span>
+            <div>
+                <div class="title">Campo Minado</div>
+                <div class="subtitle">Revele o campo sem disparar minas.</div>
             </div>
-
-            <div class="subtitle">
-                Revele todas as casas sem encontrar uma mina.
-            </div>
-
         </div>
-
 
         <div class="controls">
-
+            <button class="btn-action btn-theme" id="themeToggle" title="Alternar tema">🌙</button>
             <select id="difficulty">
-
-                <option value="easy">
-                    Fácil — 9×9 / 10 minas
-                </option>
-
-                <option value="medium" selected>
-                    Médio — 16×16 / 40 minas
-                </option>
-
-                <option value="hard">
-                    Difícil — 30×16 / 99 minas
-                </option>
-
+                <option value="easy">Fácil — 9×9 / 10 minas</option>
+                <option value="medium" selected>Médio — 16×16 / 40 minas</option>
+                <option value="hard">Difícil — 30×16 / 99 minas</option>
             </select>
-
-
-            <button
-                class="reset-button"
-                id="resetButton"
-            >
-                Novo jogo
-            </button>
-
+            <button class="btn-action btn-primary" id="resetButton">Novo Jogo</button>
         </div>
-
     </div>
 
-
-    <!-- =====================================================
-         STATUS
-    ====================================================== -->
-
-    <div class="status">
-
-        <div
-            class="counter"
-            id="mineCounter"
-        >
-            040
-        </div>
-
-
-        <button
-            class="face"
-            id="face"
-            title="Novo jogo"
-        >
-            🙂
-        </button>
-
-
-        <div
-            class="timer"
-            id="timer"
-        >
-            000
-        </div>
-
+    <div class="status-panel">
+        <div class="counter" id="mineCounter">040</div>
+        <button class="face-btn" id="face" title="Reiniciar">🙂</button>
+        <div class="timer" id="timer">000</div>
     </div>
-
-
-    <!-- =====================================================
-         TABULEIRO
-    ====================================================== -->
 
     <div class="board-wrapper">
-
-        <div
-            class="board"
-            id="board"
-        ></div>
-
+        <div class="board" id="board"></div>
     </div>
 
-
-    <!-- =====================================================
-         MENSAGEM
-    ====================================================== -->
-
-    <div
-        class="message"
-        id="message"
-    >
-        Clique em uma casa para começar.
-    </div>
-
-
-    <!-- =====================================================
-         REGRAS
-    ====================================================== -->
+    <div class="message" id="message">Clique em uma célula para iniciar</div>
 
     <div class="rules">
-
-        <span>
-            🖱️ Clique esquerdo: revelar
-        </span>
-
-        <span>
-            🚩 Clique direito: marcar
-        </span>
-
-        <span>
-            🎯 Revele todas as casas seguras para vencer
-        </span>
-
+        <span>🖱️ Clique Esquerdo: Revelar</span>
+        <span>🚩 Clique Direito: Marcar</span>
+        <span>🎯 Limpe o campo para vencer</span>
     </div>
-
-
 </div>
 
-
 <script>
-
-/* ============================================================
-   CONFIGURAÇÕES
-============================================================ */
-
-const difficulties = {
-
-    easy: {
-        rows: 9,
-        cols: 9,
-        mines: 10
-    },
-
-    medium: {
-        rows: 16,
-        cols: 16,
-        mines: 40
-    },
-
-    hard: {
-        rows: 16,
-        cols: 30,
-        mines: 99
-    }
-
-};
-
-
-/* ============================================================
-   VARIÁVEIS
-============================================================ */
-
-let currentDifficulty = "medium";
-
-let rows = 16;
-let cols = 16;
-let mineCount = 40;
-
-let board = [];
-
-let gameStarted = false;
-let gameOver = false;
-
-let flags = 0;
-let revealedCells = 0;
-
-let timer = 0;
-let timerInterval = null;
-
-
-/* ============================================================
-   ELEMENTOS
-============================================================ */
-
-const boardElement =
-    document.getElementById("board");
-
-const mineCounter =
-    document.getElementById("mineCounter");
-
-const timerElement =
-    document.getElementById("timer");
-
-const messageElement =
-    document.getElementById("message");
-
-const faceElement =
-    document.getElementById("face");
-
-const resetButton =
-    document.getElementById("resetButton");
-
-const difficultyElement =
-    document.getElementById("difficulty");
-
-
-/* ============================================================
-   NOVO JOGO
-============================================================ */
-
-function newGame() {
-
-    clearInterval(timerInterval);
-
-    const config =
-        difficulties[currentDifficulty];
-
-    rows = config.rows;
-    cols = config.cols;
-    mineCount = config.mines;
-
-    board = [];
-
-    gameStarted = false;
-    gameOver = false;
-
-    flags = 0;
-    revealedCells = 0;
-
-    timer = 0;
-
-    timerElement.textContent = "000";
-
-    mineCounter.textContent =
-        String(mineCount).padStart(3, "0");
-
-    faceElement.textContent = "🙂";
-
-    messageElement.textContent =
-        "Clique em uma casa para começar.";
-
-
-    /*
-    ============================================================
-    CRIAR MATRIZ
-    ============================================================
-    */
-
-    for (let y = 0; y < rows; y++) {
-
-        board[y] = [];
-
-        for (let x = 0; x < cols; x++) {
-
-            board[y][x] = {
-
-                mine: false,
-
-                revealed: false,
-
-                flagged: false,
-
-                number: 0
-
-            };
-
-        }
-
-    }
-
-
-    /*
-    ============================================================
-    DESENHAR
-    ============================================================
-    */
-
-    boardElement.innerHTML = "";
-
-    boardElement.style.gridTemplateColumns =
-        `repeat(${cols}, 32px)`;
-
-
-    for (let y = 0; y < rows; y++) {
-
-        for (let x = 0; x < cols; x++) {
-
-            const element =
-                document.createElement("div");
-
-            element.className = "cell";
-
-            element.dataset.x = x;
-            element.dataset.y = y;
-
-
-            element.addEventListener(
-                "click",
-                function () {
-
-                    reveal(x, y);
-
-                }
-            );
-
-
-            element.addEventListener(
-                "contextmenu",
-                function (event) {
-
-                    event.preventDefault();
-
-                    toggleFlag(x, y);
-
-                }
-            );
-
-
-            boardElement.appendChild(element);
-
-        }
-
-    }
-
-}
-
-
-/* ============================================================
-   PRIMEIRO CLIQUE
-============================================================ */
-
-function startGame(firstX, firstY) {
-
-    gameStarted = true;
-
-    placeMines(firstX, firstY);
-
-    calculateNumbers();
-
-    startTimer();
-
-    messageElement.textContent =
-        "Jogo iniciado. Boa sorte!";
-
-}
-
-
-/* ============================================================
-   COLOCAR MINAS
-============================================================ */
-
-function placeMines(safeX, safeY) {
-
-    /*
-        O primeiro clique e seus vizinhos
-        ficam protegidos.
-
-        Isso evita começar em uma situação
-        injusta.
-    */
-
-    const forbidden = new Set();
-
-
-    for (let dy = -1; dy <= 1; dy++) {
-
-        for (let dx = -1; dx <= 1; dx++) {
-
-            const x = safeX + dx;
-            const y = safeY + dy;
-
-            if (
-                x >= 0 &&
-                x < cols &&
-                y >= 0 &&
-                y < rows
-            ) {
-
-                forbidden.add(
-                    `${x},${y}`
-                );
-
+    /* Configuração de Temas */
+    const themeToggleBtn = document.getElementById("themeToggle");
+    const htmlElement = document.documentElement;
+
+    themeToggleBtn.addEventListener("click", () => {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        htmlElement.setAttribute("data-theme", newTheme);
+        themeToggleBtn.textContent = newTheme === "dark" ? "🌙" : "☀️";
+    });
+
+    /* Lógica do Jogo */
+    const difficulties = {
+        easy: { rows: 9, cols: 9, mines: 10 },
+        medium: { rows: 16, cols: 16, mines: 40 },
+        hard: { rows: 16, cols: 30, mines: 99 }
+    };
+
+    let currentDifficulty = "medium";
+    let rows = 16, cols = 16, mineCount = 40;
+    let board = [], gameStarted = false, gameOver = false;
+    let flags = 0, revealedCells = 0, timer = 0, timerInterval = null;
+
+    const boardElement = document.getElementById("board");
+    const mineCounter = document.getElementById("mineCounter");
+    const timerElement = document.getElementById("timer");
+    const messageElement = document.getElementById("message");
+    const faceElement = document.getElementById("face");
+    const resetButton = document.getElementById("resetButton");
+    const difficultyElement = document.getElementById("difficulty");
+
+    function newGame() {
+        clearInterval(timerInterval);
+        const config = difficulties[currentDifficulty];
+        rows = config.rows; cols = config.cols; mineCount = config.mines;
+        board = []; gameStarted = false; gameOver = false;
+        flags = 0; revealedCells = 0; timer = 0;
+
+        timerElement.textContent = "000";
+        mineCounter.textContent = String(mineCount).padStart(3, "0");
+        faceElement.textContent = "🙂";
+        messageElement.textContent = "Clique em uma célula para iniciar";
+
+        for (let y = 0; y < rows; y++) {
+            board[y] = [];
+            for (let x = 0; x < cols; x++) {
+                board[y][x] = { mine: false, revealed: false, flagged: false, number: 0 };
             }
-
         }
 
-    }
+        boardElement.innerHTML = "";
+        boardElement.style.gridTemplateColumns = `repeat(${cols}, 34px)`;
 
-
-    let placed = 0;
-
-
-    while (placed < mineCount) {
-
-        const x =
-            Math.floor(
-                Math.random() * cols
-            );
-
-        const y =
-            Math.floor(
-                Math.random() * rows
-            );
-
-
-        const key =
-            `${x},${y}`;
-
-
-        if (forbidden.has(key))
-            continue;
-
-
-        if (board[y][x].mine)
-            continue;
-
-
-        board[y][x].mine = true;
-
-        placed++;
-
-    }
-
-}
-
-
-/* ============================================================
-   CALCULAR NÚMEROS
-============================================================ */
-
-function calculateNumbers() {
-
-    for (let y = 0; y < rows; y++) {
-
-        for (let x = 0; x < cols; x++) {
-
-            if (board[y][x].mine)
-                continue;
-
-
-            board[y][x].number =
-                countAdjacentMines(x, y);
-
-        }
-
-    }
-
-}
-
-
-/* ============================================================
-   CONTAR MINAS
-============================================================ */
-
-function countAdjacentMines(x, y) {
-
-    let count = 0;
-
-
-    for (let dy = -1; dy <= 1; dy++) {
-
-        for (let dx = -1; dx <= 1; dx++) {
-
-            if (
-                dx === 0 &&
-                dy === 0
-            ) {
-                continue;
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const element = document.createElement("div");
+                element.className = "cell";
+                element.addEventListener("click", () => reveal(x, y));
+                element.addEventListener("contextmenu", (e) => { e.preventDefault(); toggleFlag(x, y); });
+                boardElement.appendChild(element);
             }
+        }
+    }
 
+    function startGame(firstX, firstY) {
+        gameStarted = true;
+        placeMines(firstX, firstY);
+        calculateNumbers();
+        startTimer();
+        messageElement.textContent = "Jogo em andamento. Boa sorte!";
+    }
 
-            const nx = x + dx;
-            const ny = y + dy;
-
-
-            if (
-                nx >= 0 &&
-                nx < cols &&
-                ny >= 0 &&
-                ny < rows
-            ) {
-
-                if (board[ny][nx].mine) {
-
-                    count++;
-
-                }
-
+    function placeMines(safeX, safeY) {
+        const forbidden = new Set();
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const x = safeX + dx, y = safeY + dy;
+                if (x >= 0 && x < cols && y >= 0 && y < rows) forbidden.add(`${x},${y}`);
             }
-
         }
 
-    }
-
-
-    return count;
-
-}
-
-
-/* ============================================================
-   REVELAR
-============================================================ */
-
-function reveal(x, y) {
-
-    if (gameOver)
-        return;
-
-
-    const cell =
-        board[y][x];
-
-
-    if (
-        cell.revealed ||
-        cell.flagged
-    ) {
-        return;
-    }
-
-
-    /*
-    ------------------------------------------------------------
-    PRIMEIRO CLIQUE
-    ------------------------------------------------------------
-    */
-
-    if (!gameStarted) {
-
-        startGame(x, y);
-
-    }
-
-
-    /*
-    ------------------------------------------------------------
-    MINA
-    ------------------------------------------------------------
-    */
-
-    if (cell.mine) {
-
-        cell.revealed = true;
-
-        const element =
-            getElement(x, y);
-
-        element.classList.add(
-            "revealed",
-            "mine",
-            "exploded"
-        );
-
-        element.textContent = "💣";
-
-        loseGame();
-
-        return;
-
-    }
-
-
-    /*
-    ------------------------------------------------------------
-    CASA NORMAL
-    ------------------------------------------------------------
-    */
-
-    floodReveal(x, y);
-
-
-    /*
-    ------------------------------------------------------------
-    VERIFICAR VITÓRIA
-    ------------------------------------------------------------
-    */
-
-    checkWin();
-
-}
-
-
-/* ============================================================
-   FLOOD REVEAL
-============================================================ */
-
-function floodReveal(startX, startY) {
-
-    const queue = [
-        [startX, startY]
-    ];
-
-    const visited = new Set();
-
-
-    while (queue.length > 0) {
-
-        const [x, y] =
-            queue.shift();
-
-
-        const key =
-            `${x},${y}`;
-
-
-        if (visited.has(key))
-            continue;
-
-
-        visited.add(key);
-
-
-        if (
-            x < 0 ||
-            x >= cols ||
-            y < 0 ||
-            y >= rows
-        ) {
-            continue;
-        }
-
-
-        const cell =
-            board[y][x];
-
-
-        if (
-            cell.revealed ||
-            cell.flagged ||
-            cell.mine
-        ) {
-            continue;
-        }
-
-
-        cell.revealed = true;
-
-        revealedCells++;
-
-
-        const element =
-            getElement(x, y);
-
-
-        element.classList.add(
-            "revealed"
-        );
-
-
-        /*
-        --------------------------------------------------------
-        MOSTRAR NÚMERO
-        --------------------------------------------------------
-        */
-
-        if (cell.number > 0) {
-
-            element.textContent =
-                cell.number;
-
-            element.classList.add(
-                `number-${cell.number}`
-            );
-
-        }
-
-
-        /*
-        --------------------------------------------------------
-        SE FOR ZERO, ABRIR VIZINHOS
-        --------------------------------------------------------
-        */
-
-        if (cell.number === 0) {
-
-            for (let dy = -1; dy <= 1; dy++) {
-
-                for (let dx = -1; dx <= 1; dx++) {
-
-                    if (
-                        dx === 0 &&
-                        dy === 0
-                    ) {
-                        continue;
-                    }
-
-
-                    const nx = x + dx;
-                    const ny = y + dy;
-
-
-                    if (
-                        nx >= 0 &&
-                        nx < cols &&
-                        ny >= 0 &&
-                        ny < rows
-                    ) {
-
-                        queue.push([
-                            nx,
-                            ny
-                        ]);
-
-                    }
-
-                }
-
+        let placed = 0;
+        while (placed < mineCount) {
+            const x = Math.floor(Math.random() * cols);
+            const y = Math.floor(Math.random() * rows);
+            if (!forbidden.has(`${x},${y}`) && !board[y][x].mine) {
+                board[y][x].mine = true;
+                placed++;
             }
-
         }
-
     }
 
-}
+    function calculateNumbers() {
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (!board[y][x].mine) board[y][x].number = countAdjacentMines(x, y);
+            }
+        }
+    }
 
+    function countAdjacentMines(x, y) {
+        let count = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && board[ny][nx].mine) count++;
+            }
+        }
+        return count;
+    }
 
-/* ============================================================
-   BANDEIRA
-============================================================ */
+    function reveal(x, y) {
+        if (gameOver) return;
+        const cell = board[y][x];
+        if (cell.revealed || cell.flagged) return;
 
-function toggleFlag(x, y) {
+        if (!gameStarted) startGame(x, y);
 
-    if (gameOver)
-        return;
-
-
-    const cell =
-        board[y][x];
-
-
-    if (cell.revealed)
-        return;
-
-
-    /*
-    ------------------------------------------------------------
-    PRIMEIRA BANDEIRA NÃO COMEÇA O TIMER
-    ------------------------------------------------------------
-    */
-
-    if (!cell.flagged) {
-
-        if (flags >= mineCount)
+        if (cell.mine) {
+            cell.revealed = true;
+            const el = getElement(x, y);
+            el.classList.add("revealed", "mine", "exploded");
+            el.textContent = "💣";
+            loseGame();
             return;
+        }
 
-
-        cell.flagged = true;
-
-        flags++;
-
-    } else {
-
-        cell.flagged = false;
-
-        flags--;
-
+        floodReveal(x, y);
+        checkWin();
     }
 
+    function floodReveal(startX, startY) {
+        const queue = [[startX, startY]];
+        const visited = new Set();
 
-    const element =
-        getElement(x, y);
+        while (queue.length > 0) {
+            const [x, y] = queue.shift();
+            const key = `${x},${y}`;
+            if (visited.has(key)) continue;
+            visited.add(key);
 
+            if (x < 0 || x >= cols || y < 0 || y >= rows) continue;
+            const cell = board[y][x];
+            if (cell.revealed || cell.flagged || cell.mine) continue;
 
-    element.textContent =
-        cell.flagged ? "🚩" : "";
+            cell.revealed = true;
+            revealedCells++;
+            const el = getElement(x, y);
+            el.classList.add("revealed");
 
-
-    element.classList.toggle(
-        "flagged",
-        cell.flagged
-    );
-
-
-    mineCounter.textContent =
-        String(mineCount - flags)
-            .padStart(3, "0");
-
-}
-
-
-/* ============================================================
-   PEGAR ELEMENTO
-============================================================ */
-
-function getElement(x, y) {
-
-    return boardElement.children[
-        y * cols + x
-    ];
-
-}
-
-
-/* ============================================================
-   PERDEU
-============================================================ */
-
-function loseGame() {
-
-    gameOver = true;
-
-    clearInterval(timerInterval);
-
-    faceElement.textContent = "😵";
-
-    messageElement.textContent =
-        "💥 Você perdeu!";
-
-
-    /*
-    ------------------------------------------------------------
-    MOSTRAR TODAS AS MINAS
-    ------------------------------------------------------------
-    */
-
-    for (let y = 0; y < rows; y++) {
-
-        for (let x = 0; x < cols; x++) {
-
-            const cell =
-                board[y][x];
-
-
-            if (cell.mine) {
-
-                const element =
-                    getElement(x, y);
-
-
-                element.classList.add(
-                    "revealed",
-                    "mine"
-                );
-
-
-                if (!element.classList.contains(
-                    "exploded"
-                )) {
-
-                    element.textContent = "💣";
-
+            if (cell.number > 0) {
+                el.textContent = cell.number;
+                el.classList.add(`number-${cell.number}`);
+            } else {
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx !== 0 || dy !== 0) queue.push([x + dx, y + dy]);
+                    }
                 }
-
             }
-
         }
-
     }
 
-}
+    function toggleFlag(x, y) {
+        if (gameOver) return;
+        const cell = board[y][x];
+        if (cell.revealed) return;
 
-
-/* ============================================================
-   VERIFICAR VITÓRIA
-============================================================ */
-
-function checkWin() {
-
-    const safeCells =
-        rows * cols - mineCount;
-
-
-    if (revealedCells !== safeCells)
-        return;
-
-
-    gameOver = true;
-
-    clearInterval(timerInterval);
-
-    faceElement.textContent = "😎";
-
-    messageElement.textContent =
-        "🎉 Você venceu! Campo limpo!";
-
-
-    /*
-    ------------------------------------------------------------
-    MARCAR AUTOMATICAMENTE AS MINAS
-    ------------------------------------------------------------
-    */
-
-    for (let y = 0; y < rows; y++) {
-
-        for (let x = 0; x < cols; x++) {
-
-            const cell =
-                board[y][x];
-
-
-            if (cell.mine) {
-
-                cell.flagged = true;
-
-                const element =
-                    getElement(x, y);
-
-
-                element.textContent = "🚩";
-
-                element.classList.add(
-                    "flagged"
-                );
-
-            }
-
+        if (!cell.flagged) {
+            if (flags >= mineCount) return;
+            cell.flagged = true; flags++;
+        } else {
+            cell.flagged = false; flags--;
         }
 
+        const el = getElement(x, y);
+        el.textContent = cell.flagged ? "🚩" : "";
+        mineCounter.textContent = String(mineCount - flags).padStart(3, "0");
     }
 
+    function getElement(x, y) { return boardElement.children[y * cols + x]; }
 
-    flags = mineCount;
+    function loseGame() {
+        gameOver = true;
+        clearInterval(timerInterval);
+        faceElement.textContent = "😵";
+        messageElement.textContent = "💥 Fim de jogo! Você atingiu uma mina.";
 
-
-    mineCounter.textContent =
-        "000";
-
-}
-
-
-/* ============================================================
-   TIMER
-============================================================ */
-
-function startTimer() {
-
-    clearInterval(timerInterval);
-
-
-    timerInterval =
-        setInterval(function () {
-
-            timer++;
-
-
-            if (timer > 999) {
-
-                timer = 999;
-
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (board[y][x].mine) {
+                    const el = getElement(x, y);
+                    el.classList.add("revealed", "mine");
+                    if (!el.classList.contains("exploded")) el.textContent = "💣";
+                }
             }
+        }
+    }
 
+    function checkWin() {
+        if (revealedCells !== (rows * cols - mineCount)) return;
+        gameOver = true;
+        clearInterval(timerInterval);
+        faceElement.textContent = "😎";
+        messageElement.textContent = "🎉 Parabéns! Você limpou o campo!";
+        mineCounter.textContent = "000";
+    }
 
-            timerElement.textContent =
-                String(timer)
-                    .padStart(3, "0");
-
-
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timer = Math.min(timer + 1, 999);
+            timerElement.textContent = String(timer).padStart(3, "0");
         }, 1000);
+    }
 
-}
-
-
-/* ============================================================
-   REINICIAR
-============================================================ */
-
-function resetGame() {
+    resetButton.addEventListener("click", newGame);
+    faceElement.addEventListener("click", newGame);
+    difficultyElement.addEventListener("change", (e) => { currentDifficulty = e.target.value; newGame(); });
 
     newGame();
-
-}
-
-
-/* ============================================================
-   EVENTOS
-============================================================ */
-
-resetButton.addEventListener(
-    "click",
-    resetGame
-);
-
-
-faceElement.addEventListener(
-    "click",
-    resetGame
-);
-
-
-difficultyElement.addEventListener(
-    "change",
-    function () {
-
-        currentDifficulty =
-            this.value;
-
-        newGame();
-
-    }
-);
-
-
-/* ============================================================
-   INICIAR
-============================================================ */
-
-newGame();
-
 </script>
-
 </body>
-
 </html>
