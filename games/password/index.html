@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE PASSWORD — ULTIMATE EDITION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #060913;
+            --panel-bg: rgba(15, 23, 42, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --glow-cyan: rgba(6, 182, 212, 0.3);
+            --glow-green: rgba(16, 185, 129, 0.3);
+            --glow-red: rgba(239, 68, 68, 0.3);
+            --font-family: 'Outfit', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.5) 0px, transparent 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 30px 20px;
+            overflow-x: hidden;
+        }
+
+        /* LIGHTNING EFFECT ON BACKGROUND */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.015) 0px, rgba(255, 255, 255, 0.015) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 850px;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* TYPOGRAPHY */
+        h1 {
+            font-size: 3.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 20%, var(--accent-cyan) 60%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            text-align: center;
+            filter: drop-shadow(0 0 25px rgba(6, 182, 212, 0.3));
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            margin-bottom: 35px;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        /* BUTTONS */
+        .btn {
+            position: relative;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--text-main);
+            border: 1px solid var(--panel-border);
+            padding: 16px 28px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 6px;
+            min-width: 180px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        .btn:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px var(--glow-cyan);
+            color: #fff;
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 20px var(--glow-cyan);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-danger:hover {
+            background: var(--accent-red);
+            color: #fff;
+            box-shadow: 0 8px 25px var(--glow-red);
+        }
+
+        /* MENU BUTTONS */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .menu-card-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            padding: 18px 24px;
+            width: 100%;
+        }
+
+        .menu-card-btn .btn-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            margin-top: 4px;
+        }
+
+        /* GAME HUD */
+        .hud-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            width: 100%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hud-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hud-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .hud-value {
+            font-size: 1.6rem;
+            font-weight: 900;
+            font-family: var(--font-mono);
+            color: var(--accent-cyan);
+            text-shadow: 0 0 12px var(--glow-cyan);
+        }
+
+        /* INPUT AREA */
+        .input-container {
+            width: 100%;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            width: 100%;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-box::before {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px var(--glow-cyan);
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .password-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 1.8rem;
+            font-family: var(--font-mono);
+            letter-spacing: 2px;
+            user-select: text;
+        }
+
+        .password-input::placeholder {
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* GAME CONTROLS */
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+
+        .game-controls .btn {
+            flex: 1;
+            margin: 0;
+        }
+
+        /* RULES CONTAINER */
+        .rules-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 14px;
+            margin-bottom: 40px;
+        }
+
+        .rule-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .rule-card.passed {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.05);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+        }
+
+        .rule-card.failed {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.05);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.08);
+        }
+
+        .rule-header {
+            padding: 10px 18px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
+
+        .rule-card.passed .rule-header {
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .rule-card.failed .rule-header {
+            color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .rule-body {
+            padding: 18px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 600;
+        }
+
+        .rule-icon {
+            font-size: 1.2rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .rule-card.passed .rule-icon {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .rule-card.failed .rule-icon {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .panel h2 {
+            margin-bottom: 18px;
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        /* SHAKE ANIMATION ON FAIL */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* OVERLAYS & TOASTS */
+        .toast {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+            z-index: 1000;
+            transform: translateY(-100px) scale(0.9);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toast.show {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(6, 9, 19, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            animation: modalZoom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalZoom {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 650px) {
+            h1 { font-size: 2.5rem; }
+            .hud-container { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .password-input { font-size: 1.4rem; }
+            .game-controls { flex-direction: column; }
+            .game-controls .btn { width: 100%; }
+            .modal-content { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">NOTIFICATION</div>
+
+    <!-- MAIN MENU SCREEN -->
+    <div id="screen-menu" class="screen active">
+        <h1>THE PASSWORD</h1>
+        <p class="subtitle">Crie a senha absoluta antes que o sistema caia.</p>
+
+        <div class="menu-buttons">
+            <button class="btn btn-primary" onclick="app.showScreen('screen-modes')">JOGAR AGORA</button>
+            <button class="btn" onclick="app.showScreen('screen-how')">COMO JOGAR</button>
+            <button class="btn" onclick="app.showScreen('screen-stats')">ESTATÍSTICAS</button>
+            <button class="btn" onclick="app.showScreen('screen-settings')">CONFIGURAÇÕES</button>
+        </div>
+    </div>
+
+    <!-- SELECT MODE SCREEN -->
+    <div id="screen-modes" class="screen">
+        <h1>MODOS DE JOGO</h1>
+        <p class="subtitle">Escolha o nível do seu protocolo</p>
+
+        <div class="menu-buttons">
+            <button class="btn menu-card-btn" onclick="app.startGame('NORMAL')">
+                <span>NORMAL</span>
+                <span class="btn-desc">Validação em tempo real. Errou? Ajuste sem perder.</span>
+            </button>
+            <button class="btn menu-card-btn" onclick="app.startGame('INFINITE')">
+                <span>INFINITE</span>
+                <span class="btn-desc">Desafio sem fim com geração dinâmica de regras.</span>
+            </button>
+            <button class="btn menu-card-btn" onclick="app.startGame('ONE_CHANCE')">
+                <span>⚡ UMA CHANCE</span>
+                <span class="btn-desc">Digite e aperte ENTER. Se falhar uma regra = GAME OVER!</span>
+            </button>
+            <button class="btn btn-danger" onclick="app.showScreen('screen-menu')" style="margin-top:10px;">VOLTAR</button>
+        </div>
+    </div>
+
+    <!-- HOW TO PLAY SCREEN -->
+    <div id="screen-how" class="screen">
+        <h1>COMO JOGAR</h1>
+        <p class="subtitle">Instruções do Protocolo</p>
+
+        <div class="panel">
+            <h2>Regras do Jogo</h2>
+            <p style="margin-bottom:12px; color:var(--text-muted);">1. Digite uma senha no campo interativo.</p>
+            <p style="margin-bottom:12px; color:var(--text-muted);">2. Pressione <strong>ENTER</strong> ou clique em <strong>ENVIAR</strong> para prosseguir.</p>
+            <p style="margin-bottom:12px; color:var(--text-muted);">3. Nos modos <strong>Normal/Infinito</strong>, você recebe dicas visuais ao vivo.</p>
+            <p style="margin-bottom:12px; color:var(--text-muted);">4. No modo <strong>Uma Chance</strong>, a verificação só ocorre ao enviar. Errou, perdeu!</p>
+            <p style="margin-bottom:12px; color:var(--text-muted);">5. Cada regra concluída libera um novo desafio sobre a senha atual.</p>
+        </div>
+
+        <button class="btn" onclick="app.showScreen('screen-menu')">VOLTAR AO MENU</button>
+    </div>
+
+    <!-- STATISTICS SCREEN -->
+    <div id="screen-stats" class="screen">
+        <h1>ESTATÍSTICAS</h1>
+        <p class="subtitle">Seu Histórico de Registros</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="hud-label">Pontuação Máxima</div>
+                <div class="hud-value" id="stat-high-score">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="hud-label">Mais Regras</div>
+                <div class="hud-value" id="stat-max-rules">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="hud-label">Melhor Tempo</div>
+                <div class="hud-value" id="stat-best-time">--:--</div>
+            </div>
+            <div class="stat-card">
+                <div class="hud-label">Vitórias</div>
+                <div class="hud-value" id="stat-games-won">0</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Leaderboard Local</h2>
+            <div id="leaderboard-list" style="text-align: left; font-family: var(--font-mono); font-size: 0.9rem;"></div>
+        </div>
+
+        <button class="btn" onclick="app.showScreen('screen-menu')">VOLTAR AO MENU</button>
+    </div>
+
+    <!-- SETTINGS SCREEN -->
+    <div id="screen-settings" class="screen">
+        <h1>CONFIGURAÇÕES</h1>
+        <p class="subtitle">Preferências do Sistema</p>
+
+        <div class="panel" style="max-width: 450px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <span style="font-weight:700;">EFEITOS SONOROS</span>
+                <button class="btn" id="btn-sound-toggle" style="min-width:100px; margin:0;" onclick="app.toggleSound()">ON</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700;">RESETAR DADOS</span>
+                <button class="btn btn-danger" style="min-width:100px; margin:0;" onclick="app.clearStats()">RESET</button>
+            </div>
+        </div>
+
+        <button class="btn" onclick="app.showScreen('screen-menu')">VOLTAR AO MENU</button>
+    </div>
+
+    <!-- GAMEPLAY SCREEN -->
+    <div id="screen-game" class="screen">
+        <div class="hud-container">
+            <div class="hud-item">
+                <span class="hud-label">Modo</span>
+                <span class="hud-value" id="hud-mode" style="font-size:1.1rem; margin-top:5px;">NORMAL</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Score</span>
+                <span class="hud-value" id="hud-score">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Regras</span>
+                <span class="hud-value" id="hud-rules">0/0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Tempo</span>
+                <span class="hud-value" id="hud-time">00:00</span>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-box" id="input-box">
+                <div class="input-header">
+                    <span>INSIRA A SENHA (ENTER PARA ENVIAR)</span>
+                    <span id="char-count">0 CARACTERES</span>
+                </div>
+                <input type="text" id="password-input" class="password-input" placeholder="Digite aqui..." autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button class="btn" onclick="app.useHint()" id="btn-hint">DICA (3)</button>
+            <button class="btn" onclick="app.togglePause()">PAUSAR</button>
+            <button class="btn btn-primary" onclick="app.submitPassword()">ENVIAR ↵</button>
+        </div>
+
+        <div class="rules-container" id="rules-container"></div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="modal-pause" class="modal-overlay">
+        <div class="modal-content">
+            <h1>SISTEMA PAUSADO</h1>
+            <p class="subtitle">O tempo foi congelado.</p>
+            <button class="btn btn-primary" style="width:100%; margin: 8px 0;" onclick="app.togglePause()">CONTINUAR</button>
+            <button class="btn btn-danger" style="width:100%; margin: 8px 0;" onclick="app.quitGame()">SAIR DO JOGO</button>
+        </div>
+    </div>
+
+    <div id="modal-victory" class="modal-overlay">
+        <div class="modal-content">
+            <h1 style="color:var(--accent-green)">ACESSO CONCEDIDO</h1>
+            <p class="subtitle">Você superou todas as regras de segurança!</p>
+            <div class="panel" style="text-align:left; margin: 20px 0; padding:20px;">
+                <p style="margin-bottom:8px;"><strong>Score Final:</strong> <span id="vic-score" style="color:var(--accent-cyan)">0</span></p>
+                <p style="margin-bottom:8px;"><strong>Tempo Total:</strong> <span id="vic-time">00:00</span></p>
+                <p style="margin-bottom:8px;"><strong>Regras Cumpridas:</strong> <span id="vic-rules">0</span></p>
+                <p><strong>Dicas Usadas:</strong> <span id="vic-hints">0</span></p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; margin:8px 0;" onclick="app.showScreen('screen-modes')">JOGAR NOVAMENTE</button>
+            <button class="btn" style="width:100%; margin:8px 0;" onclick="app.showScreen('screen-menu')">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <div id="modal-gameover" class="modal-overlay">
+        <div class="modal-content">
+            <h1 style="color:var(--accent-red)">FALHA DE SISTEMA</h1>
+            <p class="subtitle" id="gameover-reason">Sua senha não cumpriu os requisitos mínimos!</p>
+            <button class="btn btn-primary" style="width:100%; margin:8px 0;" onclick="app.startGame(app.currentMode)">TENTAR NOVAMENTE</button>
+            <button class="btn" style="width:100%; margin:8px 0;" onclick="app.showScreen('screen-menu')">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <script>
+        /* AUDIO SYSTEM */
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
+                }
+            }
+
+            playTone(freq, type, duration, startVol = 0.1, endVol = 0) {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(startVol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(Math.max(endVol, 0.0001), this.ctx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) { console.error(e); }
+            }
+
+            playRulePass() {
+                this.playTone(523.25, 'sine', 0.1, 0.15);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.15, 0.15), 80);
+            }
+
+            playNewRule() {
+                this.playTone(330, 'triangle', 0.15, 0.2);
+                setTimeout(() => this.playTone(440, 'triangle', 0.2, 0.2), 100);
+            }
+
+            playFail() {
+                this.playTone(150, 'sawtooth', 0.2, 0.2);
+            }
+
+            playVictory() {
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'sine', 0.3, 0.2), idx * 120);
+                });
+            }
+        }
+
+        const DATA = {
+            FRUITS: ["banana", "apple", "orange", "grape", "mango", "pear", "lemon", "cherry", "kiwi", "melon"],
+            ANIMALS: ["dog", "cat", "lion", "tiger", "bear", "wolf", "zebra", "monkey", "fox", "rabbit"],
+            COLORS: ["red", "blue", "green", "yellow", "purple", "pink", "black", "white", "orange", "brown"]
+        };
+
+        const RULE_DATABASE = [
+            {
+                id: "min_5",
+                text: "Sua senha precisa ter pelo menos 5 caracteres.",
+                hint: "Digite mais caracteres no campo.",
+                validate: (pwd) => pwd.length >= 5
+            },
+            {
+                id: "has_num",
+                text: "Sua senha precisa conter pelo menos um número.",
+                hint: "Adicione qualquer número de 0 a 9.",
+                validate: (pwd) => /\d/.test(pwd)
+            },
+            {
+                id: "has_upper",
+                text: "Sua senha precisa conter uma letra maiúscula.",
+                hint: "Digite pelo menos uma letra de A a Z em maiúsculo.",
+                validate: (pwd) => /[A-Z]/.test(pwd)
+            },
+            {
+                id: "has_symbol",
+                text: "Sua senha precisa conter um símbolo especial (!@#$%^&*).",
+                hint: "Use caracteres como !, @, # ou $.",
+                validate: (pwd) => /[^A-Za-z0-9\s]/.test(pwd)
+            },
+            {
+                id: "word_banana",
+                text: 'Sua senha precisa conter a palavra "banana".',
+                hint: 'Escreva a palavra banana em minúsculo.',
+                validate: (pwd) => pwd.includes("banana")
+            },
+            {
+                id: "min_10",
+                text: "Sua senha precisa ter pelo menos 10 caracteres.",
+                hint: "Aumente o tamanho da senha para no mínimo 10 dígitos.",
+                validate: (pwd) => pwd.length >= 10
+            },
+            {
+                id: "has_emoji",
+                text: "Sua senha precisa conter pelo menos um Emoji.",
+                hint: "Insira um emoji qualquer como 🚀 ou 🔥.",
+                validate: (pwd) => /\p{Extended_Pictographic}/u.test(pwd)
+            },
+            {
+                id: "contains_fruit",
+                text: "Sua senha precisa conter uma FRUTA (em inglês: apple, grape...).",
+                hint: "Tente adicionar apple, grape, mango ou banana.",
+                validate: (pwd) => DATA.FRUITS.some(f => pwd.toLowerCase().includes(f))
+            },
+            {
+                id: "num_sum_20",
+                text: "A soma de todos os números na senha deve ser maior ou igual a 20.",
+                hint: "Adicione números maiores como 9 e 9 para atingir a soma 20.",
+                validate: (pwd) => {
+                    const nums = pwd.match(/\d/g);
+                    if (!nums) return false;
+                    return nums.reduce((acc, curr) => acc + parseInt(curr), 0) >= 20;
+                }
+            }
+        ];
+
+        function generateDynamicRule(index) {
+            const color = DATA.COLORS[Math.floor(Math.random() * DATA.COLORS.length)];
+            return {
+                id: `dyn_color_${Date.now()}_${Math.random()}`,
+                text: `Sua senha precisa conter a cor: "${color.toUpperCase()}".`,
+                hint: `Escreva ${color} na sua senha.`,
+                validate: (pwd) => pwd.toLowerCase().includes(color)
+            };
+        }
+
+        class PasswordGame {
+            constructor() {
+                this.sound = new SoundSystem();
+                this.currentMode = "NORMAL";
+                this.activeRules = [];
+                this.availablePool = [];
+                this.password = "";
+                this.hintsLeft = 3;
+                this.score = 0;
+                this.timerSeconds = 0;
+                this.timerInterval = null;
+                this.isPaused = false;
+                this.stats = this.loadStats();
+
+                this.initDOM();
+            }
+
+            initDOM() {
+                this.dom = {
+                    input: document.getElementById('password-input'),
+                    inputBox: document.getElementById('input-box'),
+                    rulesContainer: document.getElementById('rules-container'),
+                    charCount: document.getElementById('char-count'),
+                    hudScore: document.getElementById('hud-score'),
+                    hudRules: document.getElementById('hud-rules'),
+                    hudTime: document.getElementById('hud-time'),
+                    hudMode: document.getElementById('hud-mode'),
+                    btnHint: document.getElementById('btn-hint'),
+                    btnSound: document.getElementById('btn-sound-toggle'),
+                    toast: document.getElementById('toast'),
+                    modalPause: document.getElementById('modal-pause'),
+                    modalVictory: document.getElementById('modal-victory'),
+                    modalGameOver: document.getElementById('modal-gameover'),
+                    gameoverReason: document.getElementById('gameover-reason')
+                };
+
+                this.dom.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.submitPassword();
+                });
+
+                this.dom.input.addEventListener('input', (e) => {
+                    this.password = e.target.value;
+                    this.updateCharCount();
+                    if (this.currentMode !== "ONE_CHANCE") {
+                        this.validateAll(false);
+                    }
+                });
+
+                this.renderStats();
+            }
+
+            showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+            }
+
+            showToast(msg) {
+                this.dom.toast.innerText = msg;
+                this.dom.toast.classList.add('show');
+                setTimeout(() => this.dom.toast.classList.remove('show'), 3000);
+            }
+
+            loadStats() {
+                const data = localStorage.getItem('THE_PASSWORD_STATS_V2');
+                return data ? JSON.parse(data) : { highScore: 0, maxRules: 0, bestTime: null, gamesWon: 0, leaderboard: [] };
+            }
+
+            saveStats() {
+                localStorage.setItem('THE_PASSWORD_STATS_V2', JSON.stringify(this.stats));
+                this.renderStats();
+            }
+
+            renderStats() {
+                document.getElementById('stat-high-score').innerText = this.stats.highScore;
+                document.getElementById('stat-max-rules').innerText = this.stats.maxRules;
+                document.getElementById('stat-best-time').innerText = this.stats.bestTime ? this.formatTime(this.stats.bestTime) : '--:--';
+                document.getElementById('stat-games-won').innerText = this.stats.gamesWon;
+
+                const lb = document.getElementById('leaderboard-list');
+                if (this.stats.leaderboard.length === 0) {
+                    lb.innerHTML = '<p style="color:var(--text-muted)">Nenhum registro encontrado.</p>';
+                } else {
+                    lb.innerHTML = this.stats.leaderboard
+                        .map((entry, idx) => `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">#${idx+1} [${entry.mode}] SCORE: ${entry.score} | REGRAS: ${entry.rules}</div>`)
+                        .join('');
+                }
+            }
+
+            clearStats() {
+                if (confirm("Resetar todo o histórico?")) {
+                    localStorage.removeItem('THE_PASSWORD_STATS_V2');
+                    this.stats = this.loadStats();
+                    this.renderStats();
+                    this.showToast("Dados resetados!");
+                }
+            }
+
+            toggleSound() {
+                this.sound.enabled = !this.sound.enabled;
+                this.dom.btnSound.innerText = this.sound.enabled ? "ON" : "OFF";
+            }
+
+            startGame(mode) {
+                this.currentMode = mode;
+                this.password = "";
+                this.dom.input.value = "";
+                this.score = 0;
+                this.hintsLeft = 3;
+                this.timerSeconds = 0;
+                this.isPaused = false;
+                this.activeRules = [];
+
+                this.dom.hudMode.innerText = mode.replace('_', ' ');
+                this.dom.btnHint.innerText = `DICA (${this.hintsLeft})`;
+                this.updateCharCount();
+
+                this.availablePool = [...RULE_DATABASE];
+                this.pushNextRule();
+
+                this.showScreen('screen-game');
+                this.startTimer();
+                this.dom.input.focus();
+            }
+
+            startTimer() {
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    if (!this.isPaused) {
+                        this.timerSeconds++;
+                        this.dom.hudTime.innerText = this.formatTime(this.timerSeconds);
+                    }
+                }, 1000);
+            }
+
+            formatTime(secs) {
+                const m = Math.floor(secs / 60).toString().padStart(2, '0');
+                const s = (secs % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            }
+
+            togglePause() {
+                this.isPaused = !this.isPaused;
+                this.dom.modalPause.classList.toggle('active', this.isPaused);
+                if (!this.isPaused) this.dom.input.focus();
+            }
+
+            quitGame() {
+                clearInterval(this.timerInterval);
+                this.dom.modalPause.classList.remove('active');
+                this.showScreen('screen-menu');
+            }
+
+            updateCharCount() {
+                this.dom.charCount.innerText = `${this.password.length} CARACTERES`;
+            }
+
+            pushNextRule() {
+                let nextRule = this.availablePool.length > 0 ? this.availablePool.shift() : (this.currentMode === "INFINITE" ? generateDynamicRule(this.activeRules.length) : null);
+
+                if (nextRule) {
+                    this.activeRules.push(nextRule);
+                    this.sound.playNewRule();
+                    this.renderRules();
+                    this.updateHUD();
+                    this.validateAll(true);
+                } else {
+                    this.triggerVictory();
+                }
+            }
+
+            renderRules() {
+                this.dom.rulesContainer.innerHTML = "";
+                this.activeRules.forEach((rule, idx) => {
+                    const card = document.createElement('div');
+                    card.className = "rule-card";
+                    card.id = `rule-card-${rule.id}`;
+
+                    card.innerHTML = `
+                        <div class="rule-header">
+                            <span>REGRA ${idx + 1}</span>
+                            <span id="rule-status-${rule.id}">PENDENTE</span>
+                        </div>
+                        <div class="rule-body">
+                            <span class="rule-icon" id="rule-icon-${rule.id}">?</span>
+                            <span>${rule.text}</span>
+                        </div>
+                    `;
+                    this.dom.rulesContainer.appendChild(card);
+                });
+            }
+
+            validateAll(autoAdvance = false) {
+                let allPassed = true;
+
+                this.activeRules.forEach((rule) => {
+                    const isValid = rule.validate(this.password);
+                    const card = document.getElementById(`rule-card-${rule.id}`);
+                    const statusTag = document.getElementById(`rule-status-${rule.id}`);
+                    const icon = document.getElementById(`rule-icon-${rule.id}`);
+
+                    if (isValid) {
+                        if (card) {
+                            card.className = "rule-card passed";
+                            if (statusTag) statusTag.innerText = "✓ CUMPRIDA";
+                            if (icon) icon.innerText = "✓";
+                        }
+                    } else {
+                        allPassed = false;
+                        if (card) {
+                            card.className = "rule-card failed";
+                            if (statusTag) statusTag.innerText = "✗ INCORRETA";
+                            if (icon) icon.innerText = "✕";
+                        }
+                    }
+                });
+
+                this.updateHUD();
+
+                if (allPassed && autoAdvance && this.activeRules.length > 0) {
+                    this.score += 100 * this.activeRules.length;
+                    this.sound.playRulePass();
+                    setTimeout(() => this.pushNextRule(), 300);
+                }
+
+                return allPassed;
+            }
+
+            submitPassword() {
+                const allPassed = this.validateAll(false);
+
+                if (allPassed) {
+                    this.score += 100 * this.activeRules.length;
+                    this.sound.playRulePass();
+                    
+                    if (this.availablePool.length === 0 && this.currentMode !== "INFINITE") {
+                        this.triggerVictory();
+                    } else {
+                        this.pushNextRule();
+                    }
+                } else {
+                    this.sound.playFail();
+
+                    // Animação de tremor no erro
+                    this.dom.inputBox.classList.add('shake');
+                    setTimeout(() => this.dom.inputBox.classList.remove('shake'), 400);
+
+                    if (this.currentMode === "ONE_CHANCE") {
+                        this.triggerGameOver("No modo UMA CHANCE você não pode cometer erros!");
+                        return;
+                    }
+
+                    this.showToast("Existem regras não cumpridas!");
+                }
+            }
+
+            updateHUD() {
+                const passedCount = this.activeRules.filter(r => r.validate(this.password)).length;
+                this.dom.hudScore.innerText = this.score;
+                this.dom.hudRules.innerText = `${passedCount}/${this.activeRules.length}`;
+            }
+
+            useHint() {
+                if (this.hintsLeft <= 0) {
+                    this.showToast("Sem dicas restantes!");
+                    return;
+                }
+
+                const unfulfilled = this.activeRules.find(r => !r.validate(this.password));
+                if (unfulfilled) {
+                    this.hintsLeft--;
+                    this.score = Math.max(0, this.score - 50);
+                    this.dom.btnHint.innerText = `DICA (${this.hintsLeft})`;
+                    alert(`[DICA]: ${unfulfilled.hint}`);
+                    this.updateHUD();
+                } else {
+                    this.showToast("Todas as regras atuais estão cumpridas!");
+                }
+            }
+
+            triggerVictory() {
+                clearInterval(this.timerInterval);
+                this.sound.playVictory();
+
+                this.stats.gamesWon++;
+                if (this.score > this.stats.highScore) this.stats.highScore = this.score;
+                if (this.activeRules.length > this.stats.maxRules) this.stats.maxRules = this.activeRules.length;
+
+                this.stats.leaderboard.push({ score: this.score, rules: this.activeRules.length, mode: this.currentMode });
+                this.stats.leaderboard.sort((a, b) => b.score - a.score);
+                this.stats.leaderboard = this.stats.leaderboard.slice(0, 5);
+                this.saveStats();
+
+                document.getElementById('vic-score').innerText = this.score;
+                document.getElementById('vic-time').innerText = this.formatTime(this.timerSeconds);
+                document.getElementById('vic-rules').innerText = this.activeRules.length;
+                document.getElementById('vic-hints').innerText = (3 - this.hintsLeft);
+
+                this.dom.modalVictory.classList.add('active');
+            }
+
+            triggerGameOver(reason) {
+                clearInterval(this.timerInterval);
+                this.sound.playFail();
+                this.dom.gameoverReason.innerText = reason;
+                this.dom.modalGameOver.classList.add('active');
+            }
+        }
+
+        let app;
+        window.addEventListener('DOMContentLoaded', () => { app = new PasswordGame(); });
+    </script>
+</body>
+</html>
