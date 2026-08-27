@@ -3,84 +3,164 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campo Minado Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Tema Escuro (Padrão) */
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --card-border: rgba(255, 255, 255, 0.1);
+            /* Tema Escuro Baseado no Padrão do Modelo */
+            --bg-dark: #05070f;
+            --card-bg: rgba(13, 17, 28, 0.65);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.56), 0 18px 36px -18px rgba(0, 0, 0, 0.65);
             --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --panel-bg: rgba(15, 23, 42, 0.6);
-            --cell-bg: #334155;
-            --cell-hover: #475569;
-            --cell-revealed: #1e293b;
-            --cell-border: rgba(255, 255, 255, 0.05);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
+            --text-muted: #94a3b8;
+            
+            --accent-color: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.08);
+
+            --cell-bg: rgba(255, 255, 255, 0.05);
+            --cell-hover: rgba(255, 255, 255, 0.1);
+            --cell-revealed: rgba(15, 23, 42, 0.4);
+            --cell-border: rgba(255, 255, 255, 0.06);
+
             --display-bg: #020617;
             --display-text: #38bdf8;
+
+            --radius-lg: 32px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
+            --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
+            --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(0,0,0,0) 70%);
         }
 
         [data-theme="light"] {
-            /* Tema Claro */
-            --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --card-border: rgba(255, 255, 255, 0.6);
+            /* Tema Claro Baseado no Padrão do Modelo */
+            --bg-dark: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --card-border: rgba(255, 255, 255, 0.8);
+            --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.15), 0 0 15px rgba(255, 255, 255, 0.7);
             --text-main: #0f172a;
-            --text-sub: #64748b;
-            --panel-bg: rgba(241, 245, 249, 0.8);
-            --cell-bg: #cbd5e1;
-            --cell-hover: #94a3b8;
-            --cell-revealed: #f1f5f9;
-            --cell-border: rgba(255, 255, 255, 0.4);
-            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
-            --accent: #4f46e5;
-            --accent-hover: #4338ca;
+            --text-muted: #64748b;
+            
+            --accent-color: #4f46e5;
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+            --accent-glow: rgba(79, 70, 229, 0.25);
+
+            --panel-bg: rgba(0, 0, 0, 0.03);
+            --panel-border: rgba(0, 0, 0, 0.06);
+
+            --cell-bg: rgba(0, 0, 0, 0.05);
+            --cell-hover: rgba(0, 0, 0, 0.09);
+            --cell-revealed: rgba(255, 255, 255, 0.6);
+            --cell-border: rgba(0, 0, 0, 0.06);
+
             --display-bg: #0f172a;
             --display-text: #38bdf8;
+            
+            --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0,0,0,0) 70%);
+            --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(0,0,0,0) 70%);
+            --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0) 70%);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.1s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
         }
 
         body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: var(--bg-gradient);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text-main);
             padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Orbes Animados de Fundo */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: floatOrb 20s ease-in-out infinite alternate;
+        }
+
+        .orb-1 { width: 600px; height: 600px; background: var(--orb-1); top: -10%; left: -10%; }
+        .orb-2 { width: 500px; height: 500px; background: var(--orb-2); bottom: -10%; right: -10%; animation-delay: -7s; }
+        .orb-3 { width: 400px; height: 400px; background: var(--orb-3); top: 40%; left: 60%; animation-delay: -14s; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, 40px) scale(1.1); }
+            100% { transform: translate(-40px, 80px) scale(0.95); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.92) translateY(20px); opacity: 0; filter: blur(10px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
         }
 
         .game-container {
-            width: min(100%, 900px);
+            width: 100%;
+            max-width: 650px;
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
+            border-radius: var(--radius-lg);
             padding: 28px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--card-shadow);
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            margin-bottom: 24px;
+            gap: 16px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
@@ -91,57 +171,65 @@
         }
 
         .title-icon {
-            font-size: 32px;
-            background: rgba(99, 102, 241, 0.2);
-            padding: 8px 12px;
-            border-radius: 16px;
+            font-size: 28px;
+            background: rgba(99, 102, 241, 0.15);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(99, 102, 241, 0.3);
         }
 
         .title {
-            font-size: 26px;
-            font-weight: 800;
+            font-size: 1.5rem;
+            font-weight: 900;
             letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .subtitle {
-            color: var(--text-sub);
-            font-size: 13px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
             margin-top: 2px;
+            font-weight: 500;
         }
 
         .controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         select, .btn-action {
             height: 42px;
-            padding: 0 16px;
-            border-radius: 12px;
+            padding: 0 14px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--card-border);
             background: var(--panel-bg);
             color: var(--text-main);
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 700;
             cursor: pointer;
             outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         select:hover, .btn-action:hover {
-            border-color: var(--accent);
+            border-color: var(--accent-color);
+            background: var(--cell-hover);
         }
 
         .btn-primary {
-            background: var(--accent);
+            background: var(--accent-gradient);
             color: white;
             border: none;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 20px -4px var(--accent-glow);
         }
 
         .btn-primary:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px -4px var(--accent-glow);
         }
 
         .btn-theme {
@@ -159,24 +247,26 @@
             align-items: center;
             gap: 16px;
             background: var(--panel-bg);
-            padding: 12px 20px;
-            border-radius: 16px;
-            border: 1px solid var(--card-border);
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--panel-border);
             margin-bottom: 20px;
+            backdrop-filter: blur(10px);
         }
 
         .counter, .timer {
             background: var(--display-bg);
             color: var(--display-text);
             border-radius: 10px;
-            padding: 8px 16px;
+            padding: 8px 14px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 22px;
+            font-size: 1.25rem;
             font-weight: bold;
             text-align: center;
             letter-spacing: 2px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
             width: fit-content;
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .timer {
@@ -187,7 +277,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            border: 2px solid var(--card-border);
+            border: 1px solid var(--card-border);
             background: var(--panel-bg);
             cursor: pointer;
             font-size: 22px;
@@ -195,38 +285,41 @@
             align-items: center;
             justify-content: center;
             justify-self: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .face-btn:hover {
-            transform: scale(1.08);
+            transform: scale(1.12);
+            border-color: var(--accent-color);
         }
 
         .face-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
         }
 
         .board-wrapper {
             width: 100%;
             overflow: auto;
             background: var(--panel-bg);
-            border-radius: 16px;
+            border-radius: var(--radius-md);
             padding: 16px;
-            border: 1px solid var(--card-border);
+            border: 1px solid var(--panel-border);
             display: flex;
             justify-content: center;
+            backdrop-filter: blur(10px);
+            max-height: 50vh;
         }
 
         .board {
             display: grid;
-            gap: 4px;
-            user-select: none;
+            gap: 5px;
         }
 
         .cell {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             background: var(--cell-bg);
             border: 1px solid var(--cell-border);
             display: flex;
@@ -235,11 +328,13 @@
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
         }
 
         .cell:hover:not(.revealed) {
             background: var(--cell-hover);
+            border-color: rgba(255,255,255,0.2);
             transform: translateY(-2px);
         }
 
@@ -253,20 +348,20 @@
         .cell.mine {
             background: #ef4444 !important;
             color: white;
-            animation: pulse 0.3s ease;
+            animation: pulseMine 0.3s ease;
         }
 
         .cell.exploded {
             background: #991b1b !important;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.8); }
-            50% { transform: scale(1.1); }
+        @keyframes pulseMine {
+            0% { transform: scale(0.7); }
+            50% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
 
-        /* Cores vibrantes para números */
+        /* Cores vibrantes alinhadas ao design system para os números */
         .number-1 { color: #38bdf8; }
         .number-2 { color: #4ade80; }
         .number-3 { color: #f87171; }
@@ -279,88 +374,104 @@
         .message {
             text-align: center;
             margin-top: 16px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-sub);
-            min-height: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-height: 24px;
         }
 
         .rules {
-            margin-top: 20px;
+            margin-top: 16px;
             padding-top: 16px;
-            border-top: 1px solid var(--card-border);
+            border-top: 1px solid var(--panel-border);
             display: flex;
             justify-content: center;
-            gap: 20px;
-            color: var(--text-sub);
-            font-size: 12px;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
             flex-wrap: wrap;
         }
 
         @media (max-width: 650px) {
-            .game-container { padding: 16px; border-radius: 0; min-height: 100vh; }
+            body { padding: 10px; }
+            .game-container { padding: 16px; border-radius: var(--radius-md); }
             .header { flex-direction: column; align-items: stretch; }
             .controls { justify-content: space-between; }
-            .cell { width: 30px; height: 30px; font-size: 14px; }
+            .cell { width: 32px; height: 32px; font-size: 14px; }
         }
     </style>
 </head>
 
 <body>
 
-<div class="game-container">
-    <div class="header">
-        <div class="title-group">
-            <span class="title-icon">💣</span>
-            <div>
-                <div class="title">Campo Minado</div>
-                <div class="subtitle">Revele o campo sem disparar minas.</div>
+    <!-- Fundo Ambientes com Orbes Fluctuantes -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="game-container">
+        <div class="header">
+            <div class="title-group">
+                <span class="title-icon">💣</span>
+                <div>
+                    <div class="title">Campo Minado</div>
+                    <div class="subtitle">Revele o campo sem detonar nenhuma mina.</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-action btn-theme" id="themeToggle" title="Alternar tema">🌙</button>
+                <select id="difficulty">
+                    <option value="easy">Fácil — 9×9 / 10</option>
+                    <option value="medium" selected>Médio — 16×16 / 40</option>
+                    <option value="hard">Difícil — 30×16 / 99</option>
+                </select>
+                <button class="btn-action btn-primary" id="resetButton">Novo Jogo</button>
             </div>
         </div>
 
-        <div class="controls">
-            <button class="btn-action btn-theme" id="themeToggle" title="Alternar tema">🌙</button>
-            <select id="difficulty">
-                <option value="easy">Fácil — 9×9 / 10 minas</option>
-                <option value="medium" selected>Médio — 16×16 / 40 minas</option>
-                <option value="hard">Difícil — 30×16 / 99 minas</option>
-            </select>
-            <button class="btn-action btn-primary" id="resetButton">Novo Jogo</button>
+        <div class="status-panel">
+            <div class="counter" id="mineCounter">040</div>
+            <button class="face-btn" id="face" title="Reiniciar">🙂</button>
+            <div class="timer" id="timer">000</div>
+        </div>
+
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div class="message" id="message">Clique em uma célula para iniciar</div>
+
+        <div class="rules">
+            <span>🖱️ Esquerdo: Revelar</span>
+            <span>🚩 Direito: Marcar Mina</span>
+            <span>🎯 Limpe para vencer</span>
         </div>
     </div>
 
-    <div class="status-panel">
-        <div class="counter" id="mineCounter">040</div>
-        <button class="face-btn" id="face" title="Reiniciar">🙂</button>
-        <div class="timer" id="timer">000</div>
-    </div>
-
-    <div class="board-wrapper">
-        <div class="board" id="board"></div>
-    </div>
-
-    <div class="message" id="message">Clique em uma célula para iniciar</div>
-
-    <div class="rules">
-        <span>🖱️ Clique Esquerdo: Revelar</span>
-        <span>🚩 Clique Direito: Marcar</span>
-        <span>🎯 Limpe o campo para vencer</span>
-    </div>
-</div>
-
 <script>
-    /* Configuração de Temas */
+    /* Configuração de Temas & Persistência Simples */
     const themeToggleBtn = document.getElementById("themeToggle");
     const htmlElement = document.documentElement;
 
+    function setTheme(theme) {
+        htmlElement.setAttribute("data-theme", theme);
+        themeToggleBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+        localStorage.setItem("minesweeper_theme", theme);
+    }
+
+    const savedTheme = localStorage.getItem("minesweeper_theme") || "dark";
+    setTheme(savedTheme);
+
     themeToggleBtn.addEventListener("click", () => {
         const currentTheme = htmlElement.getAttribute("data-theme");
-        const newTheme = currentTheme === "dark" ? "light" : "dark";
-        htmlElement.setAttribute("data-theme", newTheme);
-        themeToggleBtn.textContent = newTheme === "dark" ? "🌙" : "☀️";
+        setTheme(currentTheme === "dark" ? "light" : "dark");
     });
 
-    /* Lógica do Jogo */
+    /* Lógica do Jogo Campo Minado */
     const difficulties = {
         easy: { rows: 9, cols: 9, mines: 10 },
         medium: { rows: 16, cols: 16, mines: 40 },
@@ -400,7 +511,7 @@
         }
 
         boardElement.innerHTML = "";
-        boardElement.style.gridTemplateColumns = `repeat(${cols}, 34px)`;
+        boardElement.style.gridTemplateColumns = `repeat(${cols}, 36px)`;
 
         for (let y = 0; y < rows; y++) {
             for (let x = 0; x < cols; x++) {
@@ -418,7 +529,7 @@
         placeMines(firstX, firstY);
         calculateNumbers();
         startTimer();
-        messageElement.textContent = "Jogo em andamento. Boa sorte!";
+        messageElement.textContent = "Partida em andamento. Boa sorte!";
     }
 
     function placeMines(safeX, safeY) {
@@ -554,7 +665,7 @@
         gameOver = true;
         clearInterval(timerInterval);
         faceElement.textContent = "😎";
-        messageElement.textContent = "🎉 Parabéns! Você limpou o campo!";
+        messageElement.textContent = "🎉 Parabéns! Você limpou o campo com sucesso!";
         mineCounter.textContent = "000";
     }
 
