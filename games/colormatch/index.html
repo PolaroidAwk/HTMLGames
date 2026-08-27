@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>COLOR MATCH - Perception & Manipulation Game</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Theme Dark Core Ultra-Modern Dynamic Variables */
+      --bg-dark: #05070f;
+      --card-bg: rgba(13, 17, 28, 0.65);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.56), 0 18px 36px -18px rgba(0, 0, 0, 0.65);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --accent-color: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+      
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      
+      --radius-lg: 32px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      --glass-surface: rgba(255, 255, 255, 0.03);
+      --glass-surface-hover: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(0,0,0,0) 70%);
+    }
+
+    [data-theme="light"] {
+      --bg-dark: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(255, 255, 255, 0.8);
+      --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.15), 0 0 15px rgba(255, 255, 255, 0.7);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      
+      --accent-color: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+      --accent-glow: rgba(79, 70, 229, 0.25);
+      
+      --glass-surface: rgba(255, 255, 255, 0.6);
+      --glass-surface-hover: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0) 70%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 20px;
+      position: relative;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    /* Animated Ambient Background Orbs */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: floatOrb 20s ease-in-out infinite alternate;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: var(--orb-1); top: -10%; left: -10%; }
+    .orb-2 { width: 500px; height: 500px; background: var(--orb-2); bottom: -10%; right: -10%; animation-delay: -7s; }
+    .orb-3 { width: 400px; height: 400px; background: var(--orb-3); top: 40%; left: 60%; animation-delay: -14s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.1); }
+      100% { transform: translate(-40px, 80px) scale(0.95); }
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 12px var(--accent-glow));
+      line-height: 1.1;
+    }
+
+    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .w-100 { width: 100%; }
+
+    @keyframes popIn {
+      0% { transform: scale(0.92) translateY(20px); opacity: 0; filter: blur(10px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+
+    @keyframes pulseSuccess {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+      70% { box-shadow: 0 0 0 25px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+    .pulse-success { animation: pulseSuccess 0.6s ease-out; }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--card-shadow);
+      animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: 20px;
+    }
+
+    .stat-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-badge .label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; }
+    .stat-badge .value { font-size: 1.25rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+
+    .combo-badge {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--accent-color);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(8px);
+    }
+    .combo-badge.active { transform: scale(1.25) rotate(-3deg); }
+
+    .btn {
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 15px 30px -5px var(--accent-glow);
+    }
+    .btn:hover::after { opacity: 1; }
+    .btn:active { transform: translateY(1px) scale(0.99); }
+
+    .btn-secondary {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      box-shadow: none;
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: var(--glass-surface-hover);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    /* Top Menu Nav Buttons Grid */
+    .top-nav-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .top-nav-grid .btn {
+      padding: 12px 10px;
+      font-size: 0.85rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Menu Grid & Category Headers */
+    .menu-section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 22px 0 10px 4px;
+      text-align: left;
+    }
+
+    .modes-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .mode-card {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mode-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--accent-gradient);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .mode-card:hover {
+      background: var(--glass-surface-hover);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateX(4px) translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+    }
+
+    .mode-card:hover::before { opacity: 1; }
+
+    .mode-card .title { font-weight: 800; color: var(--text-main); font-size: 1rem; letter-spacing: -0.3px; }
+    .mode-card .desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+    .mode-card .arrow-icon {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: transform 0.3s, color 0.3s;
+    }
+    .mode-card:hover .arrow-icon { transform: translateX(4px); color: var(--accent-color); }
+
+    /* Custom Color Picker Component */
+    .picker-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .sat-val-container {
+      position: relative;
+      width: 100%;
+      height: 190px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: crosshair;
+      touch-action: none;
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .sat-val-canvas { width: 100%; height: 100%; display: block; }
+
+    .picker-handle {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border: 2.5px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5), inset 0 0 4px rgba(0,0,0,0.3);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      top: 0; left: 0;
+      transition: transform 0.05s ease-out;
+    }
+
+    .hue-container {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      border-radius: 14px;
+      cursor: pointer;
+      touch-action: none;
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .hue-canvas { width: 100%; height: 100%; border-radius: 14px; display: block; }
+
+    .hue-handle {
+      position: absolute;
+      top: 50%;
+      width: 26px;
+      height: 26px;
+      border: 2.5px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    /* Individual Sliders Controls */
+    .hsl-sliders-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--glass-surface);
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .slider-row label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      width: 18px;
+      color: var(--text-muted);
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(150, 150, 150, 0.2);
+      outline: none;
+    }
+
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: transform 0.1s;
+    }
+
+    .slider-row input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .slider-val {
+      font-size: 0.85rem;
+      font-family: monospace;
+      font-weight: 700;
+      width: 48px;
+      text-align: right;
+      color: var(--text-main);
+    }
+
+    /* Color Display Cards */
+    .color-box-display {
+      width: 100%;
+      height: 110px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      transition: background-color 0.2s ease, transform 0.2s;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.15), 0 10px 20px -5px rgba(0,0,0,0.2);
+    }
+
+    .color-box-split {
+      display: flex;
+      width: 100%;
+      height: 100px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+
+    .color-box-split > div {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 10px;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      color: #fff;
+    }
+
+    .color-info-text {
+      display: flex;
+      justify-content: space-between;
+      background: var(--glass-surface);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Special Modes Elements */
+    .rgb-inputs { display: flex; gap: 10px; width: 100%; }
+    .rgb-field { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .rgb-field label { font-size: 0.75rem; color: var(--text-muted); text-align: center; font-weight: 800; letter-spacing: 1px; }
+    .rgb-field input {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: var(--text-main);
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .rgb-field input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .blend-inputs { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .blend-color-swatch {
+      flex: 1;
+      height: 80px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      color: #fff;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 16px -4px rgba(0,0,0,0.2);
+    }
+
+    /* Comparison Display (2 & 4 colors) */
+    .comp-cards-grid {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .comp-cards-2 { grid-template-columns: 1fr 1fr; }
+    .comp-cards-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+    .comp-card {
+      height: 100px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.5rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .comp-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      border-color: #fff;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    }
+
+    .question-banner {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 14px;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Results Overlay */
+    .results-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--card-bg);
+      backdrop-filter: blur(30px) saturate(200%);
+      -webkit-backdrop-filter: blur(30px) saturate(200%);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      z-index: 10;
+      text-align: center;
+      gap: 16px;
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .match-percentage {
+      font-size: 3.8rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3));
+      line-height: 1;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--glass-border);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* Leaderboard Component */
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 16px 0;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      transition: transform 0.2s;
+    }
+
+    .leaderboard-item:hover { transform: translateX(3px); }
+
+    .leaderboard-item .rank {
+      font-weight: 900;
+      width: 28px;
+      color: var(--accent-color);
+    }
+
+    .leaderboard-item .player {
+      flex: 1;
+      text-align: left;
+      font-weight: 700;
+      padding-left: 8px;
+    }
+
+    .leaderboard-item .score-val {
+      font-family: monospace;
+      font-weight: 800;
+    }
+
+    /* Settings Options Styling */
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .setting-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      appearance: none;
+      background: rgba(150, 150, 150, 0.25);
+      outline: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: 1px solid var(--glass-border);
+    }
+
+    .toggle-switch:checked {
+      background: var(--accent-color);
+    }
+
+    .toggle-switch::before {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toggle-switch:checked::before {
+      transform: translateX(24px);
+    }
+
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Orbs Background -->
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="container">
+
+    <!-- ==================== MENU PRINCIPAL ==================== -->
+    <div id="screen-menu" class="card text-center">
+      <h1>Color Match</h1>
+      <p class="subtitle">Desafie sua percepção & controle visual de cores</p>
+
+      <div class="top-nav-grid">
+        <button class="btn btn-secondary" onclick="game.showStats()">📊 Stats</button>
+        <button class="btn btn-secondary" onclick="game.showLeaderboard()">🏆 Ranking</button>
+        <button class="btn btn-secondary" onclick="game.showOptions()">⚙️ Opções</button>
+      </div>
+
+      <div class="menu-section-title">Modos de Precisão</div>
+      <div class="modes-grid">
+        <div class="mode-card" onclick="game.startMode('classic')">
+          <div>
+            <div class="title">1. CLASSIC</div>
+            <div class="desc">Reproduza a cor exata usando o color picker</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="game.startMode('timeAttack')">
+          <div>
+            <div class="title">2. TIME ATTACK</div>
+            <div class="desc">60 segundos para acertar o máximo de cores</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="game.startMode('rgb')">
+          <div>
+            <div class="title">3. RGB NUMÉRICO</div>
+            <div class="desc">Adivinhe e digite os valores exatos R, G, B</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="game.startMode('blend')">
+          <div>
+            <div class="title">4. BLEND</div>
+            <div class="desc">Encontre a mistura perfeita entre duas cores</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+      </div>
+
+      <div class="menu-section-title">Modos de Percepção Comparativa</div>
+      <div class="modes-grid">
+        <div class="mode-card" onclick="game.startMode('compare2')">
+          <div>
+            <div class="title">5. DUELO (2 CORES)</div>
+            <div class="desc">Compare Matiz, Saturação ou Luminosidade</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="game.startMode('compare4')">
+          <div>
+            <div class="title">6. MATRIZ (4 CORES)</div>
+            <div class="desc">Encontre a cor extrema entre 4 alternativas</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TELA DE OPÇÕES ==================== -->
+    <div id="screen-options" class="card hidden">
+      <h2>Opções e Ajustes</h2>
+      <p class="subtitle" style="margin-bottom: 20px;">Personalize a experiência do jogo</p>
+
+      <div class="setting-item">
+        <span class="setting-label">Tema Claro / Escuro</span>
+        <input type="checkbox" id="toggle-theme" class="toggle-switch" onchange="game.toggleTheme(this.checked)">
+      </div>
+
+      <div class="setting-item">
+        <span class="setting-label">Efeitos Sonoros / Vibração</span>
+        <input type="checkbox" id="toggle-audio" class="toggle-switch" checked onchange="game.toggleAudio(this.checked)">
+      </div>
+
+      <div class="setting-item">
+        <span class="setting-label">Efeitos de Partículas</span>
+        <input type="checkbox" id="toggle-particles" class="toggle-switch" checked onchange="game.toggleParticles(this.checked)">
+      </div>
+
+      <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn btn-secondary w-100" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" onclick="game.resetData()">Resetar Todos os Dados</button>
+        <button class="btn w-100" onclick="game.showMenu()">Voltar ao Menu</button>
+      </div>
+    </div>
+
+    <!-- ==================== TELA DE LEADERBOARD ==================== -->
+    <div id="screen-leaderboard" class="card hidden text-center">
+      <h2>🏆 Leaderboard Global</h2>
+      <p class="subtitle">Sua pontuação local comparada a recordes</p>
+
+      <div class="leaderboard-list" id="leaderboard-container">
+        <!-- Inserido dinamicamente via JS -->
+      </div>
+
+      <button class="btn w-100" style="margin-top: 14px;" onclick="game.showMenu()">Voltar ao Menu</button>
+    </div>
+
+    <!-- ==================== TELA DO JOGO ==================== -->
+    <div id="screen-game" class="card hidden">
+      <div class="header-bar">
+        <button class="btn btn-secondary" style="padding: 8px 14px; font-size:0.8rem;" onclick="game.showMenu()">❮ Menu</button>
+        <div class="stat-badge">
+          <span class="label" id="mode-title-display">CLASSIC</span>
+          <span class="value" id="score-display">0</span>
+        </div>
+        <div id="timer-badge" class="stat-badge hidden">
+          <span class="label">Tempo</span>
+          <span class="value" style="color: var(--warning);" id="timer-display">60s</span>
+        </div>
+        <div class="combo-badge" id="combo-display">x1</div>
+      </div>
+
+      <!-- TARGET AREA (MODOS DE MATCH) -->
+      <div id="target-area" style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px; margin-bottom: 8px;">
+          <span id="target-label">COR ALVO</span>
+          <span id="diff-label">LVL 1</span>
+        </div>
+        
+        <div id="single-target-box" class="color-box-display"></div>
+
+        <div id="blend-target-box" class="blend-inputs hidden">
+          <div id="blend-a" class="blend-color-swatch">COR A</div>
+          <span style="font-weight: 900; color: var(--text-muted); font-size: 1.2rem;">+</span>
+          <div id="blend-b" class="blend-color-swatch">COR B</div>
+        </div>
+      </div>
+
+      <!-- TELA DE COMPARAÇÃO DE PERCEPÇÃO (2 OU 4 CORES) -->
+      <div id="perception-area" class="hidden">
+        <div class="question-banner" id="question-banner-text">
+          Qual cor tem a MAIOR Saturação?
+        </div>
+        <div id="comp-grid" class="comp-cards-grid comp-cards-2">
+          <!-- Cards dinamicos inseridos via JS -->
+        </div>
+      </div>
+
+      <!-- COLOR PICKER E SLIDERS HSL -->
+      <div id="picker-section" class="picker-container">
+        <!-- 2D Canvas Visual Picker -->
+        <div class="sat-val-container" id="sat-val-container">
+          <canvas id="sat-val-canvas" class="sat-val-canvas"></canvas>
+          <div id="sat-val-handle" class="picker-handle"></div>
+        </div>
+
+        <div class="hue-container" id="hue-container">
+          <canvas id="hue-canvas" class="hue-canvas"></canvas>
+          <div id="hue-handle" class="hue-handle"></div>
+        </div>
+
+        <!-- Sliders Individuais H, S, L -->
+        <div class="hsl-sliders-container">
+          <div class="slider-row">
+            <label>H</label>
+            <input type="range" id="slider-h" min="0" max="360" value="0">
+            <span class="slider-val" id="val-h">0°</span>
+          </div>
+          <div class="slider-row">
+            <label>S</label>
+            <input type="range" id="slider-s" min="0" max="100" value="0">
+            <span class="slider-val" id="val-s">0%</span>
+          </div>
+          <div class="slider-row">
+            <label>L</label>
+            <input type="range" id="slider-l" min="0" max="100" value="0">
+            <span class="slider-val" id="val-l">0%</span>
+          </div>
+        </div>
+
+        <div class="color-info-text">
+          <span id="disp-rgb">RGB(0, 0, 0)</span>
+          <span id="disp-hex">#000000</span>
+          <span id="disp-hsl">HSL(0, 0%, 0%)</span>
+        </div>
+      </div>
+
+      <!-- CONTROLES MODO RGB -->
+      <div id="rgb-input-section" class="rgb-inputs hidden" style="margin-top: 12px;">
+        <div class="rgb-field">
+          <label>RED</label>
+          <input type="number" id="input-r" min="0" max="255" value="0">
+        </div>
+        <div class="rgb-field">
+          <label>GREEN</label>
+          <input type="number" id="input-g" min="0" max="255" value="0">
+        </div>
+        <div class="rgb-field">
+          <label>BLUE</label>
+          <input type="number" id="input-b" min="0" max="255" value="0">
+        </div>
+      </div>
+
+      <button id="btn-check" class="btn w-100" style="margin-top: 20px;" onclick="game.submitAnswer()">CHECAR</button>
+
+      <!-- RESULTS OVERLAY CARD -->
+      <div id="results-overlay" class="results-overlay hidden">
+        <h2 id="res-title">EXCELENTE!</h2>
+        <div id="res-accuracy" class="match-percentage">98.42%</div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; letter-spacing: 1px;" id="res-subtitle">PRECISÃO DO MATCH</p>
+
+        <div class="color-box-split" id="res-split-box" style="margin: 10px 0;">
+          <div id="res-box-target">ALVO</div>
+          <div id="res-box-user">SUA COR</div>
+        </div>
+
+        <div id="res-details" style="width: 100%;"></div>
+
+        <button class="btn w-100" id="btn-next-round" onclick="game.nextRound()">PRÓXIMA COR ➔</button>
+      </div>
+    </div>
+
+    <!-- ==================== TELA DE ESTATÍSTICAS ==================== -->
+    <div id="screen-stats" class="card hidden">
+      <h2>Estatísticas Globais</h2>
+      <div style="margin: 16px 0;">
+        <div class="stat-row"><span>Total de Rodadas:</span><strong id="st-rounds">0</strong></div>
+        <div class="stat-row"><span>Acertos Totais:</span><strong id="st-correct">0</strong></div>
+        <div class="stat-row"><span>Erros Totais:</span><strong id="st-wrong">0</strong></div>
+        <div class="stat-row"><span>Precisão Média:</span><strong id="st-accuracy">0%</strong></div>
+        <div class="stat-row"><span>Melhor Pontuação:</span><strong id="st-score">0</strong></div>
+        <div class="stat-row"><span>Maior Combo:</span><strong id="st-combo">x0</strong></div>
+      </div>
+
+      <h2 style="margin-top: 20px;">Melhores Por Modo</h2>
+      <div id="mode-bests-list" style="margin-bottom: 20px;"></div>
+
+      <button class="btn btn-secondary w-100" onclick="game.showMenu()">Voltar ao Menu</button>
+    </div>
+
+  </div>
+
+  <script>
+    /* ============================================================
+       COLOR CONVERSION UTILITIES
+       ============================================================ */
+    function hslToRgb(h, s, l) {
+      h /= 360; s /= 100; l /= 100;
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q - p) * 6 * t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+      };
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      return "#" + [r, g, b].map(x => {
+        const hex = Math.min(255, Math.max(0, x)).toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      }).join("").toUpperCase();
+    }
+
+    function calculateNormalizedDistance(rgb1, rgb2) {
+      const dr = rgb1.r - rgb2.r;
+      const dg = rgb1.g - rgb2.g;
+      const db = rgb1.b - rgb2.b;
+      const distance = Math.sqrt(dr * dr + dg * dg + db * db);
+      const maxDistance = Math.sqrt(255 * 255 * 3);
+      const accuracy = Math.max(0, 100 - (distance / maxDistance) * 100);
+      return parseFloat(accuracy.toFixed(2));
+    }
+
+    /* ============================================================
+       ADVANCED COLOR PICKER
+       ============================================================ */
+    class ColorPicker {
+      constructor(onChange) {
+        this.onChange = onChange;
+        this.h = 180;
+        this.s = 100;
+        this.v = 100;
+
+        this.satValContainer = document.getElementById('sat-val-container');
+        this.satValCanvas = document.getElementById('sat-val-canvas');
+        this.satValHandle = document.getElementById('sat-val-handle');
+
+        this.hueContainer = document.getElementById('hue-container');
+        this.hueCanvas = document.getElementById('hue-canvas');
+        this.hueHandle = document.getElementById('hue-handle');
+
+        this.sliderH = document.getElementById('slider-h');
+        this.sliderS = document.getElementById('slider-s');
+        this.sliderL = document.getElementById('slider-l');
+
+        this.valH = document.getElementById('val-h');
+        this.valS = document.getElementById('val-s');
+        this.valL = document.getElementById('val-l');
+
+        this.initCanvases();
+        this.bindEvents();
+      }
+
+      initCanvases() {
+        this.renderHueCanvas();
+        this.renderSatValCanvas();
+      }
+
+      renderHueCanvas() {
+        const ctx = this.hueCanvas.getContext('2d');
+        const width = this.hueCanvas.width = this.hueContainer.clientWidth;
+        const height = this.hueCanvas.height = this.hueContainer.clientHeight;
+
+        const gradient = ctx.createLinearGradient(0, 0, width, 0);
+        for (let i = 0; i <= 360; i += 60) {
+          gradient.addColorStop(i / 360, `hsl(${i}, 100%, 50%)`);
+        }
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      renderSatValCanvas() {
+        const ctx = this.satValCanvas.getContext('2d');
+        const width = this.satValCanvas.width = this.satValContainer.clientWidth;
+        const height = this.satValCanvas.height = this.satValContainer.clientHeight;
+
+        ctx.fillStyle = `hsl(${this.h}, 100%, 50%)`;
+        ctx.fillRect(0, 0, width, height);
+
+        const whiteGrad = ctx.createLinearGradient(0, 0, width, 0);
+        whiteGrad.addColorStop(0, 'rgba(255,255,255,1)');
+        whiteGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = whiteGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        const blackGrad = ctx.createLinearGradient(0, 0, 0, height);
+        blackGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        blackGrad.addColorStop(1, 'rgba(0,0,0,1)');
+        ctx.fillStyle = blackGrad;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      bindEvents() {
+        let draggingHue = false;
+        let draggingSatVal = false;
+
+        const handleSatValMove = (e) => {
+          const rect = this.satValContainer.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+          let x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+          let y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+
+          this.s = Math.round((x / rect.width) * 100);
+          this.v = Math.round((1 - y / rect.height) * 100);
+
+          this.updateUI();
+          this.notifyChange();
+        };
+
+        const handleHueMove = (e) => {
+          const rect = this.hueContainer.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+
+          let x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+          this.h = Math.round((x / rect.width) * 360) % 360;
+
+          this.renderSatValCanvas();
+          this.updateUI();
+          this.notifyChange();
+        };
+
+        this.satValContainer.addEventListener('mousedown', (e) => { draggingSatVal = true; handleSatValMove(e); });
+        this.satValContainer.addEventListener('touchstart', (e) => { draggingSatVal = true; handleSatValMove(e); }, { passive: true });
+
+        this.hueContainer.addEventListener('mousedown', (e) => { draggingHue = true; handleHueMove(e); });
+        this.hueContainer.addEventListener('touchstart', (e) => { draggingHue = true; handleHueMove(e); }, { passive: true });
+
+        window.addEventListener('mousemove', (e) => {
+          if (draggingSatVal) handleSatValMove(e);
+          if (draggingHue) handleHueMove(e);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+          if (draggingSatVal) handleSatValMove(e);
+          if (draggingHue) handleHueMove(e);
+        }, { passive: true });
+
+        window.addEventListener('mouseup', () => { draggingSatVal = false; draggingHue = false; });
+        window.addEventListener('touchend', () => { draggingSatVal = false; draggingHue = false; });
+
+        this.sliderH.addEventListener('input', () => {
+          this.h = parseInt(this.sliderH.value);
+          this.renderSatValCanvas();
+          this.updateUI();
+          this.notifyChange();
+        });
+
+        const updateFromSL = () => {
+          const rgb = hslToRgb(this.h, parseInt(this.sliderS.value), parseInt(this.sliderL.value));
+          this.setColor(rgb.r, rgb.g, rgb.b);
+          this.notifyChange();
+        };
+
+        this.sliderS.addEventListener('input', updateFromSL);
+        this.sliderL.addEventListener('input', updateFromSL);
+
+        window.addEventListener('resize', () => {
+          this.initCanvases();
+          this.updateUI();
+        });
+      }
+
+      updateUI() {
+        const satWidth = this.satValContainer.clientWidth;
+        const satHeight = this.satValContainer.clientHeight;
+        const hueWidth = this.hueContainer.clientWidth;
+
+        this.satValHandle.style.left = `${(this.s / 100) * satWidth}px`;
+        this.satValHandle.style.top = `${(1 - this.v / 100) * satHeight}px`;
+        this.hueHandle.style.left = `${(this.h / 360) * hueWidth}px`;
+
+        const rgb = this.getRGB();
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+        this.sliderH.value = this.h;
+        this.sliderS.value = hsl.s;
+        this.sliderL.value = hsl.l;
+
+        this.valH.innerText = `${this.h}°`;
+        this.valS.innerText = `${hsl.s}%`;
+        this.valL.innerText = `${hsl.l}%`;
+      }
+
+      setColor(r, g, b) {
+        const hsl = rgbToHsl(r, g, b);
+        this.h = hsl.h;
+        this.s = hsl.s;
+        this.v = hsl.l;
+        this.renderSatValCanvas();
+        this.updateUI();
+      }
+
+      getRGB() {
+        let s = this.s / 100;
+        let v = this.v / 100;
+        let c = v * s;
+        let x = c * (1 - Math.abs(((this.h / 60) % 2) - 1));
+        let m = v - c;
+
+        let r = 0, g = 0, b = 0;
+        if (this.h >= 0 && this.h < 60) { r = c; g = x; b = 0; }
+        else if (this.h >= 60 && this.h < 120) { r = x; g = c; b = 0; }
+        else if (this.h >= 120 && this.h < 180) { r = 0; g = c; b = x; }
+        else if (this.h >= 180 && this.h < 240) { r = 0; g = x; b = c; }
+        else if (this.h >= 240 && this.h < 300) { r = x; g = 0; b = c; }
+        else if (this.h >= 300 && this.h < 360) { r = c; g = 0; b = x; }
+
+        return {
+          r: Math.round((r + m) * 255),
+          g: Math.round((g + m) * 255),
+          b: Math.round((b + m) * 255)
+        };
+      }
+
+      notifyChange() {
+        if (this.onChange) this.onChange(this.getRGB());
+      }
+    }
+
+    /* ============================================================
+       PARTICLE SYSTEM
+       ============================================================ */
+    class ParticleSystem {
+      constructor() {
+        this.canvas = document.getElementById('particle-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.enabled = true;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.loop();
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      spawn(x, y, color, count = 45) {
+        if (!this.enabled) return;
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 8 + 3;
+          this.particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: Math.random() * 7 + 3,
+            color,
+            alpha: 1,
+            decay: Math.random() * 0.025 + 0.012
+          });
+        }
+      }
+
+      loop() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= p.decay;
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+          this.ctx.save();
+          this.ctx.globalAlpha = p.alpha;
+          this.ctx.fillStyle = p.color;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+        requestAnimationFrame(() => this.loop());
+      }
+    }
+
+    /* ============================================================
+       GAME ENGINE & STATE MANAGEMENT
+       ============================================================ */
+    class ColorMatchGame {
+      constructor() {
+        this.mode = 'classic';
+        this.score = 0;
+        this.combo = 1;
+        this.level = 1;
+        this.timer = null;
+        this.timeLeft = 60;
+
+        this.targetColor = { r: 0, g: 0, b: 0 };
+        this.blendColorA = { r: 0, g: 0, b: 0 };
+        this.blendColorB = { r: 0, g: 0, b: 0 };
+        this.userColor = { r: 0, g: 0, b: 0 };
+
+        this.perceptionColors = [];
+        this.perceptionTargetIndex = -1;
+
+        this.settings = this.loadSettings();
+        this.stats = this.loadStats();
+        this.particles = new ParticleSystem();
+        this.picker = new ColorPicker((rgb) => this.onPickerChange(rgb));
+
+        this.applySettings();
+        this.bindRGBInputs();
+      }
+
+      loadSettings() {
+        const defaults = { theme: 'dark', audio: true, particles: true };
+        try {
+          const saved = localStorage.getItem('colormatch_settings');
+          return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+        } catch (e) { return defaults; }
+      }
+
+      saveSettings() {
+        try { localStorage.setItem('colormatch_settings', JSON.stringify(this.settings)); } catch (e) {}
+      }
+
+      applySettings() {
+        document.documentElement.setAttribute('data-theme', this.settings.theme);
+        document.getElementById('toggle-theme').checked = this.settings.theme === 'light';
+        document.getElementById('toggle-audio').checked = this.settings.audio;
+        document.getElementById('toggle-particles').checked = this.settings.particles;
+        this.particles.enabled = this.settings.particles;
+      }
+
+      toggleTheme(isLight) {
+        this.settings.theme = isLight ? 'light' : 'dark';
+        this.saveSettings();
+        this.applySettings();
+      }
+
+      toggleAudio(enabled) {
+        this.settings.audio = enabled;
+        this.saveSettings();
+      }
+
+      toggleParticles(enabled) {
+        this.settings.particles = enabled;
+        this.particles.enabled = enabled;
+        this.saveSettings();
+      }
+
+      resetData() {
+        if (confirm("Tem certeza de que deseja resetar todas as suas estatísticas e recordes?")) {
+          localStorage.removeItem('colormatch_stats_v2');
+          this.stats = this.loadStats();
+          alert("Dados resetados com sucesso!");
+          this.showMenu();
+        }
+      }
+
+      bindRGBInputs() {
+        const rInput = document.getElementById('input-r');
+        const gInput = document.getElementById('input-g');
+        const bInput = document.getElementById('input-b');
+
+        const updateFromInputs = () => {
+          if (this.mode !== 'rgb') return;
+          const r = Math.min(255, Math.max(0, parseInt(rInput.value) || 0));
+          const g = Math.min(255, Math.max(0, parseInt(gInput.value) || 0));
+          const b = Math.min(255, Math.max(0, parseInt(bInput.value) || 0));
+          this.userColor = { r, g, b };
+          this.updateColorDisplays();
+        };
+
+        [rInput, gInput, bInput].forEach(inp => inp.addEventListener('input', updateFromInputs));
+      }
+
+      loadStats() {
+        const defaultStats = {
+          rounds: 0, correct: 0, wrong: 0, accuracySum: 0,
+          bestScore: 0, bestCombo: 0,
+          modeBests: { classic: 0, timeAttack: 0, rgb: 0, blend: 0, compare2: 0, compare4: 0 }
+        };
+        try {
+          const loaded = localStorage.getItem('colormatch_stats_v2');
+          return loaded ? { ...defaultStats, ...JSON.parse(loaded) } : defaultStats;
+        } catch(e) { return defaultStats; }
+      }
+
+      saveStats() {
+        try { localStorage.setItem('colormatch_stats_v2', JSON.stringify(this.stats)); } catch(e){}
+      }
+
+      hideAllScreens() {
+        document.getElementById('screen-menu').classList.add('hidden');
+        document.getElementById('screen-game').classList.add('hidden');
+        document.getElementById('screen-stats').classList.add('hidden');
+        document.getElementById('screen-options').classList.add('hidden');
+        document.getElementById('screen-leaderboard').classList.add('hidden');
+      }
+
+      showMenu() {
+        clearInterval(this.timer);
+        this.hideAllScreens();
+        document.getElementById('screen-menu').classList.remove('hidden');
+      }
+
+      showOptions() {
+        this.hideAllScreens();
+        document.getElementById('screen-options').classList.remove('hidden');
+      }
+
+      showLeaderboard() {
+        this.hideAllScreens();
+        const container = document.getElementById('leaderboard-container');
+        container.innerHTML = '';
+
+        const mockGlobal = [
+          { name: 'ChromaMaster', score: 12500 },
+          { name: 'PixelPerfect', score: 9800 },
+          { name: 'Você (Melhor Recorde)', score: this.stats.bestScore },
+          { name: 'HueHunter', score: 5400 },
+          { name: 'ColorBlindFilter', score: 3200 }
+        ].sort((a, b) => b.score - a.score);
+
+        mockGlobal.forEach((item, idx) => {
+          const el = document.createElement('div');
+          el.className = 'leaderboard-item';
+          if (item.name.includes('Você')) el.style.borderColor = 'var(--accent-color)';
+          el.innerHTML = `
+            <span class="rank">#${idx + 1}</span>
+            <span class="player">${item.name}</span>
+            <span class="score-val">${item.score} pts</span>
+          `;
+          container.appendChild(el);
+        });
+
+        document.getElementById('screen-leaderboard').classList.remove('hidden');
+      }
+
+      showStats() {
+        document.getElementById('st-rounds').innerText = this.stats.rounds;
+        document.getElementById('st-correct').innerText = this.stats.correct;
+        document.getElementById('st-wrong').innerText = this.stats.wrong;
+
+        const avgAcc = this.stats.rounds > 0 ? (this.stats.accuracySum / this.stats.rounds).toFixed(2) : '0.00';
+        document.getElementById('st-accuracy').innerText = `${avgAcc}%`;
+        document.getElementById('st-score').innerText = this.stats.bestScore;
+        document.getElementById('st-combo').innerText = `x${this.stats.bestCombo}`;
+
+        const modeBestsContainer = document.getElementById('mode-bests-list');
+        modeBestsContainer.innerHTML = '';
+        const modeNames = {
+          classic: 'Classic', timeAttack: 'Time Attack', rgb: 'RGB',
+          blend: 'Blend', compare2: 'Duelo (2 Cores)', compare4: 'Matriz (4 Cores)'
+        };
+
+        Object.keys(this.stats.modeBests).forEach(m => {
+          const row = document.createElement('div');
+          row.className = 'stat-row';
+          row.innerHTML = `<span>${modeNames[m] || m}:</span><strong>${this.stats.modeBests[m]} pts</strong>`;
+          modeBestsContainer.appendChild(row);
+        });
+
+        this.hideAllScreens();
+        document.getElementById('screen-stats').classList.remove('hidden');
+      }
+
+      startMode(mode) {
+        this.mode = mode;
+        this.score = 0;
+        this.combo = 1;
+        this.level = 1;
+        this.timeLeft = 60;
+
+        document.getElementById('mode-title-display').innerText = mode.toUpperCase();
+        document.getElementById('score-display').innerText = '0';
+        this.updateComboDisplay();
+
+        const pickerSec = document.getElementById('picker-section');
+        const rgbSec = document.getElementById('rgb-input-section');
+        const targetArea = document.getElementById('target-area');
+        const perceptionArea = document.getElementById('perception-area');
+        const timerBadge = document.getElementById('timer-badge');
+        const checkBtn = document.getElementById('btn-check');
+
+        pickerSec.classList.add('hidden');
+        rgbSec.classList.add('hidden');
+        targetArea.classList.remove('hidden');
+        perceptionArea.classList.add('hidden');
+        timerBadge.classList.add('hidden');
+        checkBtn.classList.remove('hidden');
+
+        if (mode === 'rgb') {
+          rgbSec.classList.remove('hidden');
+        } else if (mode === 'compare2' || mode === 'compare4') {
+          targetArea.classList.add('hidden');
+          perceptionArea.classList.remove('hidden');
+          checkBtn.classList.add('hidden');
+        } else {
+          pickerSec.classList.remove('hidden');
+        }
+
+        if (mode === 'timeAttack') {
+          timerBadge.classList.remove('hidden');
+          document.getElementById('timer-display').innerText = `${this.timeLeft}s`;
+          this.startTimer();
+        }
+
+        this.hideAllScreens();
+        document.getElementById('screen-game').classList.remove('hidden');
+
+        this.startRound();
+      }
+
+      startTimer() {
+        clearInterval(this.timer);
+        this.timer = setInterval(() => {
+          this.timeLeft--;
+          document.getElementById('timer-display').innerText = `${this.timeLeft}s`;
+          if (this.timeLeft <= 0) {
+            clearInterval(this.timer);
+            this.endGame();
+          }
+        }, 1000);
+      }
+
+      startRound() {
+        document.getElementById('results-overlay').classList.add('hidden');
+        document.getElementById('diff-label').innerText = `LVL ${this.level}`;
+
+        document.getElementById('input-r').value = 0;
+        document.getElementById('input-g').value = 0;
+        document.getElementById('input-b').value = 0;
+
+        if (this.mode === 'compare2' || this.mode === 'compare4') {
+          this.setupPerceptionMode(this.mode === 'compare2' ? 2 : 4);
+        } else if (this.mode === 'blend') {
+          document.getElementById('single-target-box').classList.add('hidden');
+          document.getElementById('blend-target-box').classList.remove('hidden');
+
+          this.blendColorA = this.generateRandomColor();
+          this.blendColorB = this.generateRandomColor();
+
+          this.targetColor = {
+            r: Math.round((this.blendColorA.r + this.blendColorB.r) / 2),
+            g: Math.round((this.blendColorA.g + this.blendColorB.g) / 2),
+            b: Math.round((this.blendColorA.b + this.blendColorB.b) / 2)
+          };
+
+          document.getElementById('blend-a').style.backgroundColor = rgbToHex(this.blendColorA.r, this.blendColorA.g, this.blendColorA.b);
+          document.getElementById('blend-b').style.backgroundColor = rgbToHex(this.blendColorB.r, this.blendColorB.g, this.blendColorB.b);
+        } else {
+          document.getElementById('single-target-box').classList.remove('hidden');
+          document.getElementById('blend-target-box').classList.add('hidden');
+
+          this.targetColor = this.generateRandomColor();
+          document.getElementById('single-target-box').style.backgroundColor = 
+            rgbToHex(this.targetColor.r, this.targetColor.g, this.targetColor.b);
+        }
+
+        const randStart = this.generateRandomColor();
+        this.picker.setColor(randStart.r, randStart.g, randStart.b);
+        this.userColor = randStart;
+
+        this.updateColorDisplays();
+      }
+
+      setupPerceptionMode(count) {
+        const grid = document.getElementById('comp-grid');
+        grid.className = `comp-cards-grid comp-cards-${count}`;
+        grid.innerHTML = '';
+
+        this.perceptionColors = [];
+        for (let i = 0; i < count; i++) {
+          this.perceptionColors.push(this.generateRandomColor());
+        }
+
+        const properties = ['hue', 'saturation', 'lightness'];
+        const currentProp = properties[Math.floor(Math.random() * properties.length)];
+        const isHighest = Math.random() > 0.5;
+
+        const propLabels = { hue: 'MATIZ (Hue)', saturation: 'SATURAÇÃO', lightness: 'LUMINOSIDADE' };
+        const comparisonWord = isHighest ? 'MAIOR' : 'MENOR';
+
+        document.getElementById('question-banner-text').innerText = 
+          `Qual cor possui a ${comparisonWord} ${propLabels[currentProp]}?`;
+
+        let bestIndex = 0;
+        let bestValue = this.getHslProperty(this.perceptionColors[0], currentProp);
+
+        for (let i = 1; i < count; i++) {
+          const val = this.getHslProperty(this.perceptionColors[i], currentProp);
+          if (isHighest ? val > bestValue : val < bestValue) {
+            bestValue = val;
+            bestIndex = i;
+          }
+        }
+
+        this.perceptionTargetIndex = bestIndex;
+
+        this.perceptionColors.forEach((color, idx) => {
+          const card = document.createElement('div');
+          card.className = 'comp-card';
+          card.style.backgroundColor = rgbToHex(color.r, color.g, color.b);
+          card.innerText = String.fromCharCode(65 + idx);
+          card.onclick = () => this.submitPerceptionAnswer(idx);
+          grid.appendChild(card);
+        });
+      }
+
+      getHslProperty(color, prop) {
+        const hsl = rgbToHsl(color.r, color.g, color.b);
+        if (prop === 'hue') return hsl.h;
+        if (prop === 'saturation') return hsl.s;
+        return hsl.l;
+      }
+
+      generateRandomColor() {
+        return {
+          r: Math.floor(Math.random() * 256),
+          g: Math.floor(Math.random() * 256),
+          b: Math.floor(Math.random() * 256)
+        };
+      }
+
+      onPickerChange(rgb) {
+        if (this.mode === 'rgb') return;
+        this.userColor = rgb;
+        this.updateColorDisplays();
+      }
+
+      updateColorDisplays() {
+        const { r, g, b } = this.userColor;
+        const hex = rgbToHex(r, g, b);
+        const hsl = rgbToHsl(r, g, b);
+
+        document.getElementById('disp-rgb').innerText = `RGB(${r}, ${g}, ${b})`;
+        document.getElementById('disp-hex').innerText = hex;
+        document.getElementById('disp-hsl').innerText = `HSL(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+      }
+
+      updateComboDisplay() {
+        const comboEl = document.getElementById('combo-display');
+        comboEl.innerText = `x${this.combo}`;
+        comboEl.classList.add('active');
+        setTimeout(() => comboEl.classList.remove('active'), 200);
+      }
+
+      submitAnswer() {
+        const accuracy = calculateNormalizedDistance(this.targetColor, this.userColor);
+        let points = 0;
+
+        if (accuracy >= 99) points = 1000;
+        else if (accuracy >= 95) points = 700;
+        else if (accuracy >= 90) points = 500;
+        else if (accuracy >= 80) points = 300;
+        else points = Math.max(10, Math.round(accuracy * 2));
+
+        points *= this.combo;
+
+        if (accuracy >= 80) {
+          this.handleSuccess(accuracy, points);
+        } else {
+          this.handleFailure(accuracy);
+        }
+      }
+
+      submitPerceptionAnswer(selectedIndex) {
+        const isCorrect = selectedIndex === this.perceptionTargetIndex;
+        const accuracy = isCorrect ? 100.00 : 0.00;
+
+        if (isCorrect) {
+          this.handleSuccess(accuracy, 600 * this.combo);
+        } else {
+          this.handleFailure(accuracy);
+        }
+      }
+
+      handleSuccess(accuracy, pointsGained) {
+        this.score += pointsGained;
+        this.stats.correct++;
+        this.stats.rounds++;
+        this.stats.accuracySum += accuracy;
+
+        this.combo++;
+        if (this.combo > this.stats.bestCombo) this.stats.bestCombo = this.combo;
+        if (this.score > this.stats.bestScore) this.stats.bestScore = this.score;
+
+        if (this.score > (this.stats.modeBests[this.mode] || 0)) {
+          this.stats.modeBests[this.mode] = this.score;
+        }
+
+        if (this.stats.correct % 5 === 0) this.level++;
+        this.saveStats();
+
+        document.getElementById('screen-game').classList.add('pulse-success');
+        setTimeout(() => document.getElementById('screen-game').classList.remove('pulse-success'), 600);
+
+        this.particles.spawn(window.innerWidth / 2, window.innerHeight / 2, '#10b981', 50);
+
+        if (this.mode === 'timeAttack') {
+          document.getElementById('score-display').innerText = this.score;
+          this.updateComboDisplay();
+          this.startRound();
+        } else {
+          this.showResultsOverlay(true, accuracy, pointsGained);
+        }
+      }
+
+      handleFailure(accuracy) {
+        this.combo = 1;
+        this.stats.wrong++;
+        this.stats.rounds++;
+        this.stats.accuracySum += accuracy;
+        this.saveStats();
+
+        document.getElementById('screen-game').classList.add('shake');
+        setTimeout(() => document.getElementById('screen-game').classList.remove('shake'), 400);
+
+        if (this.mode === 'timeAttack') {
+          this.updateComboDisplay();
+          this.startRound();
+        } else {
+          this.showResultsOverlay(false, accuracy, 0);
+        }
+      }
+
+      showResultsOverlay(isSuccess, accuracy, pointsGained) {
+        const overlay = document.getElementById('results-overlay');
+        const resTitle = document.getElementById('res-title');
+        const resAcc = document.getElementById('res-accuracy');
+        const resBoxTarget = document.getElementById('res-box-target');
+        const resBoxUser = document.getElementById('res-box-user');
+        const resDetails = document.getElementById('res-details');
+        const splitBox = document.getElementById('res-split-box');
+
+        resTitle.innerText = isSuccess ? (accuracy >= 99 ? 'PERFECT!' : 'ACERTOU!') : 'ERROU!';
+        resTitle.style.color = isSuccess ? 'var(--success)' : 'var(--danger)';
+        resAcc.innerText = `${accuracy}%`;
+
+        if (this.mode === 'compare2' || this.mode === 'compare4') {
+          splitBox.classList.add('hidden');
+          const correctColor = this.perceptionColors[this.perceptionTargetIndex];
+          resDetails.innerHTML = `
+            <div class="stat-row"><span>RESPOSTA CORRETA:</span><strong>OPÇÃO ${String.fromCharCode(65 + this.perceptionTargetIndex)}</strong></div>
+            <div class="stat-row"><span>HEX CORRETO:</span><strong>${rgbToHex(correctColor.r, correctColor.g, correctColor.b)}</strong></div>
+            <div class="stat-row"><span>PONTOS GANHOS:</span><strong>+${pointsGained}</strong></div>
+          `;
+        } else {
+          splitBox.classList.remove('hidden');
+          const targetHex = rgbToHex(this.targetColor.r, this.targetColor.g, this.targetColor.b);
+          const userHex = rgbToHex(this.userColor.r, this.userColor.g, this.userColor.b);
+
+          resBoxTarget.style.backgroundColor = targetHex;
+          resBoxUser.style.backgroundColor = userHex;
+
+          if (this.mode === 'rgb') {
+            resDetails.innerHTML = `
+              <div class="stat-row"><span>ALVO:</span><strong>RGB(${this.targetColor.r}, ${this.targetColor.g}, ${this.targetColor.b})</strong></div>
+              <div class="stat-row"><span>SUA RESPOSTA:</span><strong>RGB(${this.userColor.r}, ${this.userColor.g}, ${this.userColor.b})</strong></div>
+            `;
+          } else {
+            resDetails.innerHTML = `
+              <div class="stat-row"><span>PONTOS GANHOS:</span><strong>+${pointsGained}</strong></div>
+              <div class="stat-row"><span>RGB ALVO:</span><strong>${this.targetColor.r}, ${this.targetColor.g}, ${this.targetColor.b}</strong></div>
+              <div class="stat-row"><span>RGB SEU:</span><strong>${this.userColor.r}, ${this.userColor.g}, ${this.userColor.b}</strong></div>
+            `;
+          }
+        }
+
+        document.getElementById('score-display').innerText = this.score;
+        this.updateComboDisplay();
+
+        overlay.classList.remove('hidden');
+      }
+
+      nextRound() {
+        this.startRound();
+      }
+
+      endGame() {
+        const overlay = document.getElementById('results-overlay');
+        document.getElementById('res-title').innerText = 'GAME OVER';
+        document.getElementById('res-title').style.color = 'var(--warning)';
+        document.getElementById('res-accuracy').innerText = `${this.score} pts`;
+        document.getElementById('res-subtitle').innerText = 'PONTUAÇÃO FINAL';
+
+        document.getElementById('res-details').innerHTML = `
+          <div class="stat-row"><span>CORES CORRESPONDIDAS:</span><strong>${this.stats.correct}</strong></div>
+          <div class="stat-row"><span>MAIOR COMBO:</span><strong>x${this.stats.bestCombo}</strong></div>
+        `;
+
+        document.getElementById('btn-next-round').innerText = 'VOLTAR AO MENU';
+        document.getElementById('btn-next-round').onclick = () => {
+          document.getElementById('btn-next-round').onclick = () => this.nextRound();
+          document.getElementById('btn-next-round').innerText = 'PRÓXIMA COR ➔';
+          this.showMenu();
+        };
+
+        overlay.classList.remove('hidden');
+      }
+    }
+
+    let game;
+    window.addEventListener('DOMContentLoaded', () => {
+      game = new ColorMatchGame();
+    });
+  </script>
+</body>
+</html>
