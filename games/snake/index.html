@@ -4,84 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SNAKE</title>
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg-dark: #020408;
-      --card-bg: rgba(5, 10, 18, 0.85);
-      --card-border: rgba(34, 197, 94, 0.3);
-      --card-shadow: 0 0 30px rgba(34, 197, 94, 0.15), inset 0 0 20px rgba(34, 197, 94, 0.1);
-      --text-main: #22c55e;
-      --text-muted: #15803d;
+      --bg-dark: #05070f;
+      --card-bg: rgba(13, 17, 28, 0.65);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.56), 0 18px 36px -18px rgba(0, 0, 0, 0.65);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       
-      --accent-color: #22c55e;
-      --accent-gradient: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);
-      --accent-glow: rgba(34, 197, 94, 0.6);
-      --accent-hover-gradient: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%);
+      --accent-color: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
       
-      --success: #22c55e;
+      --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
       
-      --radius-lg: 16px;
-      --radius-md: 10px;
-      --radius-sm: 6px;
+      --radius-lg: 32px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
       --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       
-      --glass-surface: rgba(34, 197, 94, 0.05);
-      --glass-surface-hover: rgba(34, 197, 94, 0.15);
-      --glass-border: rgba(34, 197, 94, 0.25);
+      --glass-surface: rgba(255, 255, 255, 0.03);
+      --glass-surface-hover: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
       
-      --orb-1: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, rgba(0,0,0,0) 70%);
-      --orb-2: radial-gradient(circle, rgba(21, 128, 61, 0.1) 0%, rgba(0,0,0,0) 70%);
-      --orb-3: radial-gradient(circle, rgba(74, 222, 128, 0.1) 0%, rgba(0,0,0,0) 70%);
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(0,0,0,0) 70%);
     }
 
-    /* CRT MONITOR CONTAINER OVERLAY */
-    .crt-monitor {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 99999;
-      overflow: hidden;
+    [data-theme="light"] {
+      --bg-dark: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(255, 255, 255, 0.8);
+      --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.15), 0 0 15px rgba(255, 255, 255, 0.7);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      
+      --accent-color: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+      --accent-glow: rgba(79, 70, 229, 0.25);
+      
+      --glass-surface: rgba(255, 255, 255, 0.6);
+      --glass-surface-hover: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0) 70%);
     }
 
-    /* Scanlines */
-    .crt-monitor::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-      z-index: 100000;
-      background-size: 100% 3px, 4px 100%;
-      pointer-events: none;
-    }
-
-    /* Vignette / Curvature shadow */
-    .crt-monitor::after {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.85) 100%);
-      z-index: 100001;
-      pointer-events: none;
-    }
-
-    /* Screen flicker animation */
-    @keyframes crt-flicker {
-      0% { opacity: 0.97; }
-      50% { opacity: 1; }
-      100% { opacity: 0.96; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
     body {
-      background-color: #010204;
+      background-color: var(--bg-dark);
       color: var(--text-main);
       font-family: var(--font);
       min-height: 100vh;
@@ -92,8 +82,7 @@
       overflow-x: hidden;
       padding: 16px;
       position: relative;
-      animation: crt-flicker 0.15s infinite;
-      text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+      transition: background-color 0.5s ease, color 0.5s ease;
     }
 
     .ambient-bg {
@@ -129,12 +118,12 @@
       background: var(--accent-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 15px var(--accent-glow));
+      filter: drop-shadow(0 4px 12px var(--accent-glow));
       line-height: 1.1;
     }
 
-    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
-    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 600; }
+    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
     .hidden { display: none !important; }
     .text-center { text-align: center; }
     .w-100 { width: 100%; }
@@ -153,11 +142,6 @@
       gap: 20px;
       position: relative;
       z-index: 1;
-      border: 2px solid rgba(34, 197, 94, 0.4);
-      border-radius: 24px;
-      padding: 12px;
-      background: rgba(0, 0, 0, 0.6);
-      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(34, 197, 94, 0.08);
     }
 
     .card {
@@ -209,7 +193,7 @@
     }
 
     .stat-badge .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
-    .stat-badge .value { font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; text-shadow: 0 0 6px var(--accent-glow); }
+    .stat-badge .value { font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
 
     /* POWERUP ACTIVE BAR */
     .powerup-status-bar {
@@ -227,33 +211,37 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(34, 197, 94, 0.1);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--glass-border);
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 800;
       animation: popIn 0.2s ease;
-      color: var(--text-main);
     }
+
+    .powerup-pill.shield { border-color: #06b6d4; color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
+    .powerup-pill.magnet { border-color: #ec4899; color: #ec4899; background: rgba(236, 72, 153, 0.1); }
+    .powerup-pill.ghost  { border-color: #94a3b8; color: #94a3b8; background: rgba(148, 163, 184, 0.1); }
+    .powerup-pill.mult2  { border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
 
     .btn {
       width: 100%;
       background: var(--accent-gradient);
-      color: #000;
+      color: #fff;
       border: none;
       padding: 16px 24px;
       border-radius: var(--radius-md);
       font-size: 0.95rem;
-      font-weight: 900;
-      letter-spacing: 0.5px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 0 20px var(--accent-glow);
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
       position: relative;
       overflow: hidden;
       margin-top: 10px;
@@ -262,8 +250,7 @@
 
     .btn:hover {
       transform: translateY(-3px) scale(1.01);
-      box-shadow: 0 0 30px var(--accent-glow);
-      background: #4ade80;
+      box-shadow: 0 15px 30px -5px var(--accent-glow);
     }
 
     .btn:active { transform: translateY(1px) scale(0.99); }
@@ -277,8 +264,7 @@
     }
     .btn-secondary:hover {
       background: var(--glass-surface-hover);
-      border-color: var(--accent-color);
-      color: #fff;
+      border-color: rgba(255,255,255,0.25);
     }
 
     .btn-danger {
@@ -324,12 +310,11 @@
 
     .mode-card:hover {
       background: var(--glass-surface-hover);
-      border-color: var(--accent-color);
+      border-color: rgba(99, 102, 241, 0.4);
       transform: translateX(4px) translateY(-2px);
-      box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
     }
 
-    .mode-card .title { font-weight: 800; color: var(--text-main); font-size: 0.95rem; text-shadow: 0 0 5px var(--accent-glow); }
+    .mode-card .title { font-weight: 800; color: var(--text-main); font-size: 0.95rem; }
     .mode-card .desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
     .mode-card .arrow-icon { font-size: 1rem; color: var(--text-muted); }
 
@@ -375,7 +360,7 @@
     .event-banner {
       width: 100%;
       background: var(--accent-gradient);
-      color: #000;
+      color: #fff;
       font-weight: 900;
       text-align: center;
       padding: 8px;
@@ -398,17 +383,17 @@
     }
 
     canvas {
-      background: #020502;
+      background: var(--bg-dark);
       border-radius: var(--radius-md);
-      border: 2px solid var(--card-border);
-      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), inset 0 0 15px rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow);
       width: 100%;
       max-width: 460px;
       aspect-ratio: 1/1;
     }
 
     .mobile-controls {
-      display: none;
+      display: flex;
       width: 100%;
       max-width: 240px;
       height: 150px;
@@ -429,14 +414,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       transition: all 0.15s ease;
       cursor: pointer;
     }
 
     .dpad-btn:active {
       background: var(--accent-color);
-      color: #000;
+      color: #fff;
       transform: scale(0.95);
     }
 
@@ -449,7 +434,7 @@
     .overlay-modal {
       position: fixed;
       inset: 0;
-      background: rgba(1, 3, 6, 0.9);
+      background: rgba(5, 7, 15, 0.85);
       backdrop-filter: blur(24px);
       display: none;
       flex-direction: column;
@@ -510,16 +495,9 @@
       font-weight: 700;
       width: 100%;
     }
-
-    @media (max-width: 768px) {
-      .mobile-controls { display: block; }
-    }
   </style>
 </head>
 <body>
-
-  <!-- CRT Monitor Layer Overlay (Scanlines, Curved Glass & Vignette) -->
-  <div class="crt-monitor"></div>
 
   <div class="ambient-bg">
     <div class="orb orb-1"></div>
@@ -529,10 +507,9 @@
 
   <div class="container">
 
-    <!-- ==================== MENU PRINCIPAL ==================== -->
     <div id="screen-main-menu" class="card text-center screen active">
       <h1>Snake</h1>
-      <p class="subtitle">Retro CRT Edition [Terminal v1.0]</p>
+      <p class="subtitle">Ultimate Edition</p>
 
       <div class="info-card" id="last-played-card" style="display:none; margin-top: 16px;">
         Último Modo: <span id="last-mode-val">-</span>
@@ -590,18 +567,15 @@
       </div>
     </div>
 
-    <!-- ==================== LEADERBOARD ==================== -->
     <div id="screen-leaderboard" class="card text-center screen">
       <h2>Recordes</h2>
       <p class="subtitle">Seus melhores recordes locais</p>
       
       <div id="leaderboard-list" style="width: 100%; margin: 20px 0;">
-        <!-- Inserido via JS -->
-      </div>
+        </div>
       <button class="btn btn-secondary w-100" onclick="app.showScreen('screen-main-menu')">Voltar</button>
     </div>
 
-    <!-- ==================== CONFIGURAÇÕES ==================== -->
     <div id="screen-settings" class="card screen">
       <h2>Opções</h2>
       <p class="subtitle" style="margin-bottom: 10px;">Personalize sua jogabilidade</p>
@@ -619,11 +593,10 @@
         <input type="checkbox" id="cfg-grid" onchange="app.saveConfig()">
       </div>
       <div class="setting-row">
-        <label>Paleta de Fósforo CRT</label>
+        <label>Tema Visual</label>
         <select id="cfg-theme" onchange="app.saveConfig()">
-          <option value="amber">Âmbar Clássico</option>
-          <option value="green" selected>Verde Terminal</option>
-          <option value="cyan">Azul Ciano</option>
+          <option value="dark">Escuro</option>
+          <option value="light">Claro</option>
         </select>
       </div>
       <div class="setting-row">
@@ -638,7 +611,6 @@
       <button class="btn btn-secondary w-100" style="margin-top: 20px;" onclick="app.showScreen('screen-main-menu')">Voltar</button>
     </div>
 
-    <!-- ==================== TELA DE JOGO ==================== -->
     <div id="game-screen" class="screen">
       <div class="header-bar">
         <div class="stat-badge">
@@ -659,10 +631,8 @@
         </div>
       </div>
 
-      <!-- Barra de Powerups Ativos -->
       <div class="powerup-status-bar" id="powerup-status-bar">
-        <!-- Renderizado dinamicamente -->
-      </div>
+        </div>
 
       <div class="event-banner" id="event-banner">EVENTO ATIVO</div>
 
@@ -680,7 +650,6 @@
 
   </div>
 
-  <!-- OVERLAY DE PAUSA -->
   <div id="modal-pause" class="overlay-modal">
     <div class="card text-center" style="max-width: 400px; width: 100%;">
       <h2>Pausado</h2>
@@ -691,7 +660,6 @@
     </div>
   </div>
 
-  <!-- OVERLAY DE GAME OVER -->
   <div id="modal-gameover" class="overlay-modal">
     <div class="card text-center" style="max-width: 420px; width: 100%;">
       <h2 id="go-title" style="color:var(--danger)">GAME OVER</h2>
@@ -792,18 +760,18 @@ class SoundEffects {
 const sfx = new SoundEffects();
 
 const FOOD_TYPES = {
-  NORMAL: { type: 'NORMAL', score: 10, grow: 1, chance: 0.7 },
-  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, chance: 0.1 },
-  SPEED:  { type: 'SPEED',  score: 20, grow: 1, chance: 0.07 },
-  SLOW:   { type: 'SLOW',   score: 20, grow: 1, chance: 0.07 },
-  RARE:   { type: 'RARE',   score: 100, grow: 3, chance: 0.06 }
+  NORMAL: { type: 'NORMAL', score: 10, grow: 1, color: '#ec4899', chance: 0.7 },
+  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, color: '#f59e0b', chance: 0.1 },
+  SPEED:  { type: 'SPEED',  score: 20, grow: 1, color: '#06b6d4', chance: 0.07 },
+  SLOW:   { type: 'SLOW',   score: 20, grow: 1, color: '#a855f7', chance: 0.07 },
+  RARE:   { type: 'RARE',   score: 100, grow: 3, color: '#10b981', chance: 0.06 }
 };
 
 const POWERUPS = {
-  SHIELD: { type: 'SHIELD', name: 'Escudo', icon: '🛡️', duration: 8000 },
-  MAGNET: { type: 'MAGNET', name: 'Imã', icon: '🧲', duration: 7000 },
-  GHOST:  { type: 'GHOST',  name: 'Fantasma', icon: '👻', duration: 6000 },
-  MULT2:  { type: 'MULT2',  name: '2x Score', icon: '⚡', duration: 10000 }
+  SHIELD: { type: 'SHIELD', name: 'Escudo', icon: '🛡️', color: '#06b6d4', duration: 8000 },
+  MAGNET: { type: 'MAGNET', name: 'Imã', icon: '🧲', color: '#ec4899', duration: 7000 },
+  GHOST:  { type: 'GHOST',  name: 'Fantasma', icon: '👻', color: '#94a3b8', duration: 6000 },
+  MULT2:  { type: 'MULT2',  name: '2x Score', icon: '⚡', color: '#f59e0b', duration: 10000 }
 };
 
 class Engine {
@@ -818,7 +786,7 @@ class Engine {
       sfx: true,
       vibe: true,
       grid: true,
-      theme: 'green',
+      theme: 'dark',
       speed: 'normal'
     };
 
@@ -846,63 +814,6 @@ class Engine {
     this.bindEvents();
   }
 
-  getThemeColors() {
-    if (this.config.theme === 'amber') {
-      return {
-        main: '#f59e0b',
-        muted: '#b45309',
-        gradient: 'linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%)',
-        glow: 'rgba(245, 158, 11, 0.6)',
-        surface: 'rgba(245, 158, 11, 0.05)',
-        surfaceHover: 'rgba(245, 158, 11, 0.15)',
-        border: 'rgba(245, 158, 11, 0.3)',
-        food: '#f59e0b',
-        snake1: '#fbbf24',
-        snake2: '#d97706'
-      };
-    } else if (this.config.theme === 'cyan') {
-      return {
-        main: '#06b6d4',
-        muted: '#0e7490',
-        gradient: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%)',
-        glow: 'rgba(6, 182, 212, 0.6)',
-        surface: 'rgba(6, 182, 212, 0.05)',
-        surfaceHover: 'rgba(6, 182, 212, 0.15)',
-        border: 'rgba(6, 182, 212, 0.3)',
-        food: '#22d3ee',
-        snake1: '#06b6d4',
-        snake2: '#0891b2'
-      };
-    } else {
-      // green (default)
-      return {
-        main: '#22c55e',
-        muted: '#15803d',
-        gradient: 'linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%)',
-        glow: 'rgba(34, 197, 94, 0.6)',
-        surface: 'rgba(34, 197, 94, 0.05)',
-        surfaceHover: 'rgba(34, 197, 94, 0.15)',
-        border: 'rgba(34, 197, 94, 0.3)',
-        food: '#4ade80',
-        snake1: '#22c55e',
-        snake2: '#16a34a'
-      };
-    }
-  }
-
-  applyThemeCSS() {
-    let t = this.getThemeColors();
-    let root = document.documentElement;
-    root.style.setProperty('--text-main', t.main);
-    root.style.setProperty('--text-muted', t.muted);
-    root.style.setProperty('--accent-gradient', t.gradient);
-    root.style.setProperty('--accent-glow', t.glow);
-    root.style.setProperty('--card-border', t.border);
-    root.style.setProperty('--glass-surface', t.surface);
-    root.style.setProperty('--glass-surface-hover', t.surfaceHover);
-    root.style.setProperty('--glass-border', t.border);
-  }
-
   resetGameState() {
     this.snakes = [];
     this.foods = [];
@@ -926,13 +837,13 @@ class Engine {
   }
 
   loadLocalStorage() {
-    let cfg = localStorage.getItem('snake_crt_cfg_v1');
+    let cfg = localStorage.getItem('snake_cfg_zoom_v2');
     if (cfg) this.config = Object.assign(this.config, JSON.parse(cfg));
     
-    let rec = localStorage.getItem('snake_crt_rec_v1');
+    let rec = localStorage.getItem('snake_records_zoom_v2');
     if (rec) this.records = Object.assign(this.records, JSON.parse(rec));
 
-    this.lastMode = localStorage.getItem('snake_crt_last_mode_v1');
+    this.lastMode = localStorage.getItem('snake_last_mode_zoom_v2');
 
     document.getElementById('cfg-sfx').checked = this.config.sfx;
     document.getElementById('cfg-vibe').checked = this.config.vibe;
@@ -945,7 +856,7 @@ class Engine {
       document.getElementById('last-mode-val').innerText = this.lastMode.toUpperCase();
     }
 
-    this.applyThemeCSS();
+    document.documentElement.setAttribute('data-theme', this.config.theme);
   }
 
   saveConfig() {
@@ -955,14 +866,14 @@ class Engine {
     this.config.theme = document.getElementById('cfg-theme').value;
     this.config.speed = document.getElementById('cfg-speed').value;
 
-    this.applyThemeCSS();
-    localStorage.setItem('snake_crt_cfg_v1', JSON.stringify(this.config));
+    document.documentElement.setAttribute('data-theme', this.config.theme);
+    localStorage.setItem('snake_cfg_zoom_v2', JSON.stringify(this.config));
   }
 
   saveRecord(mode, score) {
     if (score > (this.records[mode] || 0)) {
       this.records[mode] = score;
-      localStorage.setItem('snake_crt_rec_v1', JSON.stringify(this.records));
+      localStorage.setItem('snake_records_zoom_v2', JSON.stringify(this.records));
       return true;
     }
     return false;
@@ -994,7 +905,7 @@ class Engine {
       let div = document.createElement('div');
       div.className = 'leader-item';
       let val = key === 'survival' ? this.formatTime(this.records[key]) : this.records[key];
-      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--text-main); font-weight:900;">${val}</span>`;
+      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--success); font-weight:900;">${val}</span>`;
       container.appendChild(div);
     }
   }
@@ -1052,6 +963,39 @@ class Engine {
         if (dir) this.setSnakeDirection(p1, dir);
       }
     });
+
+    // Touch Swipe Gestures Support on Canvas
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    this.canvas.addEventListener('touchstart', (e) => {
+      sfx.init();
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    this.canvas.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length === 1 && !this.isPaused && !this.isGameOver) {
+        let touchEndX = e.changedTouches[0].clientX;
+        let touchEndY = e.changedTouches[0].clientY;
+        
+        let dx = touchEndX - touchStartX;
+        let dy = touchEndY - touchStartY;
+        let minSwipeDist = 30;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (Math.abs(dx) > minSwipeDist) {
+            this.handleTouchInput(dx > 0 ? 'RIGHT' : 'LEFT');
+          }
+        } else {
+          if (Math.abs(dy) > minSwipeDist) {
+            this.handleTouchInput(dy > 0 ? 'DOWN' : 'UP');
+          }
+        }
+      }
+    }, { passive: true });
   }
 
   handleTouchInput(dir) {
@@ -1059,6 +1003,11 @@ class Engine {
     if (this.isPaused || this.isGameOver) return;
     let p1 = this.snakes[0];
     if (!p1) return;
+
+    if (this.config.vibe && navigator.vibrate) {
+      navigator.vibrate(20);
+    }
+
     let reverse = (this.activeEvent === 'REVERSE CONTROLS');
     let finalDir = dir;
     if (reverse) {
@@ -1082,7 +1031,7 @@ class Engine {
     sfx.init();
     this.mode = mode;
     this.lastMode = mode;
-    localStorage.setItem('snake_crt_last_mode_v1', mode);
+    localStorage.setItem('snake_last_mode_zoom_v2', mode);
 
     this.resetGameState();
     this.isPaused = false;
@@ -1091,12 +1040,11 @@ class Engine {
     let baseSpeeds = { slow: 140, normal: 110, fast: 80 };
     this.stepInterval = baseSpeeds[this.config.speed] || 110;
 
-    let t = this.getThemeColors();
     if (mode === 'pvp') {
-      this.snakes.push(this.createSnake(3, 9, 'RIGHT', t.snake1, 'Player 1'));
-      this.snakes.push(this.createSnake(14, 9, 'LEFT', t.snake2, 'Player 2'));
+      this.snakes.push(this.createSnake(3, 9, 'RIGHT', '#10b981', 'Player 1'));
+      this.snakes.push(this.createSnake(14, 9, 'LEFT', '#06b6d4', 'Player 2'));
     } else {
-      this.snakes.push(this.createSnake(9, 9, 'RIGHT', t.snake1, 'Player 1'));
+      this.snakes.push(this.createSnake(9, 9, 'RIGHT', '#10b981', 'Player 1'));
     }
 
     if (mode === 'portals') {
@@ -1285,8 +1233,7 @@ class Engine {
             this.timeAttackLeft += 2.0;
           }
 
-          let t = this.getThemeColors();
-          this.createParticles(head.x, head.y, t.main);
+          this.createParticles(head.x, head.y, f.typeInfo.color);
           this.foods.splice(i, 1);
           this.spawnFood();
 
@@ -1434,12 +1381,16 @@ class Engine {
       let rand = Math.random();
       let selectedType = FOOD_TYPES.NORMAL;
 
-      let cum = 0;
-      for (let k in FOOD_TYPES) {
-        cum += FOOD_TYPES[k].chance;
-        if (rand <= cum) {
-          selectedType = FOOD_TYPES[k];
-          break;
+      if (this.activeEvent === 'GOLDEN FOOD') {
+        selectedType = FOOD_TYPES.GOLDEN;
+      } else {
+        let cum = 0;
+        for (let k in FOOD_TYPES) {
+          cum += FOOD_TYPES[k].chance;
+          if (rand <= cum) {
+            selectedType = FOOD_TYPES[k];
+            break;
+          }
         }
       }
 
@@ -1458,20 +1409,19 @@ class Engine {
     let p1Pos = this.getFreePosition();
     let p2Pos = this.getFreePosition();
     const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
-    let t = this.getThemeColors();
     
     this.portals = [
       { 
         id: 1, linkedId: 2, 
         x: p1Pos.x, y: p1Pos.y, 
-        color: t.main, 
+        color: '#06b6d4', 
         label: 'A',
         outDir: dirs[Math.floor(Math.random() * dirs.length)]
       },
       { 
         id: 2, linkedId: 1, 
         x: p2Pos.x, y: p2Pos.y, 
-        color: t.muted, 
+        color: '#a855f7', 
         label: 'B',
         outDir: dirs[Math.floor(Math.random() * dirs.length)]
       }
@@ -1522,11 +1472,10 @@ class Engine {
 
   render() {
     let sz = this.gridSize;
-    let t = this.getThemeColors();
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (this.config.grid) {
-      this.ctx.strokeStyle = t.border;
+      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
       this.ctx.lineWidth = 1;
       for (let i = 0; i <= this.tileCount; i++) {
         this.ctx.beginPath();
@@ -1542,7 +1491,7 @@ class Engine {
     }
 
     this.obstacles.forEach(o => {
-      this.ctx.fillStyle = t.muted;
+      this.ctx.fillStyle = '#475569';
       this.ctx.beginPath();
       this.ctx.roundRect(o.x * sz + 2, o.y * sz + 2, sz - 4, sz - 4, 6);
       this.ctx.fill();
@@ -1560,12 +1509,12 @@ class Engine {
       this.ctx.arc(cx, cy, Math.max(8, radiusPulse), 0, Math.PI * 2);
       this.ctx.fill();
 
-      this.ctx.fillStyle = '#000000';
+      this.ctx.fillStyle = '#ffffff';
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, 6, 0, Math.PI * 2);
       this.ctx.fill();
 
-      this.ctx.fillStyle = p.color;
+      this.ctx.fillStyle = '#000000';
       this.ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
@@ -1574,8 +1523,8 @@ class Engine {
     });
 
     this.foods.forEach(f => {
-      this.ctx.fillStyle = t.food;
-      this.ctx.shadowColor = t.food;
+      this.ctx.fillStyle = f.typeInfo.color;
+      this.ctx.shadowColor = f.typeInfo.color;
       this.ctx.shadowBlur = 14;
       this.ctx.beginPath();
       this.ctx.arc(f.x * sz + sz / 2, f.y * sz + sz / 2, sz / 2 - 4, 0, Math.PI * 2);
@@ -1584,8 +1533,8 @@ class Engine {
     });
 
     this.powerupsOnGrid.forEach(pw => {
-      this.ctx.fillStyle = t.main;
-      this.ctx.shadowColor = t.main;
+      this.ctx.fillStyle = pw.info.color;
+      this.ctx.shadowColor = pw.info.color;
       this.ctx.shadowBlur = 14;
       this.ctx.beginPath();
       this.ctx.roundRect(pw.x * sz + 4, pw.y * sz + 4, sz - 8, sz - 8, 8);
