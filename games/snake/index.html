@@ -1,40 +1,65 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>SNAKE - Ultimate Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SNAKE - Ultimate Edition (ColorMatch UI)</title>
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --bg-color: #0b0f19;
-      --card-bg: rgba(18, 24, 38, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #00ff88;
-      --primary-glow: rgba(0, 255, 136, 0.4);
-      --secondary: #00e1ff;
-      --secondary-glow: rgba(0, 225, 255, 0.4);
-      --accent: #ff0055;
-      --accent-glow: rgba(255, 0, 85, 0.4);
-      --text: #f1f5f9;
-      --text-dim: #64748b;
-      --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --bg-dark: #05070f;
+      --card-bg: rgba(13, 17, 28, 0.65);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.56), 0 18px 36px -18px rgba(0, 0, 0, 0.65);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --accent-color: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+      
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      
+      --radius-lg: 32px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      --glass-surface: rgba(255, 255, 255, 0.03);
+      --glass-surface-hover: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(0,0,0,0) 70%);
     }
 
     [data-theme="light"] {
-      --bg-color: #f8fafc;
-      --card-bg: rgba(255, 255, 255, 0.85);
-      --card-border: rgba(0, 0, 0, 0.08);
-      --primary: #10b981;
-      --primary-glow: rgba(16, 185, 129, 0.25);
-      --secondary: #0284c7;
-      --secondary-glow: rgba(2, 132, 199, 0.25);
-      --accent: #ef4444;
-      --accent-glow: rgba(239, 68, 68, 0.25);
-      --text: #0f172a;
-      --text-dim: #94a3b8;
+      --bg-dark: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(255, 255, 255, 0.8);
+      --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.15), 0 0 15px rgba(255, 255, 255, 0.7);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      
+      --accent-color: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+      --accent-glow: rgba(79, 70, 229, 0.25);
+      
+      --glass-surface: rgba(255, 255, 255, 0.6);
+      --glass-surface-hover: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0) 70%);
     }
 
     * {
@@ -47,299 +72,337 @@
     }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--text);
-      font-family: var(--font-family);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      overflow: hidden;
-      transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Background Glow Effects */
-    body::before, body::after {
-      content: '';
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      border-radius: 50%;
-      filter: blur(120px);
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.15;
-    }
-    body::before { background: var(--primary); top: -100px; left: -100px; }
-    body::after { background: var(--secondary); bottom: -100px; right: -100px; }
-
-    #app-container {
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 16px;
       position: relative;
-      width: 100vw;
-      height: 100vh;
-      max-width: 900px;
-      max-height: 950px;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: floatOrb 20s ease-in-out infinite alternate;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: var(--orb-1); top: -10%; left: -10%; }
+    .orb-2 { width: 500px; height: 500px; background: var(--orb-2); bottom: -10%; right: -10%; animation-delay: -7s; }
+    .orb-3 { width: 400px; height: 400px; background: var(--orb-3); top: 40%; left: 60%; animation-delay: -14s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.1); }
+      100% { transform: translate(-40px, 80px) scale(0.95); }
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 12px var(--accent-glow));
+      line-height: 1.1;
+    }
+
+    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .w-100 { width: 100%; }
+
+    @keyframes popIn {
+      0% { transform: scale(0.92) translateY(20px); opacity: 0; filter: blur(10px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
+      gap: 20px;
+      position: relative;
       z-index: 1;
     }
 
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--card-shadow);
+      animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     .screen {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
-      height: 100%;
       display: none;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      z-index: 10;
-      background: var(--bg-color);
-      padding: 24px;
-      overflow-y: auto;
-      animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .screen.active {
       display: flex;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.98); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    h1.title {
-      font-size: 3.5rem;
-      font-weight: 900;
-      letter-spacing: 6px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      filter: drop-shadow(0 0 25px var(--primary-glow));
-    }
-
-    .subtitle {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-    }
-
-    .menu-box {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 28px;
+    .header-bar {
       width: 100%;
-      max-width: 440px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .stat-badge {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      background: var(--glass-surface);
+      padding: 8px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+    }
+
+    .stat-badge .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+    .stat-badge .value { font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+
+    .combo-badge {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--accent-color);
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 800;
     }
 
     .btn {
-      position: relative;
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      border: 1px solid var(--card-border);
+      width: 100%;
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
       padding: 16px 24px;
-      font-family: var(--font-family);
+      border-radius: var(--radius-md);
       font-size: 0.95rem;
       font-weight: 800;
-      border-radius: 14px;
+      letter-spacing: 0.3px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
+      position: relative;
       overflow: hidden;
+      margin-top: 10px;
+      text-transform: uppercase;
     }
 
     .btn:hover {
-      background: var(--primary);
-      color: #0b0f19;
-      border-color: var(--primary);
-      box-shadow: 0 0 25px var(--primary-glow);
-      transform: translateY(-2px);
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 15px 30px -5px var(--accent-glow);
     }
 
-    .btn:active {
-      transform: translateY(0);
-    }
+    .btn:active { transform: translateY(1px) scale(0.99); }
 
     .btn-secondary {
-      background: transparent;
-      border-color: var(--card-border);
-      color: var(--text-dim);
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      box-shadow: none;
+      backdrop-filter: blur(10px);
     }
-
     .btn-secondary:hover {
-      border-color: var(--secondary);
-      color: var(--secondary);
-      background: transparent;
-      box-shadow: 0 0 20px var(--secondary-glow);
+      background: var(--glass-surface-hover);
+      border-color: rgba(255,255,255,0.25);
     }
 
     .btn-danger {
-      background: rgba(255, 0, 85, 0.05);
-      border-color: rgba(255, 0, 85, 0.3);
-      color: var(--accent);
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--danger);
+      box-shadow: none;
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #fff;
     }
 
-    .btn-danger:hover {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 0 25px var(--accent-glow);
+    .menu-section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 20px 0 10px 4px;
+      align-self: flex-start;
+    }
+
+    .modes-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .mode-card {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .mode-card:hover {
+      background: var(--glass-surface-hover);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateX(4px) translateY(-2px);
+    }
+
+    .mode-card .title { font-weight: 800; color: var(--text-main); font-size: 0.95rem; }
+    .mode-card .desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+    .mode-card .arrow-icon { font-size: 1rem; color: var(--text-muted); }
+
+    .top-nav-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .top-nav-grid .btn {
+      padding: 12px 10px;
+      font-size: 0.85rem;
+      border-radius: var(--radius-sm);
+      margin-top: 0;
     }
 
     .info-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
       padding: 12px 16px;
       font-size: 0.85rem;
-      color: var(--text-dim);
+      color: var(--text-muted);
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-weight: 600;
+      width: 100%;
+      margin-bottom: 12px;
     }
-
-    .info-card span {
-      color: var(--text);
-      font-weight: 800;
-    }
+    .info-card span { color: var(--text-main); font-weight: 800; }
 
     /* GAME SCREEN */
-    #game-screen {
+    #screen-game-play {
       padding: 0;
-      justify-content: space-between;
       background: transparent;
-    }
-
-    .hud {
-      width: 100%;
-      max-width: 600px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      padding: 12px;
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-top: none;
-      border-radius: 0 0 20px 20px;
-      z-index: 5;
-    }
-
-    .hud-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 8px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    .hud-label {
-      font-size: 0.65rem;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 800;
-    }
-
-    .hud-val {
-      font-size: 1.25rem;
-      font-weight: 900;
-      color: var(--primary);
+      border: none;
+      box-shadow: none;
     }
 
     .event-banner {
       width: 100%;
-      max-width: 600px;
-      background: linear-gradient(90deg, var(--secondary), var(--primary));
-      color: #0b0f19;
+      background: var(--accent-gradient);
+      color: #fff;
       font-weight: 900;
       text-align: center;
-      padding: 6px;
-      font-size: 0.85rem;
+      padding: 8px;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       display: none;
-      border-radius: 8px;
-      margin-top: 8px;
-      box-shadow: 0 0 20px var(--secondary-glow);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      box-shadow: 0 0 20px var(--accent-glow);
     }
 
     .canvas-container {
       position: relative;
-      flex: 1;
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      max-width: 600px;
-      padding: 10px 0;
+      margin-bottom: 16px;
     }
 
     canvas {
-      background: #060911;
-      border-radius: 20px;
+      background: var(--bg-dark);
+      border-radius: var(--radius-md);
       border: 1px solid var(--card-border);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      max-width: 100%;
-      max-height: 100%;
+      box-shadow: var(--card-shadow);
+      width: 100%;
+      max-width: 460px;
       aspect-ratio: 1/1;
     }
 
-    /* CONTROLES MOBILE */
     .mobile-controls {
       display: none;
       width: 100%;
-      max-width: 260px;
-      height: 160px;
-      margin: 10px auto;
+      max-width: 240px;
+      height: 150px;
       position: relative;
+      margin: 0 auto;
     }
 
     .dpad-btn {
       position: absolute;
       width: 52px;
       height: 52px;
-      background: var(--card-bg);
+      background: var(--glass-surface);
       backdrop-filter: blur(8px);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      color: var(--text);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
       font-size: 1.2rem;
       display: flex;
       justify-content: center;
       align-items: center;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       transition: all 0.15s ease;
+      cursor: pointer;
     }
 
     .dpad-btn:active {
-      background: var(--primary);
-      color: #0b0f19;
+      background: var(--accent-color);
+      color: #fff;
       transform: scale(0.95);
     }
 
@@ -350,20 +413,16 @@
 
     /* MODAL OVERLAYS */
     .overlay-modal {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(11, 15, 25, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 15, 0.85);
+      backdrop-filter: blur(24px);
       display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 20;
-      animation: fadeIn 0.2s ease;
+      z-index: 50;
+      padding: 20px;
     }
 
     .overlay-modal.active {
@@ -378,28 +437,29 @@
       margin: 16px 0;
     }
 
-    /* CONFIGURAÇÕES / LEADERBOARD */
+    /* SETTINGS / LEADERBOARD */
     .setting-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--card-border);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--glass-border);
+      width: 100%;
     }
 
     .setting-row label {
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     select, input[type="checkbox"] {
-      background: var(--bg-color);
-      color: var(--text);
-      border: 1px solid var(--card-border);
+      background: var(--glass-surface);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
       padding: 8px 12px;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       outline: none;
-      font-family: var(--font-family);
+      font-family: var(--font);
       font-weight: 600;
     }
 
@@ -407,67 +467,108 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      margin-bottom: 8px;
+      padding: 14px 18px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
+      width: 100%;
     }
 
     @media (max-width: 768px) {
-      .mobile-controls {
-        display: block;
-      }
-      h1.title { font-size: 2.5rem; }
-      .hud-val { font-size: 1.05rem; }
-      .hud-label { font-size: 0.55rem; }
-      .menu-box { padding: 20px; }
+      .mobile-controls { display: block; }
     }
   </style>
 </head>
 <body>
 
-<div id="app-container">
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
 
-  <!-- MENU PRINCIPAL -->
-  <div id="screen-main-menu" class="screen active">
-    <h1 class="title">SNAKE</h1>
-    <p class="subtitle">Escolha seu modo de jogo</p>
+  <div class="container">
 
-    <div class="menu-box">
-      <div class="info-card" id="last-played-card" style="display:none;">
+    <!-- ==================== MENU PRINCIPAL ==================== -->
+    <div id="screen-main-menu" class="card text-center screen active">
+      <h1>Snake</h1>
+      <p class="subtitle">Ultimate Edition & Modern UI</p>
+
+      <div class="info-card" id="last-played-card" style="display:none; margin-top: 16px;">
         Último Modo: <span id="last-mode-val">-</span>
       </div>
 
-      <button class="btn" onclick="app.startGame('classic')">Classic</button>
-      <button class="btn" onclick="app.startGame('time_attack')">Time Attack</button>
-      <button class="btn" onclick="app.startGame('survival')">Survival</button>
-      <button class="btn" onclick="app.startGame('portals')">Portals</button>
-      <button class="btn" onclick="app.startGame('chaos')">Chaos</button>
-      <button class="btn" onclick="app.startGame('pvp')">2 Players</button>
-      
-      <div style="display: flex; gap: 10px; margin-top: 6px;">
-        <button class="btn btn-secondary" style="flex:1" onclick="app.showScreen('screen-leaderboard')">Recordes</button>
-        <button class="btn btn-secondary" style="flex:1" onclick="app.showScreen('screen-settings')">Opções</button>
+      <div class="menu-section-title" style="margin-top: 10px;">Modos de Jogo</div>
+      <div class="modes-grid">
+        <div class="mode-card" onclick="app.startGame('classic')">
+          <div>
+            <div class="title">Classic</div>
+            <div class="desc">A experiência tradicional e infinita</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="app.startGame('time_attack')">
+          <div>
+            <div class="title">Time Attack</div>
+            <div class="desc">Ganhe tempo comendo e sobreviva</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="app.startGame('survival')">
+          <div>
+            <div class="title">Survival</div>
+            <div class="desc">Obstáculos crescentes a cada instante</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="app.startGame('portals')">
+          <div>
+            <div class="title">Portals</div>
+            <div class="desc">Teleportes dinâmicos pelo mapa</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="app.startGame('chaos')">
+          <div>
+            <div class="title">Chaos</div>
+            <div class="desc">Eventos randômicos a cada 10 segundos</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+        <div class="mode-card" onclick="app.startGame('pvp')">
+          <div>
+            <div class="title">2 Players (PvP)</div>
+            <div class="desc">Batalha local contra outro jogador</div>
+          </div>
+          <span class="arrow-icon">➔</span>
+        </div>
+      </div>
+
+      <div class="top-nav-grid">
+        <button class="btn btn-secondary" onclick="app.showScreen('screen-leaderboard')">🏆 Recordes</button>
+        <button class="btn btn-secondary" onclick="app.showScreen('screen-settings')">⚙️ Opções</button>
       </div>
     </div>
-  </div>
 
-  <!-- LEADERBOARD -->
-  <div id="screen-leaderboard" class="screen">
-    <h1 class="title">RECORDES</h1>
-    <div class="menu-box" id="leaderboard-list">
-      <!-- Inserido dinamicamente via JS -->
+    <!-- ==================== LEADERBOARD ==================== -->
+    <div id="screen-leaderboard" class="card text-center screen">
+      <h2>Recordes</h2>
+      <p class="subtitle">Seus melhores recordes locais</p>
+      
+      <div id="leaderboard-list" style="width: 100%; margin: 20px 0;">
+        <!-- Inserido via JS -->
+      </div>
+      <button class="btn btn-secondary w-100" onclick="app.showScreen('screen-main-menu')">Voltar</button>
     </div>
-    <button class="btn btn-secondary" style="margin-top: 15px; width: 100%; max-width: 440px;" onclick="app.showScreen('screen-main-menu')">Voltar</button>
-  </div>
 
-  <!-- CONFIGURAÇÕES -->
-  <div id="screen-settings" class="screen">
-    <h1 class="title">OPÇÕES</h1>
-    <div class="menu-box">
+    <!-- ==================== CONFIGURAÇÕES ==================== -->
+    <div id="screen-settings" class="card screen">
+      <h2>Opções</h2>
+      <p class="subtitle" style="margin-bottom: 10px;">Personalize sua jogabilidade</p>
+      
       <div class="setting-row">
         <label>Efeitos Sonoros (SFX)</label>
         <input type="checkbox" id="cfg-sfx" onchange="app.saveConfig()">
@@ -495,49 +596,52 @@
           <option value="fast">Rápido</option>
         </select>
       </div>
-    </div>
-    <button class="btn btn-secondary" style="margin-top: 15px; width: 100%; max-width: 440px;" onclick="app.showScreen('screen-main-menu')">Voltar</button>
-  </div>
 
-  <!-- TELA DE JOGO -->
-  <div id="game-screen" class="screen">
-    <div class="hud">
-      <div class="hud-item">
-        <span class="hud-label">SCORE</span>
-        <span class="hud-val" id="hud-score">0</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label" id="hud-sec-label">HIGH</span>
-        <span class="hud-val" id="hud-sec-val">0</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">COMBO</span>
-        <span class="hud-val" id="hud-combo">x1</span>
-      </div>
-      <div class="hud-item" onclick="app.togglePause()" style="cursor:pointer;">
-        <span class="hud-label">MENU</span>
-        <span class="hud-val" style="color:var(--text-dim)">PAUSE</span>
-      </div>
+      <button class="btn btn-secondary w-100" style="margin-top: 20px;" onclick="app.showScreen('screen-main-menu')">Voltar</button>
     </div>
 
-    <div class="event-banner" id="event-banner">EVENTO ATIVO</div>
+    <!-- ==================== TELA DE JOGO ==================== -->
+    <div id="game-screen" class="screen">
+      <div class="header-bar">
+        <div class="stat-badge">
+          <span class="label">SCORE</span>
+          <span class="value" id="hud-score">0</span>
+        </div>
+        <div class="stat-badge">
+          <span class="label" id="hud-sec-label">HIGH</span>
+          <span class="value" id="hud-sec-val">0</span>
+        </div>
+        <div class="stat-badge">
+          <span class="label">COMBO</span>
+          <span class="value" id="hud-combo">x1</span>
+        </div>
+        <div class="stat-badge" onclick="app.togglePause()" style="cursor:pointer;">
+          <span class="label">MENU</span>
+          <span class="value" style="color:var(--text-muted)">PAUSE</span>
+        </div>
+      </div>
 
-    <div class="canvas-container">
-      <canvas id="gameCanvas" width="600" height="600"></canvas>
+      <div class="event-banner" id="event-banner">EVENTO ATIVO</div>
+
+      <div class="canvas-container">
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+      </div>
+
+      <div class="mobile-controls">
+        <div class="dpad-btn dpad-up" onclick="app.handleTouchInput('UP')">▲</div>
+        <div class="dpad-btn dpad-down" onclick="app.handleTouchInput('DOWN')">▼</div>
+        <div class="dpad-btn dpad-left" onclick="app.handleTouchInput('LEFT')">◄</div>
+        <div class="dpad-btn dpad-right" onclick="app.handleTouchInput('RIGHT')">►</div>
+      </div>
     </div>
 
-    <div class="mobile-controls">
-      <div class="dpad-btn dpad-up" onclick="app.handleTouchInput('UP')">▲</div>
-      <div class="dpad-btn dpad-down" onclick="app.handleTouchInput('DOWN')">▼</div>
-      <div class="dpad-btn dpad-left" onclick="app.handleTouchInput('LEFT')">◄</div>
-      <div class="dpad-btn dpad-right" onclick="app.handleTouchInput('RIGHT')">►</div>
-    </div>
   </div>
 
   <!-- OVERLAY DE PAUSA -->
   <div id="modal-pause" class="overlay-modal">
-    <h1 class="title">PAUSADO</h1>
-    <div class="menu-box">
+    <div class="card text-center" style="max-width: 400px; width: 100%;">
+      <h2>Pausado</h2>
+      <p class="subtitle" style="margin-bottom: 20px;">Jogo pausado no momento</p>
       <button class="btn" onclick="app.togglePause()">Continuar</button>
       <button class="btn btn-secondary" onclick="app.restartGame()">Reiniciar</button>
       <button class="btn btn-danger" onclick="app.exitToMenu()">Sair para o Menu</button>
@@ -546,26 +650,26 @@
 
   <!-- OVERLAY DE GAME OVER -->
   <div id="modal-gameover" class="overlay-modal">
-    <h1 class="title" style="color:var(--accent); -webkit-text-fill-color: var(--accent);" id="go-title">GAME OVER</h1>
-    <p id="go-subtitle" style="color:var(--primary); font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;"></p>
-    
-    <div class="menu-box">
+    <div class="card text-center" style="max-width: 420px; width: 100%;">
+      <h2 id="go-title" style="color:var(--danger)">GAME OVER</h2>
+      <p id="go-subtitle" style="color:var(--success); font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;"></p>
+      
       <div class="stats-grid">
-        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
-          <span style="font-size:0.65rem; color:var(--text-dim);">PONTUAÇÃO</span>
-          <span id="go-score" style="font-size:1.4rem; color:var(--text)">0</span>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start; margin-bottom:0;">
+          <span style="font-size:0.6rem; color:var(--text-muted);">PONTUAÇÃO</span>
+          <span id="go-score" style="font-size:1.3rem; color:var(--text-main)">0</span>
         </div>
-        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
-          <span style="font-size:0.65rem; color:var(--text-dim);">RECORDE</span>
-          <span id="go-high" style="font-size:1.4rem; color:var(--primary)">0</span>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start; margin-bottom:0;">
+          <span style="font-size:0.6rem; color:var(--text-muted);">RECORDE</span>
+          <span id="go-high" style="font-size:1.3rem; color:var(--success)">0</span>
         </div>
-        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
-          <span style="font-size:0.65rem; color:var(--text-dim);">TAMANHO</span>
-          <span id="go-length" style="font-size:1.4rem; color:var(--text)">0</span>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start; margin-bottom:0;">
+          <span style="font-size:0.6rem; color:var(--text-muted);">TAMANHO</span>
+          <span id="go-length" style="font-size:1.3rem; color:var(--text-main)">0</span>
         </div>
-        <div class="info-card" style="flex-direction:column; align-items:flex-start;">
-          <span style="font-size:0.65rem; color:var(--text-dim);">MAX COMBO</span>
-          <span id="go-combo" style="font-size:1.4rem; color:var(--text)">x1</span>
+        <div class="info-card" style="flex-direction:column; align-items:flex-start; margin-bottom:0;">
+          <span style="font-size:0.6rem; color:var(--text-muted);">MAX COMBO</span>
+          <span id="go-combo" style="font-size:1.3rem; color:var(--text-main)">x1</span>
         </div>
       </div>
 
@@ -574,14 +678,7 @@
     </div>
   </div>
 
-</div>
-
 <script>
-/**
- * SNAKE ULTIMATE ENGINE
- * JS Puro (ES6)
- */
-
 class SoundEffects {
   constructor() {
     this.ctx = null;
@@ -638,18 +735,18 @@ class SoundEffects {
 const sfx = new SoundEffects();
 
 const FOOD_TYPES = {
-  NORMAL: { type: 'NORMAL', score: 10, grow: 1, color: '#ff0055', chance: 0.7 },
-  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, color: '#ffb703', chance: 0.1 },
-  SPEED:  { type: 'SPEED',  score: 20, grow: 1, color: '#00e1ff', chance: 0.07 },
-  SLOW:   { type: 'SLOW',   score: 20, grow: 1, color: '#8a2be2', chance: 0.07 },
-  RARE:   { type: 'RARE',   score: 100, grow: 3, color: '#00ff88', chance: 0.06 }
+  NORMAL: { type: 'NORMAL', score: 10, grow: 1, color: '#ec4899', chance: 0.7 },
+  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, color: '#f59e0b', chance: 0.1 },
+  SPEED:  { type: 'SPEED',  score: 20, grow: 1, color: '#06b6d4', chance: 0.07 },
+  SLOW:   { type: 'SLOW',   score: 20, grow: 1, color: '#a855f7', chance: 0.07 },
+  RARE:   { type: 'RARE',   score: 100, grow: 3, color: '#10b981', chance: 0.06 }
 };
 
 const POWERUPS = {
-  SHIELD: { type: 'SHIELD', color: '#00e1ff', duration: 8000 },
-  MAGNET: { type: 'MAGNET', color: '#ff0055', duration: 7000 },
+  SHIELD: { type: 'SHIELD', color: '#06b6d4', duration: 8000 },
+  MAGNET: { type: 'MAGNET', color: '#ec4899', duration: 7000 },
   GHOST:  { type: 'GHOST',  color: '#94a3b8', duration: 6000 },
-  MULT2:  { type: 'MULT2',  color: '#ffb703', duration: 10000 }
+  MULT2:  { type: 'MULT2',  color: '#f59e0b', duration: 10000 }
 };
 
 class Engine {
@@ -709,18 +806,17 @@ class Engine {
     
     this.activeEvent = null;
     this.eventTimer = 0;
-    
     this.activePowerups = {};
   }
 
   loadLocalStorage() {
-    let cfg = localStorage.getItem('snake_cfg');
+    let cfg = localStorage.getItem('snake_cfg_colormatch');
     if (cfg) this.config = Object.assign(this.config, JSON.parse(cfg));
     
-    let rec = localStorage.getItem('snake_records');
+    let rec = localStorage.getItem('snake_records_colormatch');
     if (rec) this.records = Object.assign(this.records, JSON.parse(rec));
 
-    this.lastMode = localStorage.getItem('snake_last_mode');
+    this.lastMode = localStorage.getItem('snake_last_mode_colormatch');
 
     document.getElementById('cfg-sfx').checked = this.config.sfx;
     document.getElementById('cfg-vibe').checked = this.config.vibe;
@@ -744,13 +840,13 @@ class Engine {
     this.config.speed = document.getElementById('cfg-speed').value;
 
     document.documentElement.setAttribute('data-theme', this.config.theme);
-    localStorage.setItem('snake_cfg', JSON.stringify(this.config));
+    localStorage.setItem('snake_cfg_colormatch', JSON.stringify(this.config));
   }
 
   saveRecord(mode, score) {
     if (score > (this.records[mode] || 0)) {
       this.records[mode] = score;
-      localStorage.setItem('snake_records', JSON.stringify(this.records));
+      localStorage.setItem('snake_records_colormatch', JSON.stringify(this.records));
       return true;
     }
     return false;
@@ -782,7 +878,7 @@ class Engine {
       let div = document.createElement('div');
       div.className = 'leader-item';
       let val = key === 'survival' ? this.formatTime(this.records[key]) : this.records[key];
-      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--primary); font-weight:800;">${val}</span>`;
+      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--success); font-weight:900;">${val}</span>`;
       container.appendChild(div);
     }
   }
@@ -811,7 +907,6 @@ class Engine {
       if (this.isPaused || this.isGameOver) return;
 
       let reverse = (this.activeEvent === 'REVERSE CONTROLS');
-
       let p1 = this.snakes[0];
       if (p1) {
         let dir = null;
@@ -871,7 +966,7 @@ class Engine {
     sfx.init();
     this.mode = mode;
     this.lastMode = mode;
-    localStorage.setItem('snake_last_mode', mode);
+    localStorage.setItem('snake_last_mode_colormatch', mode);
 
     this.resetGameState();
     this.isPaused = false;
@@ -881,10 +976,10 @@ class Engine {
     this.stepInterval = baseSpeeds[this.config.speed] || 90;
 
     if (mode === 'pvp') {
-      this.snakes.push(this.createSnake(5, 15, 'RIGHT', '#00ff88', 'Player 1'));
-      this.snakes.push(this.createSnake(25, 15, 'LEFT', '#00e1ff', 'Player 2'));
+      this.snakes.push(this.createSnake(5, 15, 'RIGHT', '#10b981', 'Player 1'));
+      this.snakes.push(this.createSnake(25, 15, 'LEFT', '#06b6d4', 'Player 2'));
     } else {
-      this.snakes.push(this.createSnake(15, 15, 'RIGHT', '#00ff88', 'Player 1'));
+      this.snakes.push(this.createSnake(15, 15, 'RIGHT', '#10b981', 'Player 1'));
     }
 
     if (mode === 'portals') {
@@ -1167,7 +1262,7 @@ class Engine {
 
     snake.isDead = true;
     sfx.playDie();
-    this.createParticles(snake.body[0].x, snake.body[0].y, '#ff0055', 20);
+    this.createParticles(snake.body[0].x, snake.body[0].y, '#ef4444', 20);
 
     if (this.mode !== 'pvp') {
       this.triggerGameOver('GAME OVER');
@@ -1234,8 +1329,8 @@ class Engine {
     let p1 = this.getFreePosition();
     let p2 = this.getFreePosition();
     this.portals = [
-      { x: p1.x, y: p1.y, color: '#00e1ff' },
-      { x: p2.x, y: p2.y, color: '#ff00e1' }
+      { x: p1.x, y: p1.y, color: '#06b6d4' },
+      { x: p2.x, y: p2.y, color: '#a855f7' }
     ];
   }
 
@@ -1286,7 +1381,7 @@ class Engine {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (this.config.grid) {
-      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.03)';
+      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)';
       this.ctx.lineWidth = 1;
       for (let i = 0; i <= this.tileCount; i++) {
         this.ctx.beginPath();
@@ -1302,7 +1397,7 @@ class Engine {
     }
 
     this.obstacles.forEach(o => {
-      this.ctx.fillStyle = '#334155';
+      this.ctx.fillStyle = '#475569';
       this.ctx.beginPath();
       this.ctx.roundRect(o.x * sz + 1, o.y * sz + 1, sz - 2, sz - 2, 4);
       this.ctx.fill();
