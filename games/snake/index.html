@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SNAKE - Ultimate Edition (Zoomed & Enhanced Portals)</title>
+  <title>SNAKE</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,68 +11,77 @@
   
   <style>
     :root {
-      --bg-dark: #05070f;
-      --card-bg: rgba(13, 17, 28, 0.65);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.56), 0 18px 36px -18px rgba(0, 0, 0, 0.65);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg-dark: #020408;
+      --card-bg: rgba(5, 10, 18, 0.85);
+      --card-border: rgba(34, 197, 94, 0.3);
+      --card-shadow: 0 0 30px rgba(34, 197, 94, 0.15), inset 0 0 20px rgba(34, 197, 94, 0.1);
+      --text-main: #22c55e;
+      --text-muted: #15803d;
       
-      --accent-color: #6366f1;
-      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-      --accent-glow: rgba(99, 102, 241, 0.4);
-      --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+      --accent-color: #22c55e;
+      --accent-gradient: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);
+      --accent-glow: rgba(34, 197, 94, 0.6);
+      --accent-hover-gradient: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%);
       
-      --success: #10b981;
+      --success: #22c55e;
       --warning: #f59e0b;
       --danger: #ef4444;
       
-      --radius-lg: 32px;
-      --radius-md: 20px;
-      --radius-sm: 14px;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
       --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       
-      --glass-surface: rgba(255, 255, 255, 0.03);
-      --glass-surface-hover: rgba(255, 255, 255, 0.08);
-      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-surface: rgba(34, 197, 94, 0.05);
+      --glass-surface-hover: rgba(34, 197, 94, 0.15);
+      --glass-border: rgba(34, 197, 94, 0.25);
       
-      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
-      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
-      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(0,0,0,0) 70%);
+      --orb-1: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(21, 128, 61, 0.1) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(74, 222, 128, 0.1) 0%, rgba(0,0,0,0) 70%);
     }
 
-    [data-theme="light"] {
-      --bg-dark: #f1f5f9;
-      --card-bg: rgba(255, 255, 255, 0.75);
-      --card-border: rgba(255, 255, 255, 0.8);
-      --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.15), 0 0 15px rgba(255, 255, 255, 0.7);
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      
-      --accent-color: #4f46e5;
-      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
-      --accent-glow: rgba(79, 70, 229, 0.25);
-      
-      --glass-surface: rgba(255, 255, 255, 0.6);
-      --glass-surface-hover: rgba(255, 255, 255, 0.9);
-      --glass-border: rgba(255, 255, 255, 0.8);
-      
-      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0,0,0,0) 70%);
-      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(0,0,0,0) 70%);
-      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0) 70%);
+    /* CRT MONITOR CONTAINER OVERLAY */
+    .crt-monitor {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99999;
+      overflow: hidden;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
+    /* Scanlines */
+    .crt-monitor::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      z-index: 100000;
+      background-size: 100% 3px, 4px 100%;
+      pointer-events: none;
+    }
+
+    /* Vignette / Curvature shadow */
+    .crt-monitor::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.85) 100%);
+      z-index: 100001;
+      pointer-events: none;
+    }
+
+    /* Screen flicker animation */
+    @keyframes crt-flicker {
+      0% { opacity: 0.97; }
+      50% { opacity: 1; }
+      100% { opacity: 0.96; }
     }
 
     body {
-      background-color: var(--bg-dark);
+      background-color: #010204;
       color: var(--text-main);
       font-family: var(--font);
       min-height: 100vh;
@@ -83,7 +92,8 @@
       overflow-x: hidden;
       padding: 16px;
       position: relative;
-      transition: background-color 0.5s ease, color 0.5s ease;
+      animation: crt-flicker 0.15s infinite;
+      text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
     }
 
     .ambient-bg {
@@ -119,12 +129,12 @@
       background: var(--accent-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 4px 12px var(--accent-glow));
+      filter: drop-shadow(0 0 15px var(--accent-glow));
       line-height: 1.1;
     }
 
-    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
-    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
+    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
+    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 600; }
     .hidden { display: none !important; }
     .text-center { text-align: center; }
     .w-100 { width: 100%; }
@@ -143,6 +153,11 @@
       gap: 20px;
       position: relative;
       z-index: 1;
+      border: 2px solid rgba(34, 197, 94, 0.4);
+      border-radius: 24px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(34, 197, 94, 0.08);
     }
 
     .card {
@@ -194,7 +209,7 @@
     }
 
     .stat-badge .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
-    .stat-badge .value { font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+    .stat-badge .value { font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; text-shadow: 0 0 6px var(--accent-glow); }
 
     /* POWERUP ACTIVE BAR */
     .powerup-status-bar {
@@ -212,37 +227,33 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(34, 197, 94, 0.1);
       border: 1px solid var(--glass-border);
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 800;
       animation: popIn 0.2s ease;
+      color: var(--text-main);
     }
-
-    .powerup-pill.shield { border-color: #06b6d4; color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
-    .powerup-pill.magnet { border-color: #ec4899; color: #ec4899; background: rgba(236, 72, 153, 0.1); }
-    .powerup-pill.ghost  { border-color: #94a3b8; color: #94a3b8; background: rgba(148, 163, 184, 0.1); }
-    .powerup-pill.mult2  { border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
 
     .btn {
       width: 100%;
       background: var(--accent-gradient);
-      color: #fff;
+      color: #000;
       border: none;
       padding: 16px 24px;
       border-radius: var(--radius-md);
       font-size: 0.95rem;
-      font-weight: 800;
-      letter-spacing: 0.3px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 10px 25px -5px var(--accent-glow);
+      box-shadow: 0 0 20px var(--accent-glow);
       position: relative;
       overflow: hidden;
       margin-top: 10px;
@@ -251,7 +262,8 @@
 
     .btn:hover {
       transform: translateY(-3px) scale(1.01);
-      box-shadow: 0 15px 30px -5px var(--accent-glow);
+      box-shadow: 0 0 30px var(--accent-glow);
+      background: #4ade80;
     }
 
     .btn:active { transform: translateY(1px) scale(0.99); }
@@ -265,7 +277,8 @@
     }
     .btn-secondary:hover {
       background: var(--glass-surface-hover);
-      border-color: rgba(255,255,255,0.25);
+      border-color: var(--accent-color);
+      color: #fff;
     }
 
     .btn-danger {
@@ -311,11 +324,12 @@
 
     .mode-card:hover {
       background: var(--glass-surface-hover);
-      border-color: rgba(99, 102, 241, 0.4);
+      border-color: var(--accent-color);
       transform: translateX(4px) translateY(-2px);
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
     }
 
-    .mode-card .title { font-weight: 800; color: var(--text-main); font-size: 0.95rem; }
+    .mode-card .title { font-weight: 800; color: var(--text-main); font-size: 0.95rem; text-shadow: 0 0 5px var(--accent-glow); }
     .mode-card .desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
     .mode-card .arrow-icon { font-size: 1rem; color: var(--text-muted); }
 
@@ -361,7 +375,7 @@
     .event-banner {
       width: 100%;
       background: var(--accent-gradient);
-      color: #fff;
+      color: #000;
       font-weight: 900;
       text-align: center;
       padding: 8px;
@@ -384,10 +398,10 @@
     }
 
     canvas {
-      background: var(--bg-dark);
+      background: #020502;
       border-radius: var(--radius-md);
-      border: 1px solid var(--card-border);
-      box-shadow: var(--card-shadow);
+      border: 2px solid var(--card-border);
+      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), inset 0 0 15px rgba(34, 197, 94, 0.15);
       width: 100%;
       max-width: 460px;
       aspect-ratio: 1/1;
@@ -415,14 +429,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
       transition: all 0.15s ease;
       cursor: pointer;
     }
 
     .dpad-btn:active {
       background: var(--accent-color);
-      color: #fff;
+      color: #000;
       transform: scale(0.95);
     }
 
@@ -435,7 +449,7 @@
     .overlay-modal {
       position: fixed;
       inset: 0;
-      background: rgba(5, 7, 15, 0.85);
+      background: rgba(1, 3, 6, 0.9);
       backdrop-filter: blur(24px);
       display: none;
       flex-direction: column;
@@ -504,6 +518,9 @@
 </head>
 <body>
 
+  <!-- CRT Monitor Layer Overlay (Scanlines, Curved Glass & Vignette) -->
+  <div class="crt-monitor"></div>
+
   <div class="ambient-bg">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -515,7 +532,7 @@
     <!-- ==================== MENU PRINCIPAL ==================== -->
     <div id="screen-main-menu" class="card text-center screen active">
       <h1>Snake</h1>
-      <p class="subtitle">Ultimate Edition (Zoomed & Portals V2)</p>
+      <p class="subtitle">Retro CRT Edition [Terminal v1.0]</p>
 
       <div class="info-card" id="last-played-card" style="display:none; margin-top: 16px;">
         Último Modo: <span id="last-mode-val">-</span>
@@ -602,10 +619,11 @@
         <input type="checkbox" id="cfg-grid" onchange="app.saveConfig()">
       </div>
       <div class="setting-row">
-        <label>Tema Visual</label>
+        <label>Paleta de Fósforo CRT</label>
         <select id="cfg-theme" onchange="app.saveConfig()">
-          <option value="dark">Escuro</option>
-          <option value="light">Claro</option>
+          <option value="amber">Âmbar Clássico</option>
+          <option value="green" selected>Verde Terminal</option>
+          <option value="cyan">Azul Ciano</option>
         </select>
       </div>
       <div class="setting-row">
@@ -774,18 +792,18 @@ class SoundEffects {
 const sfx = new SoundEffects();
 
 const FOOD_TYPES = {
-  NORMAL: { type: 'NORMAL', score: 10, grow: 1, color: '#ec4899', chance: 0.7 },
-  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, color: '#f59e0b', chance: 0.1 },
-  SPEED:  { type: 'SPEED',  score: 20, grow: 1, color: '#06b6d4', chance: 0.07 },
-  SLOW:   { type: 'SLOW',   score: 20, grow: 1, color: '#a855f7', chance: 0.07 },
-  RARE:   { type: 'RARE',   score: 100, grow: 3, color: '#10b981', chance: 0.06 }
+  NORMAL: { type: 'NORMAL', score: 10, grow: 1, chance: 0.7 },
+  GOLDEN: { type: 'GOLDEN', score: 50, grow: 2, chance: 0.1 },
+  SPEED:  { type: 'SPEED',  score: 20, grow: 1, chance: 0.07 },
+  SLOW:   { type: 'SLOW',   score: 20, grow: 1, chance: 0.07 },
+  RARE:   { type: 'RARE',   score: 100, grow: 3, chance: 0.06 }
 };
 
 const POWERUPS = {
-  SHIELD: { type: 'SHIELD', name: 'Escudo', icon: '🛡️', color: '#06b6d4', duration: 8000 },
-  MAGNET: { type: 'MAGNET', name: 'Imã', icon: '🧲', color: '#ec4899', duration: 7000 },
-  GHOST:  { type: 'GHOST',  name: 'Fantasma', icon: '👻', color: '#94a3b8', duration: 6000 },
-  MULT2:  { type: 'MULT2',  name: '2x Score', icon: '⚡', color: '#f59e0b', duration: 10000 }
+  SHIELD: { type: 'SHIELD', name: 'Escudo', icon: '🛡️', duration: 8000 },
+  MAGNET: { type: 'MAGNET', name: 'Imã', icon: '🧲', duration: 7000 },
+  GHOST:  { type: 'GHOST',  name: 'Fantasma', icon: '👻', duration: 6000 },
+  MULT2:  { type: 'MULT2',  name: '2x Score', icon: '⚡', duration: 10000 }
 };
 
 class Engine {
@@ -793,7 +811,6 @@ class Engine {
     this.canvas = document.getElementById('gameCanvas');
     this.ctx = this.canvas.getContext('2d');
     
-    // MAPA COM MAIS ZOOM: Reduzido de 30 para 18 blocos (cobra e itens bem maiores e focados)
     this.gridSize = 600 / 18; 
     this.tileCount = 18;
     
@@ -801,7 +818,7 @@ class Engine {
       sfx: true,
       vibe: true,
       grid: true,
-      theme: 'dark',
+      theme: 'green',
       speed: 'normal'
     };
 
@@ -829,6 +846,63 @@ class Engine {
     this.bindEvents();
   }
 
+  getThemeColors() {
+    if (this.config.theme === 'amber') {
+      return {
+        main: '#f59e0b',
+        muted: '#b45309',
+        gradient: 'linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%)',
+        glow: 'rgba(245, 158, 11, 0.6)',
+        surface: 'rgba(245, 158, 11, 0.05)',
+        surfaceHover: 'rgba(245, 158, 11, 0.15)',
+        border: 'rgba(245, 158, 11, 0.3)',
+        food: '#f59e0b',
+        snake1: '#fbbf24',
+        snake2: '#d97706'
+      };
+    } else if (this.config.theme === 'cyan') {
+      return {
+        main: '#06b6d4',
+        muted: '#0e7490',
+        gradient: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%)',
+        glow: 'rgba(6, 182, 212, 0.6)',
+        surface: 'rgba(6, 182, 212, 0.05)',
+        surfaceHover: 'rgba(6, 182, 212, 0.15)',
+        border: 'rgba(6, 182, 212, 0.3)',
+        food: '#22d3ee',
+        snake1: '#06b6d4',
+        snake2: '#0891b2'
+      };
+    } else {
+      // green (default)
+      return {
+        main: '#22c55e',
+        muted: '#15803d',
+        gradient: 'linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%)',
+        glow: 'rgba(34, 197, 94, 0.6)',
+        surface: 'rgba(34, 197, 94, 0.05)',
+        surfaceHover: 'rgba(34, 197, 94, 0.15)',
+        border: 'rgba(34, 197, 94, 0.3)',
+        food: '#4ade80',
+        snake1: '#22c55e',
+        snake2: '#16a34a'
+      };
+    }
+  }
+
+  applyThemeCSS() {
+    let t = this.getThemeColors();
+    let root = document.documentElement;
+    root.style.setProperty('--text-main', t.main);
+    root.style.setProperty('--text-muted', t.muted);
+    root.style.setProperty('--accent-gradient', t.gradient);
+    root.style.setProperty('--accent-glow', t.glow);
+    root.style.setProperty('--card-border', t.border);
+    root.style.setProperty('--glass-surface', t.surface);
+    root.style.setProperty('--glass-surface-hover', t.surfaceHover);
+    root.style.setProperty('--glass-border', t.border);
+  }
+
   resetGameState() {
     this.snakes = [];
     this.foods = [];
@@ -852,13 +926,13 @@ class Engine {
   }
 
   loadLocalStorage() {
-    let cfg = localStorage.getItem('snake_cfg_zoom_v2');
+    let cfg = localStorage.getItem('snake_crt_cfg_v1');
     if (cfg) this.config = Object.assign(this.config, JSON.parse(cfg));
     
-    let rec = localStorage.getItem('snake_records_zoom_v2');
+    let rec = localStorage.getItem('snake_crt_rec_v1');
     if (rec) this.records = Object.assign(this.records, JSON.parse(rec));
 
-    this.lastMode = localStorage.getItem('snake_last_mode_zoom_v2');
+    this.lastMode = localStorage.getItem('snake_crt_last_mode_v1');
 
     document.getElementById('cfg-sfx').checked = this.config.sfx;
     document.getElementById('cfg-vibe').checked = this.config.vibe;
@@ -871,7 +945,7 @@ class Engine {
       document.getElementById('last-mode-val').innerText = this.lastMode.toUpperCase();
     }
 
-    document.documentElement.setAttribute('data-theme', this.config.theme);
+    this.applyThemeCSS();
   }
 
   saveConfig() {
@@ -881,14 +955,14 @@ class Engine {
     this.config.theme = document.getElementById('cfg-theme').value;
     this.config.speed = document.getElementById('cfg-speed').value;
 
-    document.documentElement.setAttribute('data-theme', this.config.theme);
-    localStorage.setItem('snake_cfg_zoom_v2', JSON.stringify(this.config));
+    this.applyThemeCSS();
+    localStorage.setItem('snake_crt_cfg_v1', JSON.stringify(this.config));
   }
 
   saveRecord(mode, score) {
     if (score > (this.records[mode] || 0)) {
       this.records[mode] = score;
-      localStorage.setItem('snake_records_zoom_v2', JSON.stringify(this.records));
+      localStorage.setItem('snake_crt_rec_v1', JSON.stringify(this.records));
       return true;
     }
     return false;
@@ -920,7 +994,7 @@ class Engine {
       let div = document.createElement('div');
       div.className = 'leader-item';
       let val = key === 'survival' ? this.formatTime(this.records[key]) : this.records[key];
-      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--success); font-weight:900;">${val}</span>`;
+      div.innerHTML = `<span>${labels[key]}</span> <span style="color:var(--text-main); font-weight:900;">${val}</span>`;
       container.appendChild(div);
     }
   }
@@ -1008,7 +1082,7 @@ class Engine {
     sfx.init();
     this.mode = mode;
     this.lastMode = mode;
-    localStorage.setItem('snake_last_mode_zoom_v2', mode);
+    localStorage.setItem('snake_crt_last_mode_v1', mode);
 
     this.resetGameState();
     this.isPaused = false;
@@ -1017,11 +1091,12 @@ class Engine {
     let baseSpeeds = { slow: 140, normal: 110, fast: 80 };
     this.stepInterval = baseSpeeds[this.config.speed] || 110;
 
+    let t = this.getThemeColors();
     if (mode === 'pvp') {
-      this.snakes.push(this.createSnake(3, 9, 'RIGHT', '#10b981', 'Player 1'));
-      this.snakes.push(this.createSnake(14, 9, 'LEFT', '#06b6d4', 'Player 2'));
+      this.snakes.push(this.createSnake(3, 9, 'RIGHT', t.snake1, 'Player 1'));
+      this.snakes.push(this.createSnake(14, 9, 'LEFT', t.snake2, 'Player 2'));
     } else {
-      this.snakes.push(this.createSnake(9, 9, 'RIGHT', '#10b981', 'Player 1'));
+      this.snakes.push(this.createSnake(9, 9, 'RIGHT', t.snake1, 'Player 1'));
     }
 
     if (mode === 'portals') {
@@ -1148,8 +1223,6 @@ class Engine {
         if (head.y >= this.tileCount) head.y = 0;
       }
 
-      // NOVO SISTEMA DE PORTAIS APRIMORADO (V2)
-      // Cada portal tem id e linkedId (par 1-2). Ao entrar em A, você sai em B preservando momentum ou saindo na direção natural do portal de saída!
       if (this.mode === 'portals' && this.portals.length >= 2) {
         let portalHit = this.portals.find(p => p.x === head.x && p.y === head.y);
         if (portalHit) {
@@ -1158,12 +1231,10 @@ class Engine {
             sfx.playPortal();
             this.createParticles(portalHit.x, portalHit.y, portalHit.color, 12);
             
-            // Teleporta a cabeça para o destino e ajusta a direção correspondente se necessário
             head.x = targetPortal.x;
             head.y = targetPortal.y;
             s.direction = targetPortal.outDir;
             
-            // Pequeno avanço instantâneo na direção de saída para evitar loop infinito
             switch (s.direction) {
               case 'UP': head.y -= 1; break;
               case 'DOWN': head.y += 1; break;
@@ -1214,12 +1285,13 @@ class Engine {
             this.timeAttackLeft += 2.0;
           }
 
-          this.createParticles(head.x, head.y, f.typeInfo.color);
+          let t = this.getThemeColors();
+          this.createParticles(head.x, head.y, t.main);
           this.foods.splice(i, 1);
           this.spawnFood();
 
           if (this.mode === 'portals' && Math.random() < 0.5) {
-            this.spawnAdvancedPortals(); // Move os portais dinamicamente para manter o desafio alto
+            this.spawnAdvancedPortals();
           }
 
           if (this.activeEvent === 'SHRINK' && s.body.length > 3) {
@@ -1362,16 +1434,12 @@ class Engine {
       let rand = Math.random();
       let selectedType = FOOD_TYPES.NORMAL;
 
-      if (this.activeEvent === 'GOLDEN FOOD') {
-        selectedType = FOOD_TYPES.GOLDEN;
-      } else {
-        let cum = 0;
-        for (let k in FOOD_TYPES) {
-          cum += FOOD_TYPES[k].chance;
-          if (rand <= cum) {
-            selectedType = FOOD_TYPES[k];
-            break;
-          }
+      let cum = 0;
+      for (let k in FOOD_TYPES) {
+        cum += FOOD_TYPES[k].chance;
+        if (rand <= cum) {
+          selectedType = FOOD_TYPES[k];
+          break;
         }
       }
 
@@ -1386,24 +1454,24 @@ class Engine {
     this.powerupsOnGrid.push({ x: pos.x, y: pos.y, info: chosen });
   }
 
-  // PORTAIS V2: Par de portais Alfa e Beta conectados bidirecionalmente com cores vibrantes e direções de saída
   spawnAdvancedPortals() {
     let p1Pos = this.getFreePosition();
     let p2Pos = this.getFreePosition();
     const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+    let t = this.getThemeColors();
     
     this.portals = [
       { 
         id: 1, linkedId: 2, 
         x: p1Pos.x, y: p1Pos.y, 
-        color: '#06b6d4', 
+        color: t.main, 
         label: 'A',
         outDir: dirs[Math.floor(Math.random() * dirs.length)]
       },
       { 
         id: 2, linkedId: 1, 
         x: p2Pos.x, y: p2Pos.y, 
-        color: '#a855f7', 
+        color: t.muted, 
         label: 'B',
         outDir: dirs[Math.floor(Math.random() * dirs.length)]
       }
@@ -1454,10 +1522,11 @@ class Engine {
 
   render() {
     let sz = this.gridSize;
+    let t = this.getThemeColors();
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (this.config.grid) {
-      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+      this.ctx.strokeStyle = t.border;
       this.ctx.lineWidth = 1;
       for (let i = 0; i <= this.tileCount; i++) {
         this.ctx.beginPath();
@@ -1473,13 +1542,12 @@ class Engine {
     }
 
     this.obstacles.forEach(o => {
-      this.ctx.fillStyle = '#475569';
+      this.ctx.fillStyle = t.muted;
       this.ctx.beginPath();
       this.ctx.roundRect(o.x * sz + 2, o.y * sz + 2, sz - 4, sz - 4, 6);
       this.ctx.fill();
     });
 
-    // RENDERIZAÇÃO DOS PORTAIS APRIMORADOS COM ANIMAÇÃO DE PULSO E Rótulo
     this.portals.forEach(p => {
       let cx = p.x * sz + sz / 2;
       let cy = p.y * sz + sz / 2;
@@ -1492,14 +1560,12 @@ class Engine {
       this.ctx.arc(cx, cy, Math.max(8, radiusPulse), 0, Math.PI * 2);
       this.ctx.fill();
 
-      // Anel interno do portal
-      this.ctx.fillStyle = '#ffffff';
+      this.ctx.fillStyle = '#000000';
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, 6, 0, Math.PI * 2);
       this.ctx.fill();
 
-      // Letra indicativa do portal (A / B)
-      this.ctx.fillStyle = '#000000';
+      this.ctx.fillStyle = p.color;
       this.ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
@@ -1508,8 +1574,8 @@ class Engine {
     });
 
     this.foods.forEach(f => {
-      this.ctx.fillStyle = f.typeInfo.color;
-      this.ctx.shadowColor = f.typeInfo.color;
+      this.ctx.fillStyle = t.food;
+      this.ctx.shadowColor = t.food;
       this.ctx.shadowBlur = 14;
       this.ctx.beginPath();
       this.ctx.arc(f.x * sz + sz / 2, f.y * sz + sz / 2, sz / 2 - 4, 0, Math.PI * 2);
@@ -1518,8 +1584,8 @@ class Engine {
     });
 
     this.powerupsOnGrid.forEach(pw => {
-      this.ctx.fillStyle = pw.info.color;
-      this.ctx.shadowColor = pw.info.color;
+      this.ctx.fillStyle = t.main;
+      this.ctx.shadowColor = t.main;
       this.ctx.shadowBlur = 14;
       this.ctx.beginPath();
       this.ctx.roundRect(pw.x * sz + 4, pw.y * sz + 4, sz - 8, sz - 8, 8);
@@ -1579,7 +1645,6 @@ class Engine {
     }
   }
 
-  // MOSTRA VISUALMENTE SE TU ESTÁ COM ALGUM POWER-UP ATIVO E O TEMPO RESTANTE
   updatePowerupStatusBar() {
     let bar = document.getElementById('powerup-status-bar');
     bar.innerHTML = '';
