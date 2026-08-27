@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CODE BREAKER - Terminal OS v4.0</title>
+    <style>
+        :root {
+            --crt-bg: #050b05;
+            --crt-panel: #0a140a;
+            --green: #00ff66;
+            --green-dim: #008833;
+            --green-glow: rgba(0, 255, 102, 0.4);
+            --red: #ff3333;
+            --red-glow: rgba(255, 51, 51, 0.4);
+            --yellow: #ffcc00;
+            --border-color: #004411;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* PERMITIR SELEÇÃO E NAVEGAÇÃO APENAS NO INPUT */
+        input.code-input {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        body {
+            background-color: #000;
+            color: var(--green);
+            font-family: var(--font-mono);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .crt-container {
+            width: 100%;
+            max-width: 900px;
+            height: 100vh;
+            max-height: 700px;
+            background-color: var(--crt-bg);
+            border: 2px solid var(--green-dim);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.15), inset 0 0 15px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            padding: 12px;
+        }
+
+        .crt-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 51%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 101;
+        }
+
+        .flicker {
+            animation: flicker 0.15s infinite;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 255, 102, 0.015);
+            pointer-events: none;
+            z-index: 102;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+
+        .glitch-flash {
+            animation: flash 0.2s ease-out;
+        }
+
+        @keyframes flash {
+            0% { background-color: var(--green); opacity: 0.8; }
+            100% { background-color: var(--crt-bg); opacity: 1; }
+        }
+
+        .glitch-red {
+            animation: flash-red 0.3s ease-out;
+        }
+
+        @keyframes flash-red {
+            0% { background-color: var(--red); opacity: 0.5; }
+            100% { background-color: var(--crt-bg); opacity: 1; }
+        }
+
+        .text-glow {
+            text-shadow: 0 0 6px var(--green-glow);
+        }
+
+        .text-red {
+            color: var(--red);
+            text-shadow: 0 0 6px var(--red-glow);
+        }
+
+        .text-yellow {
+            color: var(--yellow);
+            text-shadow: 0 0 6px rgba(255, 204, 0, 0.4);
+        }
+
+        .text-dim {
+            color: var(--green-dim);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--green-dim);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        #menu-screen {
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .terminal-logo {
+            font-size: 1.2rem;
+            white-space: pre;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 340px;
+        }
+
+        .btn {
+            background: var(--crt-panel);
+            border: 1px solid var(--green);
+            color: var(--green);
+            padding: 10px 15px;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-shadow: 0 0 4px var(--green-glow);
+            box-shadow: inset 0 0 5px rgba(0, 255, 102, 0.1);
+            transition: all 0.1s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn:hover, .btn:focus {
+            background: var(--green);
+            color: #000;
+            box-shadow: 0 0 10px var(--green);
+            outline: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 10px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        @media (max-width: 650px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+                overflow-y: auto;
+            }
+        }
+
+        .panel {
+            background: var(--crt-panel);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .panel-title {
+            font-size: 0.75rem;
+            color: var(--green-dim);
+            border-bottom: 1px dashed var(--border-color);
+            margin-bottom: 6px;
+            padding-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .code-display {
+            font-size: 1.8rem;
+            letter-spacing: 6px;
+            text-align: center;
+            padding: 10px 0;
+            background: #000;
+            border: 1px solid var(--green-dim);
+            margin-bottom: 8px;
+        }
+
+        .hints-list {
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            max-height: 140px;
+        }
+
+        .hint-item {
+            padding: 2px 0;
+            border-bottom: 1px rgba(0, 255, 102, 0.1) solid;
+        }
+
+        .history-list {
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 255, 102, 0.03);
+            padding: 4px 6px;
+            border-left: 2px solid var(--green-dim);
+        }
+
+        .input-panel {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #000;
+            border: 1px solid var(--green);
+            padding: 6px 10px;
+        }
+
+        .prompt-symbol {
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        .code-input {
+            background: transparent;
+            border: none;
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            width: 100%;
+            outline: none;
+            text-transform: uppercase;
+            caret-color: var(--green);
+        }
+
+        .virtual-keyboard {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            margin-top: 4px;
+        }
+
+        .vk-btn {
+            background: var(--crt-panel);
+            border: 1px solid var(--green-dim);
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 6px 0;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .vk-btn:active {
+            background: var(--green);
+            color: #000;
+        }
+
+        .terminal-log {
+            height: 60px;
+            background: #000;
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            margin-top: 6px;
+        }
+
+        .modal {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 11, 5, 0.95);
+            z-index: 50;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-box {
+            border: 2px solid var(--green);
+            background: var(--crt-bg);
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 0 15px var(--green-glow);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.8rem;
+            margin: 10px 0;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 2px;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 4px;
+        }
+
+        .audio-toggle {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="crt-container" id="crt-frame">
+    <div class="crt-overlay"></div>
+    <div class="scanline"></div>
+    <div class="flicker"></div>
+
+    <!-- TELA PRINCIPAL / MENU -->
+    <div id="menu-screen" class="screen active">
+        <div class="header-bar text-glow">
+            <span>TERMINAL OS v4.0</span>
+            <span id="audio-status" class="audio-toggle">[SOM: DESL]</span>
+        </div>
+
+        <div class="terminal-logo text-glow">
+  ___ ___  ___  ___   ___ ___ ___   _  _____ ___ 
+ / __/ _ \|   \/ __| | _ )_  / __| / \|_   _| _ \
+| (_| (_) | |) \__ \ | _ \/ /| _| / _ \ | | |   /
+ \___\___/|___/|___/ |___/___|___/_/ \_\|_| |_|_\
+        </div>
+
+        <div style="font-size: 0.85rem;" class="text-glow">
+            > INICIALIZAÇÃO DO SISTEMA CONCLUÍDA.<br>
+            > PROTOCOLO DE SEGURANÇA: <span class="text-yellow">ATIVO</span><br>
+            > CRIPTOGRAFIA: <span class="text-red">██████████</span>
+        </div>
+
+        <div class="menu-options">
+            <button class="btn" onclick="openModeSelect()">[ INICIAR INVASÃO ] <span>></span></button>
+            <button class="btn" onclick="openScreen('stats-screen')">[ BANCO DE DADOS ] <span>></span></button>
+            <button class="btn" onclick="openScreen('instructions-screen')">[ MANUAL DO USUÁRIO ] <span>></span></button>
+        </div>
+
+        <div style="font-size: 0.75rem;" class="text-dim">
+            MAIOR NÍVEL: <span id="menu-best-level" class="text-glow">1</span> | RECORDE PONTOS: <span id="menu-best-score" class="text-glow">0</span>
+        </div>
+    </div>
+
+    <!-- SELEÇÃO DE MODO -->
+    <div id="mode-screen" class="screen">
+        <div class="header-bar text-glow">
+            <span>SELECIONE O PROTOCOLO</span>
+            <button class="btn btn-small" onclick="openScreen('menu-screen')">VOLTAR</button>
+        </div>
+        <div class="menu-options" style="margin: auto;">
+            <button class="btn" onclick="initGame('CLASSIC')">CLÁSSICO <span>[NÍVEIS]</span></button>
+            <button class="btn" onclick="initGame('TIME_ATTACK')">TIME ATTACK <span>[60s]</span></button>
+            <button class="btn" onclick="initGame('ENDLESS')">INFINITO <span>[SEM FIM]</span></button>
+            <button class="btn" onclick="initGame('ONE_TRY')">TENTATIVA ÚNICA <span>[EXILE]</span></button>
+            <button class="btn" onclick="initGame('NO_HINT')">SEM DICAS <span>[PURO]</span></button>
+            <button class="btn" onclick="initGame('DAILY')">CÓDIGO DIÁRIO <span>[DATA]</span></button>
+        </div>
+    </div>
+
+    <!-- MANUAL DO JOGO -->
+    <div id="instructions-screen" class="screen">
+        <div class="header-bar text-glow">
+            <span>MANUAL DE OPERAÇÕES</span>
+            <button class="btn btn-small" onclick="openScreen('menu-screen')">VOLTAR</button>
+        </div>
+        <div style="font-size: 0.8rem; line-height: 1.4; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 5px;">
+            <p>> <strong class="text-glow">OBJETIVO:</strong> Decodificar a senha secreta do sistema antes que o tempo ou as tentativas acabem.</p>
+            <p>> <strong class="text-glow">AVALIAÇÃO DAS TENTATIVAS:</strong></p>
+            <p>🟩 = Caractere correto na posição correta.</p>
+            <p>🟨 = Caractere existe na senha, mas está na posição errada.</p>
+            <p>⬛ = Caractere não existe na senha.</p>
+            <p>> <strong class="text-glow">DICAS:</strong> Use dedução lógica baseada nos relatórios iniciais. Dicas extras deduzem pontuação.</p>
+            <p>> <strong class="text-glow">NÍVEIS AVANÇADOS:</strong> Níveis maiores contêm códigos mais longos e incluem letras maiúsculas e símbolos (!@#$%).</p>
+        </div>
+    </div>
+
+    <!-- TELA DE ESTATÍSTICAS -->
+    <div id="stats-screen" class="screen">
+        <div class="header-bar text-glow">
+            <span>REGISTROS DO JOGADOR</span>
+            <button class="btn btn-small" onclick="openScreen('menu-screen')">VOLTAR</button>
+        </div>
+        <div class="stats-grid" id="stats-container">
+        </div>
+        <div class="action-bar">
+            <button class="btn btn-small text-red" onclick="resetData()">FORMATAR DADOS</button>
+        </div>
+    </div>
+
+    <!-- TELA DO JOGO (GAMEPLAY) -->
+    <div id="game-screen" class="screen">
+        <div class="header-bar">
+            <span>MODO: <span id="game-mode-display" class="text-glow">CLÁSSICO</span></span>
+            <span>NÍVEL: <span id="game-level-display" class="text-glow">01</span></span>
+            <span>TEMPO: <span id="game-timer-display" class="text-glow">00:00.0</span></span>
+            <span>PONTOS: <span id="game-score-display" class="text-glow">0000</span></span>
+        </div>
+
+        <div class="game-grid">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="panel">
+                    <div class="panel-title">CÓDIGO PROTEGIDO</div>
+                    <div class="code-display text-glow" id="target-code-masked">[ ? ? ? ? ]</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                        <span>TENTATIVAS: <span id="attempts-left" class="text-yellow">08/08</span></span>
+                        <span>COMBO: <span id="streak-counter" class="text-glow">0</span></span>
+                    </div>
+                </div>
+
+                <div class="panel" style="flex-grow: 1;">
+                    <div class="panel-title" style="display: flex; justify-content: space-between;">
+                        <span>ANÁLISE / DICAS</span>
+                        <span id="buy-hint-btn" style="cursor: pointer;" class="text-yellow" onclick="buyExtraHint()">[+ DICA (-100PTS)]</span>
+                    </div>
+                    <div class="hints-list" id="hints-container">
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">LOG DE TENTATIVAS</div>
+                <div class="history-list" id="history-container">
+                </div>
+            </div>
+
+            <div class="input-panel">
+                <div class="input-line">
+                    <span class="prompt-symbol">></span>
+                    <input type="text" id="guess-input" class="code-input" autocomplete="off" spellcheck="false" maxlength="8">
+                    <button class="btn btn-small" onclick="submitGuess()">ENVIAR</button>
+                </div>
+                <div class="virtual-keyboard" id="vk-container">
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-log" id="terminal-log">
+            <div>> SISTEMA PRONTO. AGUARDANDO ENTRADA...</div>
+        </div>
+    </div>
+
+    <!-- MODAL FINAL -->
+    <div id="end-modal" class="modal">
+        <div class="modal-box">
+            <div class="header-bar" style="margin:0;">
+                <span id="modal-title" class="text-glow">ACESSO CONCEDIDO</span>
+            </div>
+            <div style="text-align: center; margin: 10px 0;">
+                <div id="modal-status-text" class="text-glow" style="font-size: 1.2rem;">DECODIFICAÇÃO BEM-SUCEDIDA</div>
+                <div style="margin-top: 8px; font-size: 0.85rem;">CÓDIGO SECRETO ERA: <strong id="modal-secret-code" class="text-yellow">----</strong></div>
+            </div>
+            <div class="stats-grid">
+                <div class="stats-item"><span>PONTOS BASE:</span><span id="modal-base-score">0</span></div>
+                <div class="stats-item"><span>BÔNUS TEMPO:</span><span id="modal-time-bonus">0</span></div>
+                <div class="stats-item"><span>BÔNUS TENTATIVAS:</span><span id="modal-attempt-bonus">0</span></div>
+                <div class="stats-item"><span>PENALIDADE DICAS:</span><span id="modal-hint-penalty">0</span></div>
+                <div class="stats-item" style="grid-column: 1/-1; border-top: 1px solid var(--green); padding-top: 4px;">
+                    <strong>PONTUAÇÃO TOTAL:</strong><strong id="modal-total-score" class="text-glow">0</strong>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="btn" id="modal-primary-btn" onclick="handleModalNext()">PRÓXIMO NÍVEL</button>
+                <button class="btn" onclick="openScreen('menu-screen')">MENU PRINCIPAL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const AudioSys = {
+    ctx: null,
+    enabled: false,
+
+    init() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) this.ctx = new AudioContext();
+        }
+    },
+
+    toggle() {
+        this.enabled = !this.enabled;
+        if (this.enabled) this.init();
+        document.getElementById('audio-status').innerText = `[SOM: ${this.enabled ? 'LIG' : 'DESL'}]`;
+        if (this.enabled) this.beep(800, 'sine', 0.05);
+    },
+
+    beep(freq = 440, type = 'sine', duration = 0.05) {
+        if (!this.enabled || !this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+    },
+
+    playKey() { this.beep(1200, 'square', 0.02); },
+    playSuccess() { 
+        this.beep(523.25, 'triangle', 0.1); 
+        setTimeout(() => this.beep(659.25, 'triangle', 0.1), 100);
+        setTimeout(() => this.beep(783.99, 'triangle', 0.2), 200);
+    },
+    playError() {
+        this.beep(150, 'sawtooth', 0.15);
+        setTimeout(() => this.beep(100, 'sawtooth', 0.2), 100);
+    }
+};
+
+document.getElementById('audio-status').addEventListener('click', () => AudioSys.toggle());
+
+const CONFIG = {
+    CHAR_SETS: {
+        NUMBERS: '0123456789',
+        ALPHA: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        ALPHANUM: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        SYMBOLS: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%'
+    }
+};
+
+let gameState = {
+    mode: 'CLASSIC',
+    level: 1,
+    secretCode: '',
+    codeLength: 4,
+    allowedChars: CONFIG.CHAR_SETS.NUMBERS,
+    allowDuplicates: false,
+    maxAttempts: 8,
+    attemptsUsed: 0,
+    hints: [],
+    hintsBought: 0,
+    history: [],
+    score: 0,
+    streak: 0,
+    startTime: 0,
+    elapsedTime: 0,
+    timerInterval: null,
+    isGameOver: false
+};
+
+let stats = {
+    solved: 0,
+    attempts: 0,
+    totalTime: 0,
+    bestScore: 0,
+    bestTime: Infinity,
+    highestLevel: 1,
+    streak: 0
+};
+
+function loadStats() {
+    const saved = localStorage.getItem('CODE_BREAKER_STATS');
+    if (saved) {
+        try { stats = { ...stats, ...JSON.parse(saved) }; } catch(e){}
+    }
+    updateMenuStats();
+}
+
+function saveStats() {
+    localStorage.setItem('CODE_BREAKER_STATS', JSON.stringify(stats));
+    updateMenuStats();
+}
+
+function resetData() {
+    if (confirm("Deseja apagar todos os registros do terminal? Ação irreversível.")) {
+        localStorage.removeItem('CODE_BREAKER_STATS');
+        stats = { solved: 0, attempts: 0, totalTime: 0, bestScore: 0, bestTime: Infinity, highestLevel: 1, streak: 0 };
+        saveStats();
+        renderStatsScreen();
+        logTerminal("DADOS FORMATADOS COM SUCESSO.");
+    }
+}
+
+function updateMenuStats() {
+    document.getElementById('menu-best-level').innerText = stats.highestLevel;
+    document.getElementById('menu-best-score').innerText = stats.bestScore;
+}
+
+function openScreen(screenId) {
+    AudioSys.playKey();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'stats-screen') renderStatsScreen();
+    if (screenId === 'game-screen') focusInput();
+}
+
+function openModeSelect() {
+    openScreen('mode-screen');
+}
+
+function logTerminal(msg) {
+    const log = document.getElementById('terminal-log');
+    const line = document.createElement('div');
+    line.innerText = `> ${msg}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+}
+
+function triggerGlitch(isRed = false) {
+    const frame = document.getElementById('crt-frame');
+    const cls = isRed ? 'glitch-red' : 'glitch-flash';
+    frame.classList.add(cls);
+    setTimeout(() => frame.classList.remove(cls), 300);
+}
+
+function seededRandom(seed) {
+    let x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+function getLevelConfig(level, mode) {
+    let length = 4;
+    let chars = CONFIG.CHAR_SETS.NUMBERS;
+    let dupes = false;
+    let attempts = 8;
+
+    if (mode === 'DAILY') {
+        const today = new Date().toISOString().slice(0,10).replace(/-/g, '');
+        let seed = parseInt(today, 10);
+        return { length: 5, chars: CONFIG.CHAR_SETS.NUMBERS, dupes: false, attempts: 7, seed };
+    }
+
+    if (level === 1) { length = 4; attempts = 10; }
+    else if (level === 2) { length = 4; attempts = 8; }
+    else if (level === 3) { length = 5; attempts = 8; }
+    else if (level === 4) { length = 5; dupes = true; attempts = 8; }
+    else if (level === 5) { length = 6; attempts = 7; }
+    else if (level === 6) { length = 6; chars = CONFIG.CHAR_SETS.ALPHANUM; attempts = 8; }
+    else if (level === 7) { length = 7; chars = CONFIG.CHAR_SETS.ALPHANUM; attempts = 7; }
+    else { length = 8; chars = CONFIG.CHAR_SETS.SYMBOLS; dupes = true; attempts = 6; }
+
+    if (mode === 'ONE_TRY') attempts = 1;
+    if (mode === 'TIME_ATTACK') attempts = 12;
+
+    return { length, chars, dupes, attempts };
+}
+
+function generateSecretCode(cfg) {
+    let code = '';
+    let available = cfg.chars.split('');
+    
+    for (let i = 0; i < cfg.length; i++) {
+        let randIdx;
+        if (cfg.seed) {
+            randIdx = Math.floor(seededRandom(cfg.seed + i) * available.length);
+        } else {
+            randIdx = Math.floor(Math.random() * available.length);
+        }
+        
+        let char = available[randIdx];
+        code += char;
+        if (!cfg.dupes) {
+            available.splice(randIdx, 1);
+        }
+    }
+    return code;
+}
+
+function generateHints(code, cfg) {
+    if (gameState.mode === 'NO_HINT') return ["> DICAS DESATIVADAS NESTE PROTOCOLO."];
+
+    let hints = [];
+    let isNumeric = /^\d+$/.test(code);
+
+    hints.push(`O código contém ${code.length} caracteres.`);
+    hints.push(cfg.dupes ? "Os caracteres PODEM se repetir." : "Nenhum caractere se repete.");
+
+    if (isNumeric) {
+        let nums = code.split('').map(Number);
+        let sum = nums.reduce((a,b) => a + b, 0);
+        let evens = nums.filter(n => n % 2 === 0).length;
+
+        hints.push(`A soma de todos os dígitos é igual a ${sum}.`);
+        hints.push(`Existem exatamente ${evens} número(s) par(es).`);
+
+        if (nums[0] > nums[nums.length - 1]) {
+            hints.push(`O primeiro dígito é MAIOR que o último.`);
+        } else if (nums[0] < nums[nums.length - 1]) {
+            hints.push(`O primeiro dígito é MENOR que o último.`);
+        } else {
+            hints.push(`O primeiro e o último dígitos são IGUAIS.`);
+        }
+
+        let randPos = Math.floor(Math.random() * code.length);
+        if (nums[randPos] % 2 === 0) {
+            hints.push(`O dígito na posição ${randPos + 1} é PAR.`);
+        } else {
+            hints.push(`O dígito na posição ${randPos + 1} é ÍMPAR.`);
+        }
+    } else {
+        let hasLetters = /[A-Z]/.test(code);
+        let hasNumbers = /\d/.test(code);
+        let hasSymbols = /[!@#$%]/.test(code);
+
+        if (hasLetters && hasNumbers) hints.push(`O código contém letras e números.`);
+        if (hasSymbols) hints.push(`Contém símbolos de segurança especiais.`);
+
+        let randPos = Math.floor(Math.random() * code.length);
+        hints.push(`O caractere na posição ${randPos + 1} é '${code[randPos]}'.`);
+    }
+
+    return hints.map(h => `> ${h}`);
+}
+
+function generateDynamicExtraHint(code) {
+    let unrevealed = [];
+    for(let i=0; i<code.length; i++) unrevealed.push(i);
+    let pos = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    return `> EXTRA: A posição ${pos + 1} contém o caractere '${code[pos]}'.`;
+}
+
+function focusInput() {
+    setTimeout(() => {
+        const input = document.getElementById('guess-input');
+        if (input && document.getElementById('game-screen').classList.contains('active')) {
+            input.focus();
+        }
+    }, 50);
+}
+
+function initGame(mode) {
+    gameState.mode = mode;
+    gameState.level = (mode === 'CLASSIC' || mode === 'ENDLESS') ? gameState.level : 1;
+    if (mode === 'DAILY') gameState.level = 1;
+    
+    startLevel();
+    openScreen('game-screen');
+}
+
+function startLevel() {
+    const cfg = getLevelConfig(gameState.level, gameState.mode);
+    
+    gameState.secretCode = generateSecretCode(cfg);
+    gameState.codeLength = cfg.length;
+    gameState.allowedChars = cfg.chars;
+    gameState.allowDuplicates = cfg.dupes;
+    gameState.maxAttempts = cfg.attempts;
+    gameState.attemptsUsed = 0;
+    gameState.hintsBought = 0;
+    gameState.history = [];
+    gameState.isGameOver = false;
+    gameState.hints = generateHints(gameState.secretCode, cfg);
+    gameState.startTime = Date.now();
+    gameState.elapsedTime = 0;
+
+    const translateMode = {
+        'CLASSIC': 'CLÁSSICO',
+        'TIME_ATTACK': 'TIME ATTACK',
+        'ENDLESS': 'INFINITO',
+        'ONE_TRY': 'TENTATIVA ÚNICA',
+        'NO_HINT': 'SEM DICAS',
+        'DAILY': 'DIÁRIO'
+    };
+
+    document.getElementById('game-mode-display').innerText = translateMode[gameState.mode] || gameState.mode;
+    document.getElementById('game-level-display').innerText = String(gameState.level).padStart(2, '0');
+    document.getElementById('game-score-display').innerText = String(gameState.score).padStart(5, '0');
+    document.getElementById('target-code-masked').innerText = `[ ${'? '.repeat(gameState.codeLength).trim()} ]`;
+    document.getElementById('attempts-left').innerText = `${gameState.maxAttempts - gameState.attemptsUsed}/${gameState.maxAttempts}`;
+    document.getElementById('streak-counter').innerText = gameState.streak;
+
+    const input = document.getElementById('guess-input');
+    input.value = '';
+    input.maxLength = gameState.codeLength;
+    focusInput();
+
+    renderHints();
+    renderHistory();
+    setupVirtualKeyboard();
+    startTimer();
+
+    logTerminal(`INVASÃO INICIADA - NÍVEL ${gameState.level}`);
+}
+
+function startTimer() {
+    clearInterval(gameState.timerInterval);
+    gameState.timerInterval = setInterval(() => {
+        gameState.elapsedTime = (Date.now() - gameState.startTime) / 1000;
+        
+        if (gameState.mode === 'TIME_ATTACK') {
+            let remain = Math.max(0, 60 - gameState.elapsedTime);
+            document.getElementById('game-timer-display').innerText = remain.toFixed(1) + 's';
+            if (remain <= 0) endGame(false, "TEMPO ESGOTADO");
+        } else {
+            let mins = Math.floor(gameState.elapsedTime / 60);
+            let secs = (gameState.elapsedTime % 60).toFixed(1);
+            document.getElementById('game-timer-display').innerText = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(4, '0')}`;
+        }
+    }, 100);
+}
+
+function stopTimer() {
+    clearInterval(gameState.timerInterval);
+}
+
+function setupVirtualKeyboard() {
+    const container = document.getElementById('vk-container');
+    container.innerHTML = '';
+    
+    let chars = gameState.allowedChars.split('');
+    chars.forEach(ch => {
+        const btn = document.createElement('div');
+        btn.className = 'vk-btn';
+        btn.innerText = ch;
+        btn.onclick = () => {
+            AudioSys.playKey();
+            const input = document.getElementById('guess-input');
+            if (input.value.length < gameState.codeLength) {
+                input.value += ch;
+            }
+            focusInput();
+        };
+        container.appendChild(btn);
+    });
+
+    const del = document.createElement('div');
+    del.className = 'vk-btn text-yellow';
+    del.innerText = 'APAG';
+    del.onclick = () => {
+        AudioSys.playKey();
+        const input = document.getElementById('guess-input');
+        input.value = input.value.slice(0, -1);
+        focusInput();
+    };
+    container.appendChild(del);
+}
+
+/* EVENTOS DE TECLADO FÍSICO E REFOCO */
+const inputElement = document.getElementById('guess-input');
+
+inputElement.addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase();
+    AudioSys.playKey();
+});
+
+inputElement.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        submitGuess();
+    }
+});
+
+// Mantém o foco no campo de texto ao clicar na tela do jogo
+document.getElementById('game-screen').addEventListener('click', (e) => {
+    if (!e.target.closest('button') && !e.target.classList.contains('vk-btn')) {
+        focusInput();
+    }
+});
+
+function submitGuess() {
+    if (gameState.isGameOver) return;
+
+    const input = document.getElementById('guess-input');
+    const guess = input.value.toUpperCase();
+
+    if (guess.length !== gameState.codeLength) {
+        logTerminal(`ERRO: O CÓDIGO DEVE TER ${gameState.codeLength} CARACTERES.`);
+        triggerGlitch(true);
+        AudioSys.playError();
+        focusInput();
+        return;
+    }
+
+    gameState.attemptsUsed++;
+    stats.attempts++;
+
+    let secretArr = gameState.secretCode.split('');
+    let guessArr = guess.split('');
+    let result = new Array(gameState.codeLength).fill('⬛');
+    
+    let secretFlags = new Array(gameState.codeLength).fill(false);
+    let guessFlags = new Array(gameState.codeLength).fill(false);
+
+    for (let i = 0; i < gameState.codeLength; i++) {
+        if (guessArr[i] === secretArr[i]) {
+            result[i] = '🟩';
+            secretFlags[i] = true;
+            guessFlags[i] = true;
+        }
+    }
+
+    for (let i = 0; i < gameState.codeLength; i++) {
+        if (!guessFlags[i]) {
+            for (let j = 0; j < gameState.codeLength; j++) {
+                if (!secretFlags[j] && guessArr[i] === secretArr[j]) {
+                    result[i] = '🟨';
+                    secretFlags[j] = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    gameState.history.unshift({ guess, result: result.join(' ') });
+    renderHistory();
+
+    document.getElementById('attempts-left').innerText = `${gameState.maxAttempts - gameState.attemptsUsed}/${gameState.maxAttempts}`;
+    input.value = '';
+    focusInput();
+
+    if (guess === gameState.secretCode) {
+        endGame(true);
+    } else if (gameState.attemptsUsed >= gameState.maxAttempts) {
+        endGame(false, "TENTATIVAS ESGOTADAS");
+    } else {
+        AudioSys.playKey();
+        logTerminal(`TENTATIVA: ${guess} | RESULTADO: ${result.join('')}`);
+        if (gameState.maxAttempts - gameState.attemptsUsed === 1) {
+            logTerminal(`ALERTA: ÚLTIMA TENTATIVA RESTANTE!`);
+            triggerGlitch(true);
+        }
+    }
+}
+
+function buyExtraHint() {
+    if (gameState.isGameOver) return;
+    if (gameState.score < 100 && gameState.mode !== 'TIME_ATTACK') {
+        logTerminal("PONTUAÇÃO INSUFICIENTE PARA DICA EXTRA.");
+        AudioSys.playError();
+        return;
+    }
+
+    gameState.hintsBought++;
+    const hint = generateDynamicExtraHint(gameState.secretCode);
+    gameState.hints.push(hint);
+    renderHints();
+    logTerminal("DICA DE SEGURANÇA OBTIDA.");
+    AudioSys.playKey();
+    focusInput();
+}
+
+function renderHints() {
+    const container = document.getElementById('hints-container');
+    container.innerHTML = gameState.hints.map(h => `<div class="hint-item">${h}</div>`).join('');
+}
+
+function renderHistory() {
+    const container = document.getElementById('history-container');
+    container.innerHTML = gameState.history.map((h, i) => `
+        <div class="history-row">
+            <span>#${String(gameState.history.length - i).padStart(2, '0')} [${h.guess}]</span>
+            <span>${h.result}</span>
+        </div>
+    `).join('');
+}
+
+function calculateScore() {
+    let base = gameState.level * 1000;
+    let timeBonus = Math.max(0, Math.floor(300 - gameState.elapsedTime * 5));
+    let attemptBonus = (gameState.maxAttempts - gameState.attemptsUsed + 1) * 150;
+    let hintPenalty = gameState.hintsBought * 100;
+
+    let total = Math.max(50, base + timeBonus + attemptBonus - hintPenalty);
+    return { base, timeBonus, attemptBonus, hintPenalty, total };
+}
+
+function endGame(won, reason = "") {
+    stopTimer();
+    gameState.isGameOver = true;
+
+    const modal = document.getElementById('end-modal');
+    const title = document.getElementById('modal-title');
+    const statusText = document.getElementById('modal-status-text');
+    const primaryBtn = document.getElementById('modal-primary-btn');
+
+    document.getElementById('modal-secret-code').innerText = gameState.secretCode;
+
+    if (won) {
+        AudioSys.playSuccess();
+        triggerGlitch(false);
+        title.innerText = "ACESSO CONCEDIDO";
+        title.className = "text-glow";
+        statusText.innerText = "DECODIFICAÇÃO BEM-SUCEDIDA";
+        
+        gameState.streak++;
+        stats.solved++;
+        
+        let scoreBreakdown = calculateScore();
+        gameState.score += scoreBreakdown.total;
+
+        document.getElementById('modal-base-score').innerText = `+${scoreBreakdown.base}`;
+        document.getElementById('modal-time-bonus').innerText = `+${scoreBreakdown.timeBonus}`;
+        document.getElementById('modal-attempt-bonus').innerText = `+${scoreBreakdown.attemptBonus}`;
+        document.getElementById('modal-hint-penalty').innerText = `-${scoreBreakdown.hintPenalty}`;
+        document.getElementById('modal-total-score').innerText = scoreBreakdown.total;
+
+        if (gameState.score > stats.bestScore) stats.bestScore = gameState.score;
+        if (gameState.elapsedTime < stats.bestTime) stats.bestTime = gameState.elapsedTime;
+        if (gameState.level > stats.highestLevel) stats.highestLevel = gameState.level;
+
+        primaryBtn.innerText = "PRÓXIMO NÍVEL";
+        primaryBtn.onclick = () => {
+            modal.classList.remove('active');
+            gameState.level++;
+            startLevel();
+        };
+    } else {
+        AudioSys.playError();
+        triggerGlitch(true);
+        title.innerText = "ACESSO NEGADO";
+        title.className = "text-red";
+        statusText.innerText = reason || "BLOQUEIO DO SISTEMA";
+        
+        gameState.streak = 0;
+
+        document.getElementById('modal-base-score').innerText = `0`;
+        document.getElementById('modal-time-bonus').innerText = `0`;
+        document.getElementById('modal-attempt-bonus').innerText = `0`;
+        document.getElementById('modal-hint-penalty').innerText = `0`;
+        document.getElementById('modal-total-score').innerText = `0`;
+
+        primaryBtn.innerText = "TENTAR NOVAMENTE";
+        primaryBtn.onclick = () => {
+            modal.classList.remove('active');
+            startLevel();
+        };
+    }
+
+    stats.totalTime += gameState.elapsedTime;
+    saveStats();
+    modal.classList.add('active');
+}
+
+function renderStatsScreen() {
+    const container = document.getElementById('stats-container');
+    let avgTime = stats.solved > 0 ? (stats.totalTime / stats.solved).toFixed(1) + 's' : 'N/A';
+    let bTime = stats.bestTime !== Infinity ? stats.bestTime.toFixed(1) + 's' : 'N/A';
+
+    container.innerHTML = `
+        <div class="stats-item"><span>CÓDIGOS RESOLVIDOS:</span><span class="text-glow">${stats.solved}</span></div>
+        <div class="stats-item"><span>TOTAL TENTATIVAS:</span><span class="text-glow">${stats.attempts}</span></div>
+        <div class="stats-item"><span>MAIOR NÍVEL:</span><span class="text-glow">${stats.highestLevel}</span></div>
+        <div class="stats-item"><span>RECORDE PONTOS:</span><span class="text-glow">${stats.bestScore}</span></div>
+        <div class="stats-item"><span>MELHOR TEMPO:</span><span class="text-glow">${bTime}</span></div>
+        <div class="stats-item"><span>TEMPO MÉDIO:</span><span class="text-glow">${avgTime}</span></div>
+    `;
+}
+
+loadStats();
+</script>
+</body>
+</html>
