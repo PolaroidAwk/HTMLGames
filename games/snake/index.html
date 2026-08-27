@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SNAKE - Ultimate Edition (ColorMatch UI)</title>
+  <title>SNAKE - Ultimate Edition (Zoomed & Enhanced Portals)</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,9 +177,9 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      padding-bottom: 16px;
+      padding-bottom: 12px;
       border-bottom: 1px solid var(--glass-border);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       align-items: center;
     }
 
@@ -196,15 +196,35 @@
     .stat-badge .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
     .stat-badge .value { font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
 
-    .combo-badge {
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      color: var(--accent-color);
-      padding: 6px 12px;
-      border-radius: 30px;
-      font-size: 0.8rem;
-      font-weight: 800;
+    /* POWERUP ACTIVE BAR */
+    .powerup-status-bar {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      min-height: 32px;
+      margin-bottom: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
     }
+
+    .powerup-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      animation: popIn 0.2s ease;
+    }
+
+    .powerup-pill.shield { border-color: #06b6d4; color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
+    .powerup-pill.magnet { border-color: #ec4899; color: #ec4899; background: rgba(236, 72, 153, 0.1); }
+    .powerup-pill.ghost  { border-color: #94a3b8; color: #94a3b8; background: rgba(148, 163, 184, 0.1); }
+    .powerup-pill.mult2  { border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
 
     .btn {
       width: 100%;
@@ -495,7 +515,7 @@
     <!-- ==================== MENU PRINCIPAL ==================== -->
     <div id="screen-main-menu" class="card text-center screen active">
       <h1>Snake</h1>
-      <p class="subtitle">Ultimate Edition & Modern UI</p>
+      <p class="subtitle">Ultimate Edition (Zoomed & Portals V2)</p>
 
       <div class="info-card" id="last-played-card" style="display:none; margin-top: 16px;">
         Último Modo: <span id="last-mode-val">-</span>
@@ -526,8 +546,8 @@
         </div>
         <div class="mode-card" onclick="app.startGame('portals')">
           <div>
-            <div class="title">Portals</div>
-            <div class="desc">Teleportes dinâmicos pelo mapa</div>
+            <div class="title">Portals (V2 Avançado)</div>
+            <div class="desc">Rede de teletransporte dinâmica sincronizada</div>
           </div>
           <span class="arrow-icon">➔</span>
         </div>
@@ -619,6 +639,11 @@
           <span class="label">MENU</span>
           <span class="value" style="color:var(--text-muted)">PAUSE</span>
         </div>
+      </div>
+
+      <!-- Barra de Powerups Ativos -->
+      <div class="powerup-status-bar" id="powerup-status-bar">
+        <!-- Renderizado dinamicamente -->
       </div>
 
       <div class="event-banner" id="event-banner">EVENTO ATIVO</div>
@@ -730,6 +755,20 @@ class SoundEffects {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.2);
   }
+  playPortal() {
+    if (!app.config.sfx || !this.ctx) return;
+    let osc = this.ctx.createOscillator();
+    let gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
+  }
 }
 
 const sfx = new SoundEffects();
@@ -743,18 +782,20 @@ const FOOD_TYPES = {
 };
 
 const POWERUPS = {
-  SHIELD: { type: 'SHIELD', color: '#06b6d4', duration: 8000 },
-  MAGNET: { type: 'MAGNET', color: '#ec4899', duration: 7000 },
-  GHOST:  { type: 'GHOST',  color: '#94a3b8', duration: 6000 },
-  MULT2:  { type: 'MULT2',  color: '#f59e0b', duration: 10000 }
+  SHIELD: { type: 'SHIELD', name: 'Escudo', icon: '🛡️', color: '#06b6d4', duration: 8000 },
+  MAGNET: { type: 'MAGNET', name: 'Imã', icon: '🧲', color: '#ec4899', duration: 7000 },
+  GHOST:  { type: 'GHOST',  name: 'Fantasma', icon: '👻', color: '#94a3b8', duration: 6000 },
+  MULT2:  { type: 'MULT2',  name: '2x Score', icon: '⚡', color: '#f59e0b', duration: 10000 }
 };
 
 class Engine {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
     this.ctx = this.canvas.getContext('2d');
-    this.gridSize = 20;
-    this.tileCount = 30;
+    
+    // MAPA COM MAIS ZOOM: Reduzido de 30 para 18 blocos (cobra e itens bem maiores e focados)
+    this.gridSize = 600 / 18; 
+    this.tileCount = 18;
     
     this.config = {
       sfx: true,
@@ -781,7 +822,7 @@ class Engine {
     this.loopId = null;
     this.lastTime = 0;
     this.accumulatedTime = 0;
-    this.stepInterval = 90;
+    this.stepInterval = 110;
 
     this.resetGameState();
     this.loadLocalStorage();
@@ -807,16 +848,17 @@ class Engine {
     this.activeEvent = null;
     this.eventTimer = 0;
     this.activePowerups = {};
+    this.portalPulse = 0;
   }
 
   loadLocalStorage() {
-    let cfg = localStorage.getItem('snake_cfg_colormatch');
+    let cfg = localStorage.getItem('snake_cfg_zoom_v2');
     if (cfg) this.config = Object.assign(this.config, JSON.parse(cfg));
     
-    let rec = localStorage.getItem('snake_records_colormatch');
+    let rec = localStorage.getItem('snake_records_zoom_v2');
     if (rec) this.records = Object.assign(this.records, JSON.parse(rec));
 
-    this.lastMode = localStorage.getItem('snake_last_mode_colormatch');
+    this.lastMode = localStorage.getItem('snake_last_mode_zoom_v2');
 
     document.getElementById('cfg-sfx').checked = this.config.sfx;
     document.getElementById('cfg-vibe').checked = this.config.vibe;
@@ -840,13 +882,13 @@ class Engine {
     this.config.speed = document.getElementById('cfg-speed').value;
 
     document.documentElement.setAttribute('data-theme', this.config.theme);
-    localStorage.setItem('snake_cfg_colormatch', JSON.stringify(this.config));
+    localStorage.setItem('snake_cfg_zoom_v2', JSON.stringify(this.config));
   }
 
   saveRecord(mode, score) {
     if (score > (this.records[mode] || 0)) {
       this.records[mode] = score;
-      localStorage.setItem('snake_records_colormatch', JSON.stringify(this.records));
+      localStorage.setItem('snake_records_zoom_v2', JSON.stringify(this.records));
       return true;
     }
     return false;
@@ -869,7 +911,7 @@ class Engine {
       classic: 'Classic',
       time_attack: 'Time Attack',
       survival: 'Survival',
-      portals: 'Portals',
+      portals: 'Portals (V2)',
       chaos: 'Chaos',
       pvp: '2 Players'
     };
@@ -966,24 +1008,24 @@ class Engine {
     sfx.init();
     this.mode = mode;
     this.lastMode = mode;
-    localStorage.setItem('snake_last_mode_colormatch', mode);
+    localStorage.setItem('snake_last_mode_zoom_v2', mode);
 
     this.resetGameState();
     this.isPaused = false;
     this.isGameOver = false;
 
-    let baseSpeeds = { slow: 120, normal: 90, fast: 65 };
-    this.stepInterval = baseSpeeds[this.config.speed] || 90;
+    let baseSpeeds = { slow: 140, normal: 110, fast: 80 };
+    this.stepInterval = baseSpeeds[this.config.speed] || 110;
 
     if (mode === 'pvp') {
-      this.snakes.push(this.createSnake(5, 15, 'RIGHT', '#10b981', 'Player 1'));
-      this.snakes.push(this.createSnake(25, 15, 'LEFT', '#06b6d4', 'Player 2'));
+      this.snakes.push(this.createSnake(3, 9, 'RIGHT', '#10b981', 'Player 1'));
+      this.snakes.push(this.createSnake(14, 9, 'LEFT', '#06b6d4', 'Player 2'));
     } else {
-      this.snakes.push(this.createSnake(15, 15, 'RIGHT', '#10b981', 'Player 1'));
+      this.snakes.push(this.createSnake(9, 9, 'RIGHT', '#10b981', 'Player 1'));
     }
 
     if (mode === 'portals') {
-      this.spawnPortals();
+      this.spawnAdvancedPortals();
     }
 
     this.spawnFood();
@@ -1021,6 +1063,7 @@ class Engine {
     let dt = currentTime - this.lastTime;
     this.lastTime = currentTime;
     this.accumulatedTime += dt;
+    this.portalPulse += dt * 0.005;
 
     this.updateTimers(dt);
 
@@ -1063,7 +1106,7 @@ class Engine {
       }
     } else if (this.mode === 'survival') {
       this.survivalTimer += dt;
-      if (Math.floor(this.survivalTimer / 20000) > this.obstacles.length / 3) {
+      if (Math.floor(this.survivalTimer / 15000) > this.obstacles.length / 2) {
         this.spawnObstacle();
       }
     } else if (this.mode === 'chaos') {
@@ -1074,7 +1117,7 @@ class Engine {
       }
     }
 
-    if (Math.random() < 0.001 && this.powerupsOnGrid.length < 1) {
+    if (Math.random() < 0.002 && this.powerupsOnGrid.length < 1) {
       this.spawnPowerup();
     }
   }
@@ -1105,13 +1148,30 @@ class Engine {
         if (head.y >= this.tileCount) head.y = 0;
       }
 
-      if (this.mode === 'portals' && this.portals.length === 2) {
-        let p1 = this.portals[0];
-        let p2 = this.portals[1];
-        if (head.x === p1.x && head.y === p1.y) {
-          head = { x: p2.x, y: p2.y };
-        } else if (head.x === p2.x && head.y === p2.y) {
-          head = { x: p1.x, y: p1.y };
+      // NOVO SISTEMA DE PORTAIS APRIMORADO (V2)
+      // Cada portal tem id e linkedId (par 1-2). Ao entrar em A, você sai em B preservando momentum ou saindo na direção natural do portal de saída!
+      if (this.mode === 'portals' && this.portals.length >= 2) {
+        let portalHit = this.portals.find(p => p.x === head.x && p.y === head.y);
+        if (portalHit) {
+          let targetPortal = this.portals.find(p => p.id === portalHit.linkedId);
+          if (targetPortal) {
+            sfx.playPortal();
+            this.createParticles(portalHit.x, portalHit.y, portalHit.color, 12);
+            
+            // Teleporta a cabeça para o destino e ajusta a direção correspondente se necessário
+            head.x = targetPortal.x;
+            head.y = targetPortal.y;
+            s.direction = targetPortal.outDir;
+            
+            // Pequeno avanço instantâneo na direção de saída para evitar loop infinito
+            switch (s.direction) {
+              case 'UP': head.y -= 1; break;
+              case 'DOWN': head.y += 1; break;
+              case 'LEFT': head.x -= 1; break;
+              case 'RIGHT': head.x += 1; break;
+            }
+            this.createParticles(targetPortal.x, targetPortal.y, targetPortal.color, 12);
+          }
         }
       }
 
@@ -1142,7 +1202,7 @@ class Engine {
           s.shouldShrink = false;
 
           this.combo++;
-          this.comboTimer = 3000;
+          this.comboTimer = 3500;
           if (this.combo > this.maxCombo) this.maxCombo = this.combo;
 
           let mult = (this.activePowerups['MULT2'] ? 2 : 1) * this.combo;
@@ -1151,15 +1211,15 @@ class Engine {
           this.score += earned;
 
           if (this.mode === 'time_attack') {
-            this.timeAttackLeft += 1.5;
+            this.timeAttackLeft += 2.0;
           }
 
           this.createParticles(head.x, head.y, f.typeInfo.color);
           this.foods.splice(i, 1);
           this.spawnFood();
 
-          if (this.mode === 'portals' && Math.random() < 0.4) {
-            this.spawnPortals();
+          if (this.mode === 'portals' && Math.random() < 0.5) {
+            this.spawnAdvancedPortals(); // Move os portais dinamicamente para manter o desafio alto
           }
 
           if (this.activeEvent === 'SHRINK' && s.body.length > 3) {
@@ -1257,6 +1317,7 @@ class Engine {
   handleSnakeDeath(snake) {
     if (this.activePowerups['SHIELD']) {
       delete this.activePowerups['SHIELD'];
+      sfx.playPowerup();
       return;
     }
 
@@ -1290,12 +1351,12 @@ class Engine {
       x = Math.floor(Math.random() * this.tileCount);
       y = Math.floor(Math.random() * this.tileCount);
       tries++;
-    } while (this.isPositionOccupied(x, y) && tries < 500);
+    } while (this.isPositionOccupied(x, y) && tries < 300);
     return { x, y };
   }
 
   spawnFood() {
-    let count = (this.activeEvent === 'DOUBLE FOOD' || this.activeEvent === 'RAIN') ? 3 : 1;
+    let count = (this.activeEvent === 'DOUBLE FOOD' || this.activeEvent === 'RAIN') ? 2 : 1;
     while (this.foods.length < count) {
       let pos = this.getFreePosition();
       let rand = Math.random();
@@ -1325,12 +1386,27 @@ class Engine {
     this.powerupsOnGrid.push({ x: pos.x, y: pos.y, info: chosen });
   }
 
-  spawnPortals() {
-    let p1 = this.getFreePosition();
-    let p2 = this.getFreePosition();
+  // PORTAIS V2: Par de portais Alfa e Beta conectados bidirecionalmente com cores vibrantes e direções de saída
+  spawnAdvancedPortals() {
+    let p1Pos = this.getFreePosition();
+    let p2Pos = this.getFreePosition();
+    const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+    
     this.portals = [
-      { x: p1.x, y: p1.y, color: '#06b6d4' },
-      { x: p2.x, y: p2.y, color: '#a855f7' }
+      { 
+        id: 1, linkedId: 2, 
+        x: p1Pos.x, y: p1Pos.y, 
+        color: '#06b6d4', 
+        label: 'A',
+        outDir: dirs[Math.floor(Math.random() * dirs.length)]
+      },
+      { 
+        id: 2, linkedId: 1, 
+        x: p2Pos.x, y: p2Pos.y, 
+        color: '#a855f7', 
+        label: 'B',
+        outDir: dirs[Math.floor(Math.random() * dirs.length)]
+      }
     ];
   }
 
@@ -1381,7 +1457,7 @@ class Engine {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (this.config.grid) {
-      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)';
+      this.ctx.strokeStyle = (this.config.theme === 'light') ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
       this.ctx.lineWidth = 1;
       for (let i = 0; i <= this.tileCount; i++) {
         this.ctx.beginPath();
@@ -1399,26 +1475,44 @@ class Engine {
     this.obstacles.forEach(o => {
       this.ctx.fillStyle = '#475569';
       this.ctx.beginPath();
-      this.ctx.roundRect(o.x * sz + 1, o.y * sz + 1, sz - 2, sz - 2, 4);
+      this.ctx.roundRect(o.x * sz + 2, o.y * sz + 2, sz - 4, sz - 4, 6);
       this.ctx.fill();
     });
 
+    // RENDERIZAÇÃO DOS PORTAIS APRIMORADOS COM ANIMAÇÃO DE PULSO E Rótulo
     this.portals.forEach(p => {
+      let cx = p.x * sz + sz / 2;
+      let cy = p.y * sz + sz / 2;
+      let radiusPulse = (sz / 2 - 4) + Math.sin(this.portalPulse * 3 + p.id) * 3;
+
       this.ctx.fillStyle = p.color;
       this.ctx.shadowColor = p.color;
-      this.ctx.shadowBlur = 12;
+      this.ctx.shadowBlur = 18;
       this.ctx.beginPath();
-      this.ctx.arc(p.x * sz + sz / 2, p.y * sz + sz / 2, sz / 2 - 2, 0, Math.PI * 2);
+      this.ctx.arc(cx, cy, Math.max(8, radiusPulse), 0, Math.PI * 2);
       this.ctx.fill();
+
+      // Anel interno do portal
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Letra indicativa do portal (A / B)
+      this.ctx.fillStyle = '#000000';
+      this.ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText(p.label, cx, cy);
       this.ctx.shadowBlur = 0;
     });
 
     this.foods.forEach(f => {
       this.ctx.fillStyle = f.typeInfo.color;
       this.ctx.shadowColor = f.typeInfo.color;
-      this.ctx.shadowBlur = 12;
+      this.ctx.shadowBlur = 14;
       this.ctx.beginPath();
-      this.ctx.arc(f.x * sz + sz / 2, f.y * sz + sz / 2, sz / 2 - 3, 0, Math.PI * 2);
+      this.ctx.arc(f.x * sz + sz / 2, f.y * sz + sz / 2, sz / 2 - 4, 0, Math.PI * 2);
       this.ctx.fill();
       this.ctx.shadowBlur = 0;
     });
@@ -1426,9 +1520,9 @@ class Engine {
     this.powerupsOnGrid.forEach(pw => {
       this.ctx.fillStyle = pw.info.color;
       this.ctx.shadowColor = pw.info.color;
-      this.ctx.shadowBlur = 10;
+      this.ctx.shadowBlur = 14;
       this.ctx.beginPath();
-      this.ctx.roundRect(pw.x * sz + 3, pw.y * sz + 3, sz - 6, sz - 6, 4);
+      this.ctx.roundRect(pw.x * sz + 4, pw.y * sz + 4, sz - 8, sz - 8, 8);
       this.ctx.fill();
       this.ctx.shadowBlur = 0;
     });
@@ -1439,16 +1533,16 @@ class Engine {
         if (idx === 0) {
           this.ctx.fillStyle = s.color;
           this.ctx.shadowColor = s.color;
-          this.ctx.shadowBlur = 14;
+          this.ctx.shadowBlur = 16;
           this.ctx.beginPath();
-          this.ctx.roundRect(b.x * sz + 1, b.y * sz + 1, sz - 2, sz - 2, 6);
+          this.ctx.roundRect(b.x * sz + 2, b.y * sz + 2, sz - 4, sz - 4, 8);
           this.ctx.fill();
           this.ctx.shadowBlur = 0;
         } else {
           this.ctx.fillStyle = s.color;
-          this.ctx.globalAlpha = Math.max(0.2, 1 - (idx / s.body.length) * 0.7);
+          this.ctx.globalAlpha = Math.max(0.25, 1 - (idx / s.body.length) * 0.65);
           this.ctx.beginPath();
-          this.ctx.roundRect(b.x * sz + 2, b.y * sz + 2, sz - 4, sz - 4, 4);
+          this.ctx.roundRect(b.x * sz + 4, b.y * sz + 4, sz - 8, sz - 8, 6);
           this.ctx.fill();
           this.ctx.globalAlpha = 1.0;
         }
@@ -1458,11 +1552,12 @@ class Engine {
     this.particles.forEach(p => {
       this.ctx.fillStyle = p.color;
       this.ctx.globalAlpha = p.life;
-      this.ctx.fillRect(p.x, p.y, 4, 4);
+      this.ctx.fillRect(p.x, p.y, 5, 5);
       this.ctx.globalAlpha = 1.0;
     });
 
     this.updateHUD();
+    this.updatePowerupStatusBar();
   }
 
   updateHUD() {
@@ -1481,6 +1576,23 @@ class Engine {
     } else {
       secLabel.innerText = 'HIGH';
       secVal.innerText = this.records[this.mode] || 0;
+    }
+  }
+
+  // MOSTRA VISUALMENTE SE TU ESTÁ COM ALGUM POWER-UP ATIVO E O TEMPO RESTANTE
+  updatePowerupStatusBar() {
+    let bar = document.getElementById('powerup-status-bar');
+    bar.innerHTML = '';
+
+    for (let key in this.activePowerups) {
+      let pwInfo = POWERUPS[key];
+      if (!pwInfo) continue;
+      let timeLeft = Math.ceil(this.activePowerups[key] / 1000);
+
+      let pill = document.createElement('div');
+      pill.className = `powerup-pill ${key.toLowerCase()}`;
+      pill.innerHTML = `<span>${pwInfo.icon}</span> <span>${pwInfo.name}</span> <span style="opacity:0.8; font-weight:600;">(${timeLeft}s)</span>`;
+      bar.appendChild(pill);
     }
   }
 
