@@ -272,6 +272,43 @@
 
 
         /* =====================================================
+           ABAS (TODOS / FAVORITOS / SUGESTÕES)
+        ===================================================== */
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            background: rgba(0, 20, 10, 0.4);
+            border: 1px solid var(--green-dark);
+            color: #168d4c;
+            font-family: "VT323", monospace;
+            font-size: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tab:hover {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .tab.active {
+            background: rgba(57, 255, 136, 0.15);
+            border-color: var(--green);
+            color: var(--green);
+            text-shadow: 0 0 5px var(--green);
+        }
+
+
+        /* =====================================================
            PESQUISA
         ===================================================== */
 
@@ -406,17 +443,33 @@
 
 
         /* =====================================================
-           NOME
+           NOME E FAVORITO
         ===================================================== */
 
-        .filename {
+        .filename-container {
             flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
+        .filename {
             font-size: 26px;
 
             color: var(--green);
 
             letter-spacing: 1px;
+        }
+
+        .fav-star {
+            display: none;
+            font-size: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 5px #ffd700;
+        }
+
+        .file.favorite .fav-star {
+            display: inline-block;
         }
 
 
@@ -609,7 +662,18 @@
             </div>
 
             <div class="terminal-line">
-                C:\GAMES&gt; <span>SELECT A GAME TO EXECUTE</span>
+                C:\GAMES&gt; <span>SELECT A GAME TO EXECUTE (CLIQUE COM O BOTÃO DIREITO PARA FAVORITAR)</span>
+            </div>
+
+
+            <!-- =================================================
+                 ABAS (TODOS / FAVORITOS / SUGESTÕES)
+            ================================================== -->
+
+            <div class="tabs-container">
+                <button class="tab active" onclick="mudarAba('todos')" id="tabTodos">TODOS OS JOGOS</button>
+                <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos">⭐ FAVORITOS</button>
+                <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">💬 SUGESTÕES</a>
             </div>
 
 
@@ -650,6 +714,7 @@
 
                 <div
                     class="file"
+                    data-id="fnaf"
                     data-name="fnaf five nights at freddys"
                     onclick="abrirJogo('fnaf/index.html')"
                 >
@@ -658,8 +723,9 @@
                         🐻
                     </div>
 
-                    <div class="filename">
-                        FNAF
+                    <div class="filename-container">
+                        <span class="filename">FNAF</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -677,6 +743,7 @@
 
                 <div
                     class="file"
+                    data-id="campo-minado"
                     data-name="campo-minado campo minado"
                     onclick="abrirJogo('campo-minado/index.html')"
                 >
@@ -685,8 +752,9 @@
                         💣
                     </div>
 
-                    <div class="filename">
-                        MINESWEEPER
+                    <div class="filename-container">
+                        <span class="filename">MINESWEEPER</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -704,6 +772,7 @@
 
                 <div
                     class="file"
+                    data-id="snake"
                     data-name="snake jogo da cobrinha"
                     onclick="abrirJogo('snake/index.html')"
                 >
@@ -712,8 +781,9 @@
                         🐍
                     </div>
 
-                    <div class="filename">
-                        SNAKE
+                    <div class="filename-container">
+                        <span class="filename">SNAKE</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -731,6 +801,7 @@
 
                 <div
                     class="file"
+                    data-id="tigrinho"
                     data-name="tigrinho fortune tiger"
                     onclick="abrirJogo('tigre/index.html')"
                 >
@@ -739,8 +810,9 @@
                         🎰
                     </div>
 
-                    <div class="filename">
-                        TIGRINHO
+                    <div class="filename-container">
+                        <span class="filename">TIGRINHO</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -757,6 +829,7 @@
 
                 <div
                     class="file"
+                    data-id="count-chaos"
                     data-name="count-chaos count chaos"
                     onclick="abrirJogo('countchaos/index.html')"
                 >
@@ -765,8 +838,9 @@
                         🔢
                     </div>
 
-                    <div class="filename">
-                        COUNT-CHAOS
+                    <div class="filename-container">
+                        <span class="filename">COUNT-CHAOS</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -783,6 +857,7 @@
 
                 <div
                     class="file"
+                    data-id="nova-terminal"
                     data-name="nova nova terminal"
                     onclick="abrirJogo('novaterminal/index.html')"
                 >
@@ -791,8 +866,9 @@
                         📈
                     </div>
 
-                    <div class="filename">
-                        NOVA-TERMINAL
+                    <div class="filename-container">
+                        <span class="filename">NOVA-TERMINAL</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -809,6 +885,7 @@
 
                 <div
                     class="file"
+                    data-id="password"
                     data-name="password the password"
                     onclick="abrirJogo('password/index.html')"
                 >
@@ -817,8 +894,9 @@
                         🔑
                     </div>
 
-                    <div class="filename">
-                        THE-PASSWORD
+                    <div class="filename-container">
+                        <span class="filename">THE-PASSWORD</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -835,6 +913,7 @@
 
                 <div
                     class="file"
+                    data-id="symbol-memory"
                     data-name="symbol symbol memory"
                     onclick="abrirJogo('symbol/index.html')"
                 >
@@ -843,8 +922,9 @@
                         🧠
                     </div>
 
-                    <div class="filename">
-                        SYMBOL MEMORY
+                    <div class="filename-container">
+                        <span class="filename">SYMBOL MEMORY</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -861,6 +941,7 @@
 
                 <div
                     class="file"
+                    data-id="color-match"
                     data-name="color color match"
                     onclick="abrirJogo('colormatch/index.html')"
                 >
@@ -869,8 +950,9 @@
                         🎨
                     </div>
 
-                    <div class="filename">
-                        COLOR MATCH
+                    <div class="filename-container">
+                        <span class="filename">COLOR MATCH</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -887,6 +969,7 @@
 
                 <div
                     class="file"
+                    data-id="code-breaker"
                     data-name="code code breaker"
                     onclick="abrirJogo('codebreaker/index.html')"
                 >
@@ -895,8 +978,9 @@
                         👨🏻‍💻
                     </div>
 
-                    <div class="filename">
-                        CODE BREAKER
+                    <div class="filename-container">
+                        <span class="filename">CODE BREAKER</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -913,6 +997,7 @@
 
                 <div
                     class="file"
+                    data-id="mini-market"
                     data-name="mart mini mart"
                     onclick="abrirJogo('minimart/index.html')"
                 >
@@ -921,8 +1006,9 @@
                         🛒
                     </div>
 
-                    <div class="filename">
-                        MINI MARKET
+                    <div class="filename-container">
+                        <span class="filename">MINI MARKET</span>
+                        <span class="fav-star">⭐</span>
                     </div>
 
                     <div class="description">
@@ -964,7 +1050,7 @@
                 </div>
 
                 <div>
-                    [ ENTER ] SELECT GAME
+                    [ ENTER ] SELECT GAME | [ BOTÃO DIREITO ] FAVORITAR
                 </div>
 
                 <div>
@@ -986,72 +1072,104 @@
     <script>
 
         /* =====================================================
-           ABRIR JOGO
+           ESTADO DAS ABAS E FAVORITOS
         ===================================================== */
 
-        function abrirJogo(caminho) {
+        let abaAtual = 'todos';
 
-            window.location.href = "games/" + caminho;
-
+        function mudarAba(aba) {
+            abaAtual = aba;
+            document.getElementById('tabTodos').classList.toggle('active', aba === 'todos');
+            document.getElementById('tabFavoritos').classList.toggle('active', aba === 'favoritos');
+            filtrarJogos();
         }
 
 
         /* =====================================================
-           PESQUISA
+           SISTEMA DE FAVORITOS (LOCALSTORAGE)
         ===================================================== */
 
-        const search =
-            document.getElementById("search");
+        const files = document.querySelectorAll(".file");
 
-        const files =
-            document.querySelectorAll(".file");
-
-        const empty =
-            document.getElementById("empty");
-
-
-        search.addEventListener("input", function () {
-
-            const texto =
-                this.value
-                    .toLowerCase()
-                    .trim();
-
-            let encontrados = 0;
-
-
-            files.forEach(function (file) {
-
-                const nome =
-                    file.dataset.name.toLowerCase();
-
-
-                if (nome.includes(texto)) {
-
-                    file.style.display = "flex";
-
-                    encontrados++;
-
+        function carregarFavoritos() {
+            let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
+            files.forEach(file => {
+                const id = file.dataset.id;
+                if (favoritos.includes(id)) {
+                    file.classList.add('favorite');
                 } else {
+                    file.classList.remove('favorite');
+                }
+            });
+        }
 
-                    file.style.display = "none";
+        // Clique com o botão direito para favoritar/desfavoritar
+        files.forEach(file => {
+            file.addEventListener('contextmenu', function (e) {
+                e.preventDefault(); // Impede o menu de contexto padrão do navegador
+                const id = this.dataset.id;
+                let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
 
+                if (favoritos.includes(id)) {
+                    favoritos = favoritos.filter(favId => favId !== id);
+                } else {
+                    favoritos.push(id);
                 }
 
+                localStorage.setItem('htmlgames_favs', JSON.stringify(favoritos));
+                carregarFavoritos();
+                filtrarJogos();
+            });
+        });
+
+        // Carrega os favoritos ao iniciar a página
+        carregarFavoritos();
+
+
+        /* =====================================================
+           ABRIR JOGO
+        ===================================================== */
+
+        function abrirJogo(caminho) {
+            window.location.href = "games/" + caminho;
+        }
+
+
+        /* =====================================================
+           PESQUISA E FILTROS COMBINADOS
+        ===================================================== */
+
+        const search = document.getElementById("search");
+        const empty = document.getElementById("empty");
+
+        function filtrarJogos() {
+            const texto = search.value.toLowerCase().trim();
+            let encontrados = 0;
+
+            files.forEach(function (file) {
+                const nome = file.dataset.name.toLowerCase();
+                const ehFavorito = file.classList.contains('favorite');
+
+                // Condição de exibição: Respeita a aba ativa E o texto digitado na pesquisa
+                let passaNaAba = (abaAtual === 'todos') || (abaAtual === 'favoritos' && ehFavorito);
+                let passaNaBusca = nome.includes(texto);
+
+                if (passaNaAba && passaNaBusca) {
+                    file.style.display = "flex";
+                    encontrados++;
+                } else {
+                    file.style.display = "none";
+                }
             });
 
-
             if (encontrados === 0) {
-
                 empty.style.display = "block";
-
             } else {
-
                 empty.style.display = "none";
-
             }
+        }
 
-        });
+        search.addEventListener("input", filtrarJogos);
 
 
         /* =====================================================
@@ -1059,24 +1177,12 @@
         ===================================================== */
 
         search.addEventListener("keydown", function (event) {
-
             if (event.key === "Enter") {
-
-                const visiveis =
-                    Array.from(files)
-                        .filter(file =>
-                            file.style.display !== "none"
-                        );
-
-
+                const visiveis = Array.from(files).filter(file => file.style.display !== "none");
                 if (visiveis.length > 0) {
-
                     visiveis[0].click();
-
                 }
-
             }
-
         });
 
     </script>
