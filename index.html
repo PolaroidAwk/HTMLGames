@@ -628,10 +628,6 @@
         <div class="screen">
 
 
-            <!-- =================================================
-                 HEADER
-            ================================================== -->
-
             <header class="header">
 
                 <div class="header-top">
@@ -653,10 +649,6 @@
             </header>
 
 
-            <!-- =================================================
-                 TERMINAL
-            ================================================== -->
-
             <div class="terminal-line">
                 C:\GAMES&gt; <span>ACCESSING GAME DATABASE...</span>
             </div>
@@ -666,20 +658,12 @@
             </div>
 
 
-            <!-- =================================================
-                 ABAS (TODOS / FAVORITOS / SUGESTÕES)
-            ================================================== -->
-
             <div class="tabs-container">
                 <button class="tab active" onclick="mudarAba('todos')" id="tabTodos">TODOS OS JOGOS</button>
                 <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos">⭐ FAVORITOS</button>
                 <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">💬 SUGESTÕES</a>
             </div>
 
-
-            <!-- =================================================
-                 PESQUISA
-            ================================================== -->
 
             <div class="search-container">
 
@@ -700,336 +684,9 @@
             </div>
 
 
-            <!-- =================================================
-                 LISTA
-            ================================================== -->
-
-            <div
-                class="file-list"
-                id="fileList"
-            >
-
-
-                <!-- FNAF -->
-
-                <div
-                    class="file"
-                    data-id="fnaf"
-                    data-name="fnaf five nights at freddys"
-                    onclick="abrirJogo('fnaf/index.html')"
-                >
-
-                    <div class="icon">
-                        🐻
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">FNAF</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        FIVE NIGHTS AT FREDDY'S
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
+            <div class="file-list" id="fileList">
                 </div>
 
-
-                <!-- CAMPO MINADO -->
-
-                <div
-                    class="file"
-                    data-id="campo-minado"
-                    data-name="campo-minado campo minado"
-                    onclick="abrirJogo('campo-minado/index.html')"
-                >
-
-                    <div class="icon">
-                        💣
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">MINESWEEPER</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        CAMPO-MINADO
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-
-                <!-- SNAKE -->
-
-                <div
-                    class="file"
-                    data-id="snake"
-                    data-name="snake jogo da cobrinha"
-                    onclick="abrirJogo('snake/index.html')"
-                >
-
-                    <div class="icon">
-                        🐍
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">SNAKE</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        JOGO DA COBRINHA PLUS
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-
-                <!-- TIGRINHO -->
-
-                <div
-                    class="file"
-                    data-id="tigrinho"
-                    data-name="tigrinho fortune tiger"
-                    onclick="abrirJogo('tigre/index.html')"
-                >
-
-                    <div class="icon">
-                        🎰
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">TIGRINHO</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        FORTUNE TIGER
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- COUNT CHAOS -->
-
-                <div
-                    class="file"
-                    data-id="count-chaos"
-                    data-name="count-chaos count chaos"
-                    onclick="abrirJogo('countchaos/index.html')"
-                >
-
-                    <div class="icon">
-                        🔢
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">COUNT-CHAOS</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        CONTE DE 1 A 10 SEGUINDO AS REGRAS
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- NOVA TERMINAL -->
-
-                <div
-                    class="file"
-                    data-id="nova-terminal"
-                    data-name="nova nova terminal"
-                    onclick="abrirJogo('novaterminal/index.html')"
-                >
-
-                    <div class="icon">
-                        📈
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">NOVA-TERMINAL</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        INVISTA EM AÇÕES SEM QUEBRAR
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- THE PASSWORD -->
-
-                <div
-                    class="file"
-                    data-id="password"
-                    data-name="password the password"
-                    onclick="abrirJogo('password/index.html')"
-                >
-
-                    <div class="icon">
-                        🔑
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">THE-PASSWORD</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        CRIE UMA SENHA ENQUANTO NOVAS DEMANDAS SÃO ADICIONADAS
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- SYMBOL MEMORY -->
-
-                <div
-                    class="file"
-                    data-id="symbol-memory"
-                    data-name="symbol symbol memory"
-                    onclick="abrirJogo('symbol/index.html')"
-                >
-
-                    <div class="icon">
-                        🧠
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">SYMBOL MEMORY</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        MEMORIZE UMA SEQUÊNCIA DE SÍMBOLOS E RESPONDA CORRETAMENTE
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- COLOR MATCH -->
-
-                <div
-                    class="file"
-                    data-id="color-match"
-                    data-name="color color match"
-                    onclick="abrirJogo('colormatch/index.html')"
-                >
-
-                    <div class="icon">
-                        🎨
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">COLOR MATCH</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        REPLIQUE CORRETAMENTE AS CORES MOSTRADAS
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- CODE BREAKER -->
-
-                <div
-                    class="file"
-                    data-id="code-breaker"
-                    data-name="code code breaker"
-                    onclick="abrirJogo('codebreaker/index.html')"
-                >
-
-                    <div class="icon">
-                        👨🏻‍💻
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">CODE BREAKER</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        DESVENDE O CÓDIGO SECRETO PARA INVADIR O SISTEMA
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-                <!-- MINI MART -->
-
-                <div
-                    class="file"
-                    data-id="mini-market"
-                    data-name="mart mini mart"
-                    onclick="abrirJogo('minimart/index.html')"
-                >
-
-                    <div class="icon">
-                        🛒
-                    </div>
-
-                    <div class="filename-container">
-                        <span class="filename">MINI MARKET</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-
-                    <div class="description">
-                        GERENCIE SEU PRÓPRIO SUPER MERCADO
-                    </div>
-
-                    <div class="arrow">
-                        &gt;
-                    </div>
-
-                </div>
-
-
-
-
-            </div>
-
-
-            <!-- =================================================
-                 VAZIO
-            ================================================== -->
 
             <div
                 class="empty"
@@ -1038,10 +695,6 @@
                 NO GAMES FOUND.
             </div>
 
-
-            <!-- =================================================
-                 FOOTER
-            ================================================== -->
 
             <footer class="footer">
 
@@ -1065,11 +718,200 @@
     </div>
 
 
-    <!-- =====================================================
-         JAVASCRIPT
-    ===================================================== -->
-
     <script>
+
+        /* =====================================================
+           LISTA CENTRALIZADA DE JOGOS (FÁCIL DE EDITAR)
+           - id: identificador único (necessário para os favoritos)
+           - nome: título principal exibido em destaque
+           - desc: descrição detalhada do jogo
+           - icone: emoji representativo
+           - url: pode ser caminho local (ex: 'games/fnaf/index.html') ou link externo (ex: 'https://exemplo.com')
+           - externo: true se for abrir em outra aba/link externo, false se for abrir localmente na mesma aba
+        ===================================================== */
+        const listaDeJogos = [
+            {
+                id: 'fnaf',
+                nome: 'FNAF gemini',
+                desc: "VERSÃO GEMINI",
+                icone: '🐻',
+                url: 'games/fnaf/index.html',
+                externo: false
+            },
+            {
+                id: 'campo-minado',
+                nome: 'MINESWEEPER',
+                desc: 'CAMPO-MINADO',
+                icone: '💣',
+                url: 'games/campo-minado/index.html',
+                externo: false
+            },
+            {
+                id: 'snake',
+                nome: 'SNAKE',
+                desc: 'JOGO DA COBRINHA PLUS',
+                icone: '🐍',
+                url: 'games/snake/index.html',
+                externo: false
+            },
+            {
+                id: 'tigrinho',
+                nome: 'TIGRINHO',
+                desc: 'FORTUNE TIGER',
+                icone: '🎰',
+                url: 'games/tigre/index.html',
+                externo: false
+            },
+            {
+                id: 'count-chaos',
+                nome: 'COUNT-CHAOS',
+                desc: 'CONTE DE 1 A 10 SEGUINDO AS REGRAS',
+                icone: '🔢',
+                url: 'games/countchaos/index.html',
+                externo: false
+            },
+            {
+                id: 'nova-terminal',
+                nome: 'NOVA-TERMINAL',
+                desc: 'INVISTA EM AÇÕES SEM QUEBRAR',
+                icone: '📈',
+                url: 'games/novaterminal/index.html',
+                externo: false
+            },
+            {
+                id: 'password',
+                nome: 'THE-PASSWORD',
+                desc: 'CRIE UMA SENHA ENQUANTO NOVAS DEMANDAS SÃO ADICIONADAS',
+                icone: '🔑',
+                url: 'games/password/index.html',
+                externo: false
+            },
+            {
+                id: 'symbol-memory',
+                nome: 'SYMBOL MEMORY',
+                desc: 'MEMORIZE UMA SEQUÊNCIA DE SÍMBOLOS E RESPONDA CORRETAMENTE',
+                icone: '🧠',
+                url: 'games/symbol/index.html',
+                externo: false
+            },
+            {
+                id: 'color-match',
+                nome: 'COLOR MATCH',
+                desc: 'REPLIQUE CORRETAMENTE AS CORES MOSTRADAS',
+                icone: '🎨',
+                url: 'games/colormatch/index.html',
+                externo: false
+            },
+            {
+                id: 'code-breaker',
+                nome: 'CODE BREAKER',
+                desc: 'DESVENDE O CÓDIGO SECRETO PARA INVADIR O SISTEMA',
+                icone: '👨🏻‍💻',
+                url: 'games/codebreaker/index.html',
+                externo: false
+            },
+            {
+                id: 'mini-market',
+                nome: 'MINI MARKET',
+                desc: 'GERENCIE SEU PRÓPRIO SUPER MERCADO',
+                icone: '🛒',
+                url: 'games/minimart/index.html',
+                externo: false
+            },
+            {
+                id: 'tboi',
+                nome: 'THE BINDING OF ISAAC',
+                desc: 'APENAS PARA COMPUTADORES',
+                icone: '😭',
+                url: 'https://patlamontagne.github.io/the-binding-of-isaac-js/',
+                externo: true
+            },
+            {
+                id: 'fnaf1',
+                nome: 'FNAF 1',
+                desc: "APENAS PARA COMPUTADORES",
+                icone: '🐻',
+                url: 'https://irv77.github.io/hd_fnaf/1/',
+                externo: true
+            },
+            {
+                id: 'fnaf2',
+                nome: 'FNAF 2',
+                desc: "APENAS PARA COMPUTADORES",
+                icone: '🐻',
+                url: 'https://irv77.github.io/hd_fnaf/2/',
+                externo: true
+            },
+            {
+                id: 'fnaf3',
+                nome: 'FNAF 3',
+                desc: "APENAS PARA COMPUTADORES",
+                icone: '🐰',
+                url: 'https://irv77.github.io/hd_fnaf/3/',
+                externo: true
+            },
+            {
+                id: 'fnaf4',
+                nome: 'FNAF 4',
+                desc: "APENAS PARA COMPUTADORES",
+                icone: '👹',
+                url: 'https://irv77.github.io/hd_fnaf/4/',
+                externo: true
+            },
+            /* EXEMPLO DE COMO ADICIONAR UM LINK EXTERNO:
+            {
+                id: 'meu-jogo-externo',
+                nome: 'JOGO EXTERNO',
+                desc: 'JOGO HOSPEDADO EM OUTRO SITE',
+                icone: '🌐',
+                url: 'https://www.exemplo.com',
+                externo: true
+            }
+            */
+        ];
+
+
+        /* =====================================================
+           RENDERIZAR OS JOGOS NA TELA
+        ===================================================== */
+        const fileListContainer = document.getElementById('fileList');
+
+        function renderizarJogos() {
+            fileListContainer.innerHTML = '';
+            listaDeJogos.forEach(jogo => {
+                const div = document.createElement('div');
+                div.className = 'file';
+                div.dataset.id = jogo.id;
+                div.dataset.name = `${jogo.nome} ${jogo.desc}`.toLowerCase();
+
+                // Ação de clique: se for externo abre em nova aba, senão navega normalmente
+                div.onclick = function() {
+                    if (jogo.externo) {
+                        window.open(jogo.url, '_blank');
+                    } else {
+                        window.location.href = jogo.url;
+                    }
+                };
+
+                div.innerHTML = `
+                    <div class="icon">${jogo.icone}</div>
+                    <div class="filename-container">
+                        <span class="filename">${jogo.nome}</span>
+                        <span class="fav-star">⭐</span>
+                    </div>
+                    <div class="description">${jogo.desc}</div>
+                    <div class="arrow">&gt;</div>
+                `;
+
+                fileListContainer.appendChild(div);
+            });
+
+            // Atualiza os seletores e recarrega os favoritos após renderizar
+            files = document.querySelectorAll(".file");
+            carregarFavoritos();
+            filtrarJogos();
+        }
+
 
         /* =====================================================
            ESTADO DAS ABAS E FAVORITOS
@@ -1089,7 +931,7 @@
            SISTEMA DE FAVORITOS (LOCALSTORAGE)
         ===================================================== */
 
-        const files = document.querySelectorAll(".file");
+        let files = [];
 
         function carregarFavoritos() {
             let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
@@ -1103,35 +945,25 @@
             });
         }
 
-        // Clique com o botão direito para favoritar/desfavoritar
-        files.forEach(file => {
-            file.addEventListener('contextmenu', function (e) {
-                e.preventDefault(); // Impede o menu de contexto padrão do navegador
-                const id = this.dataset.id;
-                let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
+        // Delegação de evento ou atribuição direta após renderizar para o botão direito (favoritar)
+        function configurarEventosFavorito() {
+            files.forEach(file => {
+                file.addEventListener('contextmenu', function (e) {
+                    e.preventDefault(); // Impede o menu de contexto padrão do navegador
+                    const id = this.dataset.id;
+                    let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
 
-                if (favoritos.includes(id)) {
-                    favoritos = favoritos.filter(favId => favId !== id);
-                } else {
-                    favoritos.push(id);
-                }
+                    if (favoritos.includes(id)) {
+                        favoritos = favoritos.filter(favId => favId !== id);
+                    } else {
+                        favoritos.push(id);
+                    }
 
-                localStorage.setItem('htmlgames_favs', JSON.stringify(favoritos));
-                carregarFavoritos();
-                filtrarJogos();
+                    localStorage.setItem('htmlgames_favs', JSON.stringify(favoritos));
+                    carregarFavoritos();
+                    filtrarJogos();
+                });
             });
-        });
-
-        // Carrega os favoritos ao iniciar a página
-        carregarFavoritos();
-
-
-        /* =====================================================
-           ABRIR JOGO
-        ===================================================== */
-
-        function abrirJogo(caminho) {
-            window.location.href = "games/" + caminho;
         }
 
 
@@ -1150,7 +982,6 @@
                 const nome = file.dataset.name.toLowerCase();
                 const ehFavorito = file.classList.contains('favorite');
 
-                // Condição de exibição: Respeita a aba ativa E o texto digitado na pesquisa
                 let passaNaAba = (abaAtual === 'todos') || (abaAtual === 'favoritos' && ehFavorito);
                 let passaNaBusca = nome.includes(texto);
 
@@ -1184,6 +1015,10 @@
                 }
             }
         });
+
+        // Inicialização principal
+        renderizarJogos();
+        configurarEventosFavorito();
 
     </script>
 
