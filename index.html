@@ -1,1050 +1,1786 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HTMLGames // GAME TERMINAL</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --green: #39ff88;
+    --green-bright: #9affc4;
+    --green-dark: #167a42;
+    --green-darker: #07351d;
+    --green-faint: rgba(57,255,136,.08);
+
+    --bg: #010503;
+    --panel: rgba(2, 14, 8, .88);
+
+    --font: "VT323", monospace;
+}
+
+html {
+    background: #000;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 50% 40%, #082616 0%, #020b06 45%, #000 100%);
+    color: var(--green);
+    font-family: var(--font);
+    overflow-x: hidden;
+}
+
+/* =========================================================
+   CRT
+========================================================= */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,.025) 0px,
+            rgba(255,255,255,.025) 1px,
+            rgba(0,0,0,.08) 2px,
+            rgba(0,0,0,.08) 4px
+        );
+
+    mix-blend-mode: screen;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+
+    box-shadow:
+        inset 0 0 100px rgba(0,0,0,.95),
+        inset 0 0 250px rgba(0,0,0,.85);
+}
+
+/* =========================================================
+   MONITOR
+========================================================= */
+
+.monitor {
+    min-height: 100vh;
+    padding: 35px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen {
+    width: min(1250px, 96vw);
+    min-height: 760px;
+
+    position: relative;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            ellipse at 50% 30%,
+            rgba(13,70,39,.75),
+            rgba(2,14,8,.96) 60%,
+            #010402 100%
+        );
+
+    border: 1px solid #1d673c;
+    border-radius: 24px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 0 25px rgba(57,255,136,.14),
+        0 0 100px rgba(57,255,136,.07),
+        inset 0 0 70px rgba(0,0,0,.8);
+}
+
+.screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(57,255,136,.055),
+            transparent 70%
+        );
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    padding-bottom: 20px;
+    margin-bottom: 22px;
+
+    border-bottom: 1px solid var(--green-dark);
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-symbol {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border: 1px solid var(--green-dark);
+    background: rgba(57,255,136,.06);
+
+    font-size: 30px;
+
+    box-shadow:
+        0 0 15px rgba(57,255,136,.08),
+        inset 0 0 15px rgba(57,255,136,.05);
+}
+
+.system-name {
+    font-size: 48px;
+    line-height: .8;
+    letter-spacing: 3px;
+
+    color: var(--green);
 
-    <title>HTMLGames</title>
+    text-shadow:
+        0 0 5px var(--green),
+        0 0 20px rgba(57,255,136,.45);
+}
+
+.subtitle {
+    margin-top: 8px;
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    color: #269653;
+    font-size: 20px;
+    letter-spacing: 1px;
+}
+
+.status-box {
+    text-align: right;
+}
+
+.status {
+    font-size: 21px;
+    color: var(--green);
+
+    text-shadow: 0 0 8px var(--green);
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+.status::before {
+    content: "●";
+    margin-right: 8px;
+    animation: blink 1s infinite;
+}
+
+.status-detail {
+    margin-top: 5px;
+    color: #237f49;
+    font-size: 17px;
+}
 
-        /* =====================================================
-           CONFIGURAÇÕES
-        ===================================================== */
+@keyframes blink {
+    0%,45% { opacity: 1; }
+    46%,100% { opacity: .2; }
+}
+
+/* =========================================================
+   TERMINAL MESSAGE
+========================================================= */
+
+.terminal {
+    position: relative;
+    z-index: 2;
+
+    padding: 14px 16px;
+    margin-bottom: 20px;
+
+    border-left: 2px solid var(--green);
+    background: rgba(57,255,136,.035);
 
-        :root {
-            --green: #39ff88;
-            --green-dark: #0c7a3d;
-            --green-darker: #062b18;
-            --black: #020604;
-        }
+    color: #238c4e;
+    font-size: 19px;
 
+    box-shadow: inset 15px 0 30px rgba(57,255,136,.015);
+}
 
-        /* =====================================================
-           CORPO
-        ===================================================== */
+.terminal strong {
+    color: var(--green);
+}
 
-        body {
-            background: #000;
+.terminal-line {
+    margin: 2px 0;
+}
 
-            color: var(--green);
+/* =========================================================
+   TOOLBAR
+========================================================= */
 
-            font-family: "VT323", monospace;
+.toolbar {
+    position: relative;
+    z-index: 3;
 
-            min-height: 100vh;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 
-            overflow-x: hidden;
-        }
+    margin-bottom: 18px;
+}
 
+.tabs {
+    display: flex;
+    gap: 7px;
+}
 
-        /* =====================================================
-           EFEITO CRT
-        ===================================================== */
+.tab {
+    border: 1px solid var(--green-dark);
+    background: rgba(0,20,10,.55);
 
-        body::before {
-            content: "";
+    color: #238d4e;
+    font-family: var(--font);
+    font-size: 20px;
 
-            position: fixed;
+    padding: 8px 15px;
 
-            inset: 0;
+    cursor: pointer;
 
-            pointer-events: none;
+    transition:
+        .15s ease;
+}
 
-            z-index: 999;
+.tab:hover {
+    color: var(--green);
+    border-color: var(--green);
+    transform: translateY(-1px);
+}
 
-            background:
-                repeating-linear-gradient(
-                    to bottom,
-                    rgba(255,255,255,0.025) 0px,
-                    rgba(255,255,255,0.025) 1px,
-                    rgba(0,0,0,0.08) 2px,
-                    rgba(0,0,0,0.08) 4px
-                );
+.tab.active {
+    color: var(--green);
 
-            mix-blend-mode: screen;
-        }
+    background:
+        linear-gradient(
+            135deg,
+            rgba(57,255,136,.17),
+            rgba(57,255,136,.04)
+        );
 
+    border-color: var(--green);
 
-        /* =====================================================
-           VINHETA / CURVATURA
-        ===================================================== */
+    box-shadow:
+        0 0 12px rgba(57,255,136,.1),
+        inset 0 0 12px rgba(57,255,136,.04);
 
-        body::after {
-            content: "";
+    text-shadow: 0 0 6px var(--green);
+}
 
-            position: fixed;
+/* =========================================================
+   SEARCH
+========================================================= */
 
-            inset: 0;
+.search-area {
+    position: relative;
+    flex: 1;
+}
 
-            pointer-events: none;
+.search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
 
-            z-index: 998;
+    color: var(--green-dark);
+    font-size: 22px;
+}
 
-            box-shadow:
-                inset 0 0 100px rgba(0,0,0,0.95),
-                inset 0 0 220px rgba(0,0,0,0.8);
+.search {
+    width: 100%;
 
-            border-radius: 4%;
-        }
+    background: rgba(0,0,0,.5);
 
+    border: 1px solid var(--green-dark);
 
-        /* =====================================================
-           MONITOR
-        ===================================================== */
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 22px;
 
-        .monitor {
-            min-height: 100vh;
+    padding: 9px 42px;
 
-            padding: 35px;
+    outline: none;
 
-            display: flex;
+    transition: .15s;
 
-            align-items: center;
+    text-shadow: 0 0 5px var(--green);
+}
 
-            justify-content: center;
+.search::placeholder {
+    color: #176b3b;
+}
 
-            background:
-                radial-gradient(
-                    ellipse at center,
-                    #06170d 0%,
-                    #020704 60%,
-                    #000 100%
-                );
-        }
+.search:focus {
+    border-color: var(--green);
 
+    box-shadow:
+        0 0 15px rgba(57,255,136,.12),
+        inset 0 0 15px rgba(57,255,136,.03);
+}
 
-        /* =====================================================
-           TELA
-        ===================================================== */
+.search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
 
-        .screen {
-            width: min(1100px, 95vw);
+    color: var(--green-dark);
+    cursor: pointer;
 
-            min-height: 700px;
+    font-size: 20px;
 
-            background:
-                radial-gradient(
-                    ellipse at center,
-                    #071d10 0%,
-                    #031008 65%,
-                    #010503 100%
-                );
+    display: none;
+}
 
-            border:
+.search-clear:hover {
+    color: var(--green);
+}
 
-                2px solid #174f2d;
+/* =========================================================
+   GAME INFO
+========================================================= */
 
-            border-radius: 25px;
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-            padding: 30px;
+    margin: 5px 2px 10px;
 
-            box-shadow:
+    color: #247d47;
+    font-size: 18px;
+}
 
-                0 0 20px rgba(57,255,136,0.15),
+.game-count {
+    color: var(--green);
+}
 
-                0 0 70px rgba(57,255,136,0.08),
+/* =========================================================
+   GAME GRID
+========================================================= */
 
-                inset 0 0 50px rgba(0,0,0,0.8);
+.file-list {
+    position: relative;
+    z-index: 2;
 
-            position: relative;
+    display: grid;
 
-            overflow: hidden;
-        }
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
+    gap: 10px;
 
-        /* =====================================================
-           BRILHO DA TELA
-        ===================================================== */
+    max-height: 485px;
 
-        .screen::before {
-            content: "";
+    overflow-y: auto;
 
-            position: absolute;
+    padding-right: 5px;
+}
 
-            inset: 0;
+/* scrollbar */
 
-            pointer-events: none;
+.file-list::-webkit-scrollbar {
+    width: 7px;
+}
 
-            background:
-                radial-gradient(
-                    ellipse at center,
-                    rgba(57,255,136,0.05),
-                    transparent 70%
-                );
-        }
+.file-list::-webkit-scrollbar-track {
+    background: #020a05;
+}
 
+.file-list::-webkit-scrollbar-thumb {
+    background: #125d32;
+}
 
-        /* =====================================================
-           HEADER
-        ===================================================== */
+.file-list::-webkit-scrollbar-thumb:hover {
+    background: var(--green-dark);
+}
 
-        .header {
-            position: relative;
+/* =========================================================
+   GAME CARD
+========================================================= */
 
-            border-bottom: 1px solid var(--green-dark);
+.file {
+    min-height: 105px;
 
-            padding-bottom: 18px;
+    position: relative;
 
-            margin-bottom: 25px;
-        }
+    display: flex;
+    align-items: center;
 
-        .header-top {
-            display: flex;
+    padding: 15px 17px;
 
-            justify-content: space-between;
+    border: 1px solid #0c4827;
 
-            align-items: center;
-        }
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,28,14,.65),
+            rgba(0,10,5,.55)
+        );
 
+    cursor: pointer;
 
-        .system-name {
-            font-size: 38px;
+    overflow: hidden;
 
-            text-shadow:
-                0 0 5px var(--green),
-                0 0 15px rgba(57,255,136,0.5);
+    transition:
+        transform .16s ease,
+        border-color .16s ease,
+        background .16s ease,
+        box-shadow .16s ease;
+}
 
-            letter-spacing: 2px;
-        }
+.file::before {
+    content: "";
 
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
 
-        .status {
-            font-size: 20px;
+    width: 2px;
 
-            color: var(--green);
+    background: transparent;
 
-            text-shadow:
-                0 0 8px var(--green);
-        }
+    transition: .15s;
+}
 
+.file::after {
+    content: "";
 
-        .status::before {
-            content: "● ";
+    position: absolute;
 
-            animation: blink 1s infinite;
-        }
+    width: 100px;
+    height: 100px;
 
+    right: -50px;
+    bottom: -50px;
 
-        @keyframes blink {
+    border-radius: 50%;
 
-            0%, 45% {
-                opacity: 1;
-            }
+    background: rgba(57,255,136,.06);
 
-            46%, 100% {
-                opacity: 0;
-            }
+    filter: blur(20px);
 
-        }
+    transition: .2s;
+}
 
+.file:hover {
+    transform: translateX(4px);
 
-        .subtitle {
-            font-size: 20px;
+    border-color: #279b57;
 
-            color: #1ebc62;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(57,255,136,.105),
+            rgba(0,20,10,.65)
+        );
 
-            margin-top: 5px;
-        }
+    box-shadow:
+        0 0 18px rgba(57,255,136,.07);
+}
 
+.file:hover::before {
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+}
 
-        /* =====================================================
-           TERMINAL
-        ===================================================== */
+.file:hover::after {
+    transform: scale(2);
+}
 
-        .terminal-line {
-            font-size: 20px;
+.file.selected {
+    border-color: var(--green);
 
-            margin-bottom: 20px;
+    box-shadow:
+        0 0 18px rgba(57,255,136,.12),
+        inset 0 0 20px rgba(57,255,136,.025);
+}
 
-            color: #1ebc62;
-        }
+.file.selected::before {
+    background: var(--green);
+}
 
-        .terminal-line span {
-            color: var(--green);
-        }
+/* =========================================================
+   GAME ICON
+========================================================= */
 
+.icon {
+    width: 65px;
+    height: 65px;
 
-        /* =====================================================
-           ABAS (TODOS / FAVORITOS / SUGESTÕES)
-        ===================================================== */
+    flex-shrink: 0;
 
-        .tabs-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-        .tab {
-            background: rgba(0, 20, 10, 0.4);
-            border: 1px solid var(--green-dark);
-            color: #168d4c;
-            font-family: "VT323", monospace;
-            font-size: 20px;
-            padding: 5px 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-        }
+    margin-right: 15px;
 
-        .tab:hover {
-            border-color: var(--green);
-            color: var(--green);
-        }
+    border: 1px solid #145b31;
 
-        .tab.active {
-            background: rgba(57, 255, 136, 0.15);
-            border-color: var(--green);
-            color: var(--green);
-            text-shadow: 0 0 5px var(--green);
-        }
+    background:
+        radial-gradient(
+            circle,
+            rgba(57,255,136,.09),
+            rgba(0,0,0,.25)
+        );
 
+    font-size: 35px;
 
-        /* =====================================================
-           PESQUISA
-        ===================================================== */
+    filter:
+        grayscale(.4)
+        sepia(.3)
+        hue-rotate(70deg)
+        saturate(2);
 
-        .search-container {
-            margin-bottom: 25px;
+    transition: .15s;
+}
 
-            display: flex;
+.file:hover .icon {
+    border-color: var(--green-dark);
 
-            align-items: center;
+    filter:
+        grayscale(0)
+        sepia(.15)
+        hue-rotate(55deg)
+        saturate(2.3);
 
-            gap: 10px;
-        }
+    transform: scale(1.05);
+}
 
+/* =========================================================
+   GAME TEXT
+========================================================= */
 
-        .prompt {
-            font-size: 23px;
+.game-content {
+    min-width: 0;
+    flex: 1;
+}
 
-            color: var(--green);
-        }
+.filename-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
+.filename {
+    color: var(--green);
 
-        .search {
-            flex: 1;
+    font-size: 27px;
 
-            max-width: 450px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-            background: rgba(0,0,0,0.45);
+    letter-spacing: 1px;
 
-            border: 1px solid var(--green-dark);
+    text-shadow:
+        0 0 5px rgba(57,255,136,.35);
+}
 
-            color: var(--green);
+.description {
+    margin-top: 3px;
 
-            font-family: "VT323", monospace;
+    color: #21864a;
 
-            font-size: 22px;
+    font-size: 17px;
 
-            padding: 7px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-            outline: none;
+.external {
+    color: #176b3b;
+    font-size: 16px;
+    margin-top: 5px;
+}
 
-            text-shadow:
-                0 0 5px var(--green);
-        }
+.fav-star {
+    display: none;
 
+    color: #ffd84a;
 
-        .search::placeholder {
-            color: #176b3b;
-        }
+    font-size: 18px;
 
+    text-shadow:
+        0 0 8px #ffd84a;
+}
 
-        .search:focus {
-            border-color: var(--green);
+.file.favorite .fav-star {
+    display: inline-block;
+}
 
-            box-shadow:
-                0 0 10px rgba(57,255,136,0.2);
-        }
+/* =========================================================
+   ARROW
+========================================================= */
 
+.arrow {
+    flex-shrink: 0;
 
-        /* =====================================================
-           LISTA
-        ===================================================== */
+    margin-left: 12px;
 
-        .file-list {
-            border: 1px solid var(--green-dark);
+    color: var(--green-dark);
 
-            position: relative;
-        }
+    font-size: 31px;
 
+    opacity: .5;
 
-        /* =====================================================
-           JOGO
-        ===================================================== */
+    transition: .15s;
+}
 
-        .file {
-            min-height: 72px;
+.file:hover .arrow,
+.file.selected .arrow {
+    color: var(--green);
+    opacity: 1;
 
-            display: flex;
+    transform: translateX(4px);
 
-            align-items: center;
+    text-shadow:
+        0 0 8px var(--green);
+}
 
-            padding: 10px 18px;
+/* =========================================================
+   EMPTY
+========================================================= */
 
-            border-bottom: 1px solid #0b4225;
+.empty {
+    display: none;
 
-            cursor: pointer;
+    grid-column: 1 / -1;
 
-            background: rgba(0,20,10,0.25);
+    padding: 65px 20px;
 
-            transition:
-                background 0.1s,
-                padding-left 0.1s;
-        }
+    border: 1px dashed var(--green-dark);
 
+    text-align: center;
 
-        .file:last-child {
-            border-bottom: none;
-        }
+    color: #21864a;
 
+    font-size: 25px;
+}
 
-        .file:hover {
-            background: rgba(57,255,136,0.08);
+.empty-big {
+    color: var(--green);
 
-            padding-left: 27px;
+    font-size: 42px;
 
-            text-shadow:
-                0 0 8px var(--green);
-        }
+    margin-bottom: 5px;
+}
 
+/* =========================================================
+   FOOTER
+========================================================= */
 
-        .file:hover .arrow {
-            opacity: 1;
-        }
+.footer {
+    position: relative;
+    z-index: 2;
 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-        /* =====================================================
-           ÍCONE
-        ===================================================== */
+    margin-top: 20px;
+    padding-top: 15px;
 
-        .icon {
-            width: 50px;
+    border-top: 1px solid var(--green-dark);
 
-            font-size: 28px;
+    color: #176b3b;
 
-            filter:
-                grayscale(1)
-                sepia(1)
-                hue-rotate(70deg)
-                saturate(3);
+    font-size: 17px;
+}
 
-            margin-right: 10px;
-        }
+.footer strong {
+    color: var(--green-dark);
+}
 
+/* =========================================================
+   RESPONSIVO
+========================================================= */
 
-        /* =====================================================
-           NOME E FAVORITO
-        ===================================================== */
+@media (max-width: 850px) {
 
-        .filename-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .screen {
+        padding: 22px;
+    }
 
-        .filename {
-            font-size: 26px;
+    .file-list {
+        grid-template-columns: 1fr;
+    }
 
-            color: var(--green);
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-            letter-spacing: 1px;
-        }
+    .tabs {
+        width: 100%;
+    }
 
-        .fav-star {
-            display: none;
-            font-size: 20px;
-            color: #ffd700;
-            text-shadow: 0 0 5px #ffd700;
-        }
+    .tab {
+        flex: 1;
+    }
 
-        .file.favorite .fav-star {
-            display: inline-block;
-        }
+    .header {
+        align-items: center;
+    }
+}
 
+@media (max-width: 600px) {
 
-        /* =====================================================
-           DESCRIÇÃO
-        ===================================================== */
+    .monitor {
+        padding: 8px;
+    }
 
-        .description {
-            font-size: 19px;
+    .screen {
+        min-height: 95vh;
+        padding: 16px;
+        border-radius: 15px;
+    }
 
-            color: #168d4c;
+    .system-name {
+        font-size: 35px;
+    }
 
-            margin-right: 25px;
-        }
+    .logo-symbol {
+        width: 43px;
+        height: 43px;
+        font-size: 24px;
+    }
 
+    .subtitle {
+        font-size: 17px;
+    }
 
-        /* =====================================================
-           SETA
-        ===================================================== */
+    .status-box {
+        display: none;
+    }
 
-        .arrow {
-            font-size: 28px;
+    .terminal {
+        font-size: 17px;
+    }
 
-            color: var(--green);
+    .file {
+        min-height: 90px;
+        padding: 11px;
+    }
 
-            opacity: 0.4;
+    .icon {
+        width: 52px;
+        height: 52px;
+        font-size: 28px;
+        margin-right: 11px;
+    }
 
-            transition: 0.1s;
-        }
+    .filename {
+        font-size: 24px;
+    }
 
+    .description {
+        font-size: 15px;
+    }
 
-        /* =====================================================
-           NENHUM JOGO
-        ===================================================== */
-
-        .empty {
-            display: none;
-
-            border: 1px solid var(--green-dark);
-
-            border-top: none;
-
-            padding: 40px;
-
-            text-align: center;
-
-            font-size: 25px;
-
-            color: #168d4c;
-        }
-
-
-        /* =====================================================
-           FOOTER
-        ===================================================== */
-
-        .footer {
-            margin-top: 25px;
-
-            display: flex;
-
-            justify-content: space-between;
-
-            border-top: 1px solid var(--green-dark);
-
-            padding-top: 12px;
-
-            color: #126b3a;
-
-            font-size: 18px;
-        }
-
-
-        /* =====================================================
-           CURSOR
-        ===================================================== */
-
-        .cursor {
-            display: inline-block;
-
-            width: 10px;
-
-            height: 20px;
-
-            background: var(--green);
-
-            margin-left: 5px;
-
-            animation: cursorBlink 0.8s infinite;
-        }
-
-
-        @keyframes cursorBlink {
-
-            0%, 50% {
-                opacity: 1;
-            }
-
-            51%, 100% {
-                opacity: 0;
-            }
-
-        }
-
-
-        /* =====================================================
-           RESPONSIVO
-        ===================================================== */
-
-        @media (max-width: 700px) {
-
-            .monitor {
-                padding: 10px;
-            }
-
-            .screen {
-                padding: 18px;
-
-                min-height: 95vh;
-
-                border-radius: 15px;
-            }
-
-            .system-name {
-                font-size: 28px;
-            }
-
-            .status {
-                font-size: 16px;
-            }
-
-            .description {
-                display: none;
-            }
-
-            .filename {
-                font-size: 23px;
-            }
-
-            .footer {
-                flex-direction: column;
-
-                gap: 5px;
-            }
-        }
-
-    </style>
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+</style>
 </head>
-
 
 <body>
 
+<div class="monitor">
 
-    <div class="monitor">
+<div class="screen">
 
-        <div class="screen">
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
+<header class="header">
 
-            <header class="header">
+    <div class="logo-area">
 
-                <div class="header-top">
+        <div class="logo-symbol">
+            ▣
+        </div>
 
-                    <div class="system-name">
-                        HTMLGames
-                    </div>
-
-                    <div class="status">
-                        ONLINE
-                    </div>
-
-                </div>
-
-                <div class="subtitle">
-                    Polaroido - Made using AIs
-                </div>
-
-            </header>
-
-
-            <div class="terminal-line">
-                C:\GAMES&gt; <span>ACCESSING GAME DATABASE...</span>
+        <div>
+            <div class="system-name">
+                HTMLGAMES
             </div>
 
-            <div class="terminal-line">
-                C:\GAMES&gt; <span>SELECT A GAME TO EXECUTE (CLIQUE COM O BOTÃO DIREITO PARA FAVORITAR)</span>
+            <div class="subtitle">
+                POLAROIDO // DIGITAL GAME ARCHIVE
             </div>
-
-
-            <div class="tabs-container">
-                <button class="tab active" onclick="mudarAba('todos')" id="tabTodos">TODOS OS JOGOS</button>
-                <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos">⭐ FAVORITOS</button>
-                <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">💬 SUGESTÕES</a>
-            </div>
-
-
-            <div class="search-container">
-
-                <div class="prompt">
-                    C:\GAMES&gt;
-                </div>
-
-                <input
-                    id="search"
-                    class="search"
-                    type="text"
-                    placeholder="SEARCH..."
-                    autocomplete="off"
-                >
-
-                <span class="cursor"></span>
-
-            </div>
-
-
-            <div class="file-list" id="fileList">
-                </div>
-
-
-            <div
-                class="empty"
-                id="empty"
-            >
-                NO GAMES FOUND.
-            </div>
-
-
-            <footer class="footer">
-
-                <div>
-                    SYSTEM READY.
-                </div>
-
-                <div>
-                    [ ENTER ] SELECT GAME | [ BOTÃO DIREITO ] FAVORITAR
-                </div>
-
-                <div>
-                    [ ESC ] EXIT
-                </div>
-
-            </footer>
-
-
         </div>
 
     </div>
 
+    <div class="status-box">
 
-    <script>
+        <div class="status">
+            SYSTEM ONLINE
+        </div>
 
-        /* =====================================================
-           LISTA CENTRALIZADA DE JOGOS (FÁCIL DE EDITAR)
-           - id: identificador único (necessário para os favoritos)
-           - nome: título principal exibido em destaque
-           - desc: descrição detalhada do jogo
-           - icone: emoji representativo
-           - url: pode ser caminho local (ex: 'games/fnaf/index.html') ou link externo (ex: 'https://exemplo.com')
-           - externo: true se for abrir em outra aba/link externo, false se for abrir localmente na mesma aba
-        ===================================================== */
-        const listaDeJogos = [
-            {
-                id: 'fnaf',
-                nome: 'FNAF gemini',
-                desc: "VERSÃO GEMINI",
-                icone: '🐻',
-                url: 'games/fnaf/index.html',
-                externo: false
-            },
-            {
-                id: 'campo-minado',
-                nome: 'MINESWEEPER',
-                desc: 'CAMPO-MINADO',
-                icone: '💣',
-                url: 'games/campo-minado/index.html',
-                externo: false
-            },
-            {
-                id: 'snake',
-                nome: 'SNAKE',
-                desc: 'JOGO DA COBRINHA PLUS',
-                icone: '🐍',
-                url: 'games/snake/index.html',
-                externo: false
-            },
-            {
-                id: 'tigrinho',
-                nome: 'TIGRINHO',
-                desc: 'FORTUNE TIGER',
-                icone: '🎰',
-                url: 'games/tigre/index.html',
-                externo: false
-            },
-            {
-                id: 'count-chaos',
-                nome: 'COUNT-CHAOS',
-                desc: 'CONTE DE 1 A 10 SEGUINDO AS REGRAS',
-                icone: '🔢',
-                url: 'games/countchaos/index.html',
-                externo: false
-            },
-            {
-                id: 'nova-terminal',
-                nome: 'NOVA-TERMINAL',
-                desc: 'INVISTA EM AÇÕES SEM QUEBRAR',
-                icone: '📈',
-                url: 'games/novaterminal/index.html',
-                externo: false
-            },
-            {
-                id: 'password',
-                nome: 'THE-PASSWORD',
-                desc: 'CRIE UMA SENHA ENQUANTO NOVAS DEMANDAS SÃO ADICIONADAS',
-                icone: '🔑',
-                url: 'games/password/index.html',
-                externo: false
-            },
-            {
-                id: 'symbol-memory',
-                nome: 'SYMBOL MEMORY',
-                desc: 'MEMORIZE UMA SEQUÊNCIA DE SÍMBOLOS E RESPONDA CORRETAMENTE',
-                icone: '🧠',
-                url: 'games/symbol/index.html',
-                externo: false
-            },
-            {
-                id: 'color-match',
-                nome: 'COLOR MATCH',
-                desc: 'REPLIQUE CORRETAMENTE AS CORES MOSTRADAS',
-                icone: '🎨',
-                url: 'games/colormatch/index.html',
-                externo: false
-            },
-            {
-                id: 'code-breaker',
-                nome: 'CODE BREAKER',
-                desc: 'DESVENDE O CÓDIGO SECRETO PARA INVADIR O SISTEMA',
-                icone: '👨🏻‍💻',
-                url: 'games/codebreaker/index.html',
-                externo: false
-            },
-            {
-                id: 'mini-market',
-                nome: 'MINI MARKET',
-                desc: 'GERENCIE SEU PRÓPRIO SUPER MERCADO',
-                icone: '🛒',
-                url: 'games/minimart/index.html',
-                externo: false
-            },
-            {
-                id: 'tboi',
-                nome: 'THE BINDING OF ISAAC',
-                desc: 'APENAS PARA COMPUTADORES',
-                icone: '😭',
-                url: 'https://patlamontagne.github.io/the-binding-of-isaac-js/',
-                externo: true
-            },
-            {
-                id: 'fnaf1',
-                nome: 'FNAF 1',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '🐻',
-                url: 'https://irv77.github.io/hd_fnaf/1/',
-                externo: true
-            },
-            {
-                id: 'fnaf2',
-                nome: 'FNAF 2',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '🐻',
-                url: 'https://irv77.github.io/hd_fnaf/2/',
-                externo: true
-            },
-            {
-                id: 'fnaf3',
-                nome: 'FNAF 3',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '🐰',
-                url: 'https://irv77.github.io/hd_fnaf/3/',
-                externo: true
-            },
-            {
-                id: 'fnaf4',
-                nome: 'FNAF 4',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '👹',
-                url: 'https://irv77.github.io/hd_fnaf/4/',
-                externo: true
-            },
-            {
-                id: 'celeste',
-                nome: 'CELESTE',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '🛘',
-                url: 'https://verdini.github.io/celeste-classic-web/',
-                externo: true
-            },
-            {
-                id: 'ultrakill',
-                nome: 'ULTRAKILL',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '🔫',
-                url: 'https://chickenstrips05.github.io/Ultrakill-web/',
-                externo: true
-            },
-            {
-                id: 'baldi',
-                nome: 'BALDIS BASICs',
-                desc: "APENAS PARA COMPUTADORES",
-                icone: '📏',
-                url: 'https://michaelsoft1853.github.io/baldi-s-basics-webgl/',
-                externo: true
-            }
-            /* EXEMPLO DE COMO ADICIONAR UM LINK EXTERNO:
-            {
-                id: 'meu-jogo-externo',
-                nome: 'JOGO EXTERNO',
-                desc: 'JOGO HOSPEDADO EM OUTRO SITE',
-                icone: '🌐',
-                url: 'https://www.exemplo.com',
-                externo: true
-            }
-            */
-        ];
+        <div class="status-detail">
+            CONNECTION: STABLE
+        </div>
+
+    </div>
+
+</header>
 
 
-        /* =====================================================
-           RENDERIZAR OS JOGOS NA TELA
-        ===================================================== */
-        const fileListContainer = document.getElementById('fileList');
+<!-- =====================================================
+     TERMINAL
+===================================================== -->
 
-        function renderizarJogos() {
-            fileListContainer.innerHTML = '';
-            listaDeJogos.forEach(jogo => {
-                const div = document.createElement('div');
-                div.className = 'file';
-                div.dataset.id = jogo.id;
-                div.dataset.name = `${jogo.nome} ${jogo.desc}`.toLowerCase();
+<div class="terminal">
 
-                // Ação de clique: se for externo abre em nova aba, senão navega normalmente
-                div.onclick = function() {
-                    if (jogo.externo) {
-                        window.open(jogo.url, '_blank');
-                    } else {
-                        window.location.href = jogo.url;
-                    }
-                };
+    <div class="terminal-line">
+        C:\GAMES&gt; <strong>ACCESSING GAME DATABASE...</strong>
+    </div>
 
-                div.innerHTML = `
-                    <div class="icon">${jogo.icone}</div>
-                    <div class="filename-container">
-                        <span class="filename">${jogo.nome}</span>
-                        <span class="fav-star">⭐</span>
-                    </div>
-                    <div class="description">${jogo.desc}</div>
-                    <div class="arrow">&gt;</div>
-                `;
+    <div class="terminal-line">
+        C:\GAMES&gt; DATABASE LOADED // SELECT AN APPLICATION TO EXECUTE
+    </div>
 
-                fileListContainer.appendChild(div);
-            });
+</div>
 
-            // Atualiza os seletores e recarrega os favoritos após renderizar
-            files = document.querySelectorAll(".file");
-            carregarFavoritos();
-            filtrarJogos();
+
+<!-- =====================================================
+     TOOLBAR
+===================================================== -->
+
+<div class="toolbar">
+
+    <div class="tabs">
+
+        <button
+            class="tab active"
+            onclick="mudarAba('todos')"
+            id="tabTodos"
+        >
+            ALL
+        </button>
+
+        <button
+            class="tab"
+            onclick="mudarAba('favoritos')"
+            id="tabFavoritos"
+        >
+            ★ FAVORITES
+        </button>
+
+        <a
+            class="tab"
+            href="https://forms.gle/boRAUm1VEiJNdS5DA"
+            target="_blank"
+        >
+            + SUGGEST
+        </a>
+
+    </div>
+
+    <div class="search-area">
+
+        <span class="search-icon">
+            &gt;_
+        </span>
+
+        <input
+            id="search"
+            class="search"
+            type="text"
+            placeholder="SEARCH DATABASE..."
+            autocomplete="off"
+        >
+
+        <span
+            id="searchClear"
+            class="search-clear"
+            onclick="limparBusca()"
+        >
+            ×
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     GAME INFO
+===================================================== -->
+
+<div class="game-info">
+
+    <div>
+        DATABASE / <span class="game-count" id="gameCount">0 GAMES</span>
+    </div>
+
+    <div>
+        RIGHT CLICK = ★ FAVORITE
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     GAME LIST
+===================================================== -->
+
+<div
+    class="file-list"
+    id="fileList"
+>
+
+    <div class="empty" id="empty">
+
+        <div class="empty-big">
+            [ 404 ]
+        </div>
+
+        NO GAMES FOUND.
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    <div>
+        <strong>●</strong> SYSTEM READY
+    </div>
+
+    <div>
+        ↑ ↓ NAVIGATE &nbsp; // &nbsp; ENTER EXECUTE
+    </div>
+
+    <div>
+        ESC CLEAR SEARCH
+    </div>
+
+</footer>
+
+</div>
+</div>
+
+
+<script>
+
+/* =========================================================
+   DATABASE
+========================================================= */
+
+const listaDeJogos = [
+
+    {
+        id: 'fnaf',
+        nome: 'FNAF GEMINI',
+        desc: 'VERSÃO GEMINI',
+        icone: '🐻',
+        url: 'games/fnaf/index.html',
+        externo: false
+    },
+
+    {
+        id: 'campo-minado',
+        nome: 'MINESWEEPER',
+        desc: 'CAMPO-MINADO',
+        icone: '💣',
+        url: 'games/campo-minado/index.html',
+        externo: false
+    },
+
+    {
+        id: 'snake',
+        nome: 'SNAKE',
+        desc: 'JOGO DA COBRINHA PLUS',
+        icone: '🐍',
+        url: 'games/snake/index.html',
+        externo: false
+    },
+
+    {
+        id: 'tigrinho',
+        nome: 'TIGRINHO',
+        desc: 'FORTUNE TIGER',
+        icone: '🎰',
+        url: 'games/tigre/index.html',
+        externo: false
+    },
+
+    {
+        id: 'count-chaos',
+        nome: 'COUNT-CHAOS',
+        desc: 'CONTE DE 1 A 10 SEGUINDO AS REGRAS',
+        icone: '🔢',
+        url: 'games/countchaos/index.html',
+        externo: false
+    },
+
+    {
+        id: 'nova-terminal',
+        nome: 'NOVA-TERMINAL',
+        desc: 'INVISTA EM AÇÕES SEM QUEBRAR',
+        icone: '📈',
+        url: 'games/novaterminal/index.html',
+        externo: false
+    },
+
+    {
+        id: 'password',
+        nome: 'THE-PASSWORD',
+        desc: 'CRIE UMA SENHA ENQUANTO NOVAS DEMANDAS SÃO ADICIONADAS',
+        icone: '🔑',
+        url: 'games/password/index.html',
+        externo: false
+    },
+
+    {
+        id: 'symbol-memory',
+        nome: 'SYMBOL MEMORY',
+        desc: 'MEMORIZE UMA SEQUÊNCIA DE SÍMBOLOS',
+        icone: '🧠',
+        url: 'games/symbol/index.html',
+        externo: false
+    },
+
+    {
+        id: 'color-match',
+        nome: 'COLOR MATCH',
+        desc: 'REPLIQUE CORRETAMENTE AS CORES',
+        icone: '🎨',
+        url: 'games/colormatch/index.html',
+        externo: false
+    },
+
+    {
+        id: 'code-breaker',
+        nome: 'CODE BREAKER',
+        desc: 'DESVENDE O CÓDIGO SECRETO',
+        icone: '👨🏻‍💻',
+        url: 'games/codebreaker/index.html',
+        externo: false
+    },
+
+    {
+        id: 'mini-market',
+        nome: 'MINI MARKET',
+        desc: 'GERENCIE SEU PRÓPRIO SUPERMERCADO',
+        icone: '🛒',
+        url: 'games/minimart/index.html',
+        externo: false
+    },
+
+    {
+        id: 'tboi',
+        nome: 'THE BINDING OF ISAAC',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '😭',
+        url: 'https://patlamontagne.github.io/the-binding-of-isaac-js/',
+        externo: true
+    },
+
+    {
+        id: 'fnaf1',
+        nome: 'FNAF 1',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '🐻',
+        url: 'https://irv77.github.io/hd_fnaf/1/',
+        externo: true
+    },
+
+    {
+        id: 'fnaf2',
+        nome: 'FNAF 2',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '🐻',
+        url: 'https://irv77.github.io/hd_fnaf/2/',
+        externo: true
+    },
+
+    {
+        id: 'fnaf3',
+        nome: 'FNAF 3',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '🐰',
+        url: 'https://irv77.github.io/hd_fnaf/3/',
+        externo: true
+    },
+
+    {
+        id: 'fnaf4',
+        nome: 'FNAF 4',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '👹',
+        url: 'https://irv77.github.io/hd_fnaf/4/',
+        externo: true
+    },
+
+    {
+        id: 'celeste',
+        nome: 'CELESTE',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '🛘',
+        url: 'https://verdini.github.io/celeste-classic-web/',
+        externo: true
+    },
+
+    {
+        id: 'ultrakill',
+        nome: 'ULTRAKILL',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '🔫',
+        url: 'https://chickenstrips05.github.io/Ultrakill-web/',
+        externo: true
+    },
+
+    {
+        id: 'baldi',
+        nome: 'BALDI’S BASICS',
+        desc: 'APENAS PARA COMPUTADORES',
+        icone: '📏',
+        url: 'https://michaelsoft1853.github.io/baldi-s-basics-webgl/',
+        externo: true
+    }
+
+];
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let files = [];
+let abaAtual = 'todos';
+let selectedIndex = 0;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const fileListContainer =
+    document.getElementById('fileList');
+
+const search =
+    document.getElementById('search');
+
+const empty =
+    document.getElementById('empty');
+
+const gameCount =
+    document.getElementById('gameCount');
+
+const searchClear =
+    document.getElementById('searchClear');
+
+
+/* =========================================================
+   FAVORITOS
+========================================================= */
+
+function obterFavoritos() {
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem('htmlgames_favs')
+        ) || [];
+
+    } catch {
+
+        return [];
+
+    }
+}
+
+
+function salvarFavoritos(favoritos) {
+
+    localStorage.setItem(
+        'htmlgames_favs',
+        JSON.stringify(favoritos)
+    );
+
+}
+
+
+function carregarFavoritos() {
+
+    const favoritos = obterFavoritos();
+
+    files.forEach(file => {
+
+        if (favoritos.includes(file.dataset.id)) {
+
+            file.classList.add('favorite');
+
+        } else {
+
+            file.classList.remove('favorite');
+
         }
 
+    });
 
-        /* =====================================================
-           ESTADO DAS ABAS E FAVORITOS
-        ===================================================== */
-
-        let abaAtual = 'todos';
-
-        function mudarAba(aba) {
-            abaAtual = aba;
-            document.getElementById('tabTodos').classList.toggle('active', aba === 'todos');
-            document.getElementById('tabFavoritos').classList.toggle('active', aba === 'favoritos');
-            filtrarJogos();
-        }
+}
 
 
-        /* =====================================================
-           SISTEMA DE FAVORITOS (LOCALSTORAGE)
-        ===================================================== */
+/* =========================================================
+   FAVORITAR
+========================================================= */
 
-        let files = [];
+function alternarFavorito(id) {
 
-        function carregarFavoritos() {
-            let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
-            files.forEach(file => {
-                const id = file.dataset.id;
-                if (favoritos.includes(id)) {
-                    file.classList.add('favorite');
-                } else {
-                    file.classList.remove('favorite');
+    let favoritos = obterFavoritos();
+
+    if (favoritos.includes(id)) {
+
+        favoritos =
+            favoritos.filter(
+                fav => fav !== id
+            );
+
+    } else {
+
+        favoritos.push(id);
+
+    }
+
+    salvarFavoritos(favoritos);
+
+    carregarFavoritos();
+
+    filtrarJogos();
+
+}
+
+
+/* =========================================================
+   ABRIR JOGO
+========================================================= */
+
+function abrirJogo(jogo) {
+
+    if (jogo.externo) {
+
+        window.open(
+            jogo.url,
+            '_blank'
+        );
+
+    } else {
+
+        window.location.href =
+            jogo.url;
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderizarJogos() {
+
+    fileListContainer.innerHTML = '';
+
+    listaDeJogos.forEach((jogo, index) => {
+
+        const div =
+            document.createElement('div');
+
+        div.className = 'file';
+
+        div.dataset.id =
+            jogo.id;
+
+        div.dataset.index =
+            index;
+
+        div.dataset.name =
+            `${jogo.nome} ${jogo.desc}`.toLowerCase();
+
+        div.innerHTML = `
+
+            <div class="icon">
+                ${jogo.icone}
+            </div>
+
+            <div class="game-content">
+
+                <div class="filename-container">
+
+                    <span class="filename">
+                        ${jogo.nome}
+                    </span>
+
+                    <span class="fav-star">
+                        ★
+                    </span>
+
+                </div>
+
+                <div class="description">
+                    ${jogo.desc}
+                </div>
+
+                ${
+                    jogo.externo
+                    ?
+                    `<div class="external">
+                        ↗ EXTERNAL CONNECTION
+                    </div>`
+                    :
+                    ''
                 }
-            });
-        }
 
-        // Delegação de evento ou atribuição direta após renderizar para o botão direito (favoritar)
-        function configurarEventosFavorito() {
-            files.forEach(file => {
-                file.addEventListener('contextmenu', function (e) {
-                    e.preventDefault(); // Impede o menu de contexto padrão do navegador
-                    const id = this.dataset.id;
-                    let favoritos = JSON.parse(localStorage.getItem('htmlgames_favs')) || [];
+            </div>
 
-                    if (favoritos.includes(id)) {
-                        favoritos = favoritos.filter(favId => favId !== id);
-                    } else {
-                        favoritos.push(id);
-                    }
+            <div class="arrow">
+                ›
+            </div>
 
-                    localStorage.setItem('htmlgames_favs', JSON.stringify(favoritos));
-                    carregarFavoritos();
-                    filtrarJogos();
-                });
-            });
-        }
+        `;
+
+        /* Clique */
+
+        div.addEventListener(
+            'click',
+            () => abrirJogo(jogo)
+        );
 
 
-        /* =====================================================
-           PESQUISA E FILTROS COMBINADOS
-        ===================================================== */
+        /* Botão direito */
 
-        const search = document.getElementById("search");
-        const empty = document.getElementById("empty");
+        div.addEventListener(
+            'contextmenu',
+            event => {
 
-        function filtrarJogos() {
-            const texto = search.value.toLowerCase().trim();
-            let encontrados = 0;
+                event.preventDefault();
 
-            files.forEach(function (file) {
-                const nome = file.dataset.name.toLowerCase();
-                const ehFavorito = file.classList.contains('favorite');
+                alternarFavorito(
+                    jogo.id
+                );
 
-                let passaNaAba = (abaAtual === 'todos') || (abaAtual === 'favoritos' && ehFavorito);
-                let passaNaBusca = nome.includes(texto);
-
-                if (passaNaAba && passaNaBusca) {
-                    file.style.display = "flex";
-                    encontrados++;
-                } else {
-                    file.style.display = "none";
-                }
-            });
-
-            if (encontrados === 0) {
-                empty.style.display = "block";
-            } else {
-                empty.style.display = "none";
             }
+        );
+
+
+        fileListContainer.appendChild(
+            div
+        );
+
+    });
+
+
+    files =
+        document.querySelectorAll('.file');
+
+    carregarFavoritos();
+
+    filtrarJogos();
+
+}
+
+
+/* =========================================================
+   ABAS
+========================================================= */
+
+function mudarAba(aba) {
+
+    abaAtual = aba;
+
+    document
+        .getElementById('tabTodos')
+        .classList.toggle(
+            'active',
+            aba === 'todos'
+        );
+
+    document
+        .getElementById('tabFavoritos')
+        .classList.toggle(
+            'active',
+            aba === 'favoritos'
+        );
+
+    selectedIndex = 0;
+
+    filtrarJogos();
+
+}
+
+
+/* =========================================================
+   FILTRO
+========================================================= */
+
+function filtrarJogos() {
+
+    const texto =
+        search.value
+        .toLowerCase()
+        .trim();
+
+    let encontrados = [];
+
+    files.forEach(file => {
+
+        const nome =
+            file.dataset.name;
+
+        const favorito =
+            file.classList.contains(
+                'favorite'
+            );
+
+        const passaAba =
+            abaAtual === 'todos'
+            ||
+            favorito;
+
+        const passaBusca =
+            nome.includes(texto);
+
+        const mostrar =
+            passaAba &&
+            passaBusca;
+
+        file.style.display =
+            mostrar
+            ? 'flex'
+            : 'none';
+
+        if (mostrar) {
+
+            encontrados.push(file);
+
         }
 
-        search.addEventListener("input", filtrarJogos);
+    });
 
 
-        /* =====================================================
-           ENTER NA PESQUISA
-        ===================================================== */
+    /* contador */
 
-        search.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                const visiveis = Array.from(files).filter(file => file.style.display !== "none");
-                if (visiveis.length > 0) {
-                    visiveis[0].click();
-                }
-            }
-        });
+    gameCount.textContent =
+        `${encontrados.length} ${
+            encontrados.length === 1
+            ? 'GAME'
+            : 'GAMES'
+        }`;
 
-        // Inicialização principal
-        renderizarJogos();
-        configurarEventosFavorito();
 
-    </script>
+    /* vazio */
+
+    empty.style.display =
+        encontrados.length === 0
+        ? 'block'
+        : 'none';
+
+
+    /* busca */
+
+    searchClear.style.display =
+        texto.length > 0
+        ? 'block'
+        : 'none';
+
+
+    atualizarSelecao(encontrados);
+
+}
+
+
+/* =========================================================
+   SELEÇÃO
+========================================================= */
+
+function atualizarSelecao(lista) {
+
+    files.forEach(
+        file =>
+            file.classList.remove(
+                'selected'
+            )
+    );
+
+    if (!lista.length)
+        return;
+
+    if (
+        selectedIndex >= lista.length
+    ) {
+
+        selectedIndex =
+            lista.length - 1;
+
+    }
+
+    lista[selectedIndex]
+        .classList.add(
+            'selected'
+        );
+
+}
+
+
+/* =========================================================
+   JOGOS VISÍVEIS
+========================================================= */
+
+function obterVisiveis() {
+
+    return Array.from(files)
+        .filter(
+            file =>
+                file.style.display !== 'none'
+        );
+
+}
+
+
+/* =========================================================
+   TECLADO
+========================================================= */
+
+document.addEventListener(
+    'keydown',
+    event => {
+
+        const visiveis =
+            obterVisiveis();
+
+        if (!visiveis.length)
+            return;
+
+
+        /* ↓ */
+
+        if (
+            event.key === 'ArrowDown'
+        ) {
+
+            event.preventDefault();
+
+            selectedIndex =
+                Math.min(
+                    selectedIndex + 1,
+                    visiveis.length - 1
+                );
+
+            atualizarSelecao(
+                visiveis
+            );
+
+            visiveis[
+                selectedIndex
+            ].scrollIntoView({
+                block: 'nearest',
+                behavior: 'smooth'
+            });
+
+        }
+
+
+        /* ↑ */
+
+        if (
+            event.key === 'ArrowUp'
+        ) {
+
+            event.preventDefault();
+
+            selectedIndex =
+                Math.max(
+                    selectedIndex - 1,
+                    0
+                );
+
+            atualizarSelecao(
+                visiveis
+            );
+
+            visiveis[
+                selectedIndex
+            ].scrollIntoView({
+                block: 'nearest',
+                behavior: 'smooth'
+            });
+
+        }
+
+
+        /* ENTER */
+
+        if (
+            event.key === 'Enter'
+            &&
+            document.activeElement !== search
+        ) {
+
+            const file =
+                visiveis[selectedIndex];
+
+            const jogo =
+                listaDeJogos.find(
+                    j =>
+                        j.id ===
+                        file.dataset.id
+                );
+
+            if (jogo)
+                abrirJogo(jogo);
+
+        }
+
+
+        /* ESC */
+
+        if (
+            event.key === 'Escape'
+        ) {
+
+            limparBusca();
+
+            search.blur();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ENTER NA PESQUISA
+========================================================= */
+
+search.addEventListener(
+    'keydown',
+    event => {
+
+        if (
+            event.key !== 'Enter'
+        )
+            return;
+
+        const visiveis =
+            obterVisiveis();
+
+        if (!visiveis.length)
+            return;
+
+        const file =
+            visiveis[0];
+
+        const jogo =
+            listaDeJogos.find(
+                j =>
+                    j.id ===
+                    file.dataset.id
+            );
+
+        if (jogo)
+            abrirJogo(jogo);
+
+    }
+);
+
+
+/* =========================================================
+   BUSCA
+========================================================= */
+
+search.addEventListener(
+    'input',
+    () => {
+
+        selectedIndex = 0;
+
+        filtrarJogos();
+
+    }
+);
+
+
+/* =========================================================
+   LIMPAR BUSCA
+========================================================= */
+
+function limparBusca() {
+
+    search.value = '';
+
+    selectedIndex = 0;
+
+    filtrarJogos();
+
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+renderizarJogos();
+
+</script>
 
 </body>
 </html>
