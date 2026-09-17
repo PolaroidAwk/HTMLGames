@@ -6,1088 +6,6303 @@
 
 <title>HTMLGames</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-:root {
-    --green: #39ff88;
-    --green-bright: #9affc4;
-    --green-dark: #167a42;
-    --green-darker: #07351d;
-    --green-faint: rgba(57,255,136,.08);
-    --red-pc: #ff4a4a;
-
-    --bg: #010503;
-    --panel: rgba(2, 14, 8, .88);
-
-    --font: "VT323", monospace;
+:root{
+    --green:#39ff88;
+    --green-bright:#9affc4;
+    --green-dark:#167a42;
+    --green-darker:#07351d;
+    --bg:#010503;
+    --panel:rgba(2,14,8,.96);
+    --red:#ff4a4a;
+    --yellow:#ffd84a;
+    --font:"VT323",monospace;
 }
 
-html {
-    background: #000;
+html{
+    background:#000;
 }
 
-body {
-    min-height: 100vh;
-    background: radial-gradient(circle at 50% 40%, #082616 0%, #020b06 45%, #000 100%);
-    color: var(--green);
-    font-family: var(--font);
-    overflow-x: hidden;
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            #082616 0%,
+            #020b06 45%,
+            #000 100%
+        );
+    color:var(--green);
+    font-family:var(--font);
+    overflow-x:hidden;
 }
 
-/* =========================================================
-   CRT & NOISE EFFECTS
-========================================================= */
-
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    pointer-events: none;
-    background: repeating-linear-gradient(
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:9000;
+    pointer-events:none;
+    background:repeating-linear-gradient(
         to bottom,
         rgba(255,255,255,.025) 0px,
         rgba(255,255,255,.025) 1px,
         rgba(0,0,0,.08) 2px,
         rgba(0,0,0,.08) 4px
     );
-    mix-blend-mode: screen;
+    mix-blend-mode:screen;
 }
 
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 9998;
-    pointer-events: none;
-    box-shadow: inset 0 0 100px rgba(0,0,0,.95), inset 0 0 250px rgba(0,0,0,.85);
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:8999;
+    pointer-events:none;
+    box-shadow:
+        inset 0 0 100px rgba(0,0,0,.95),
+        inset 0 0 250px rgba(0,0,0,.85);
 }
 
-/* =========================================================
-   MONITOR
-========================================================= */
+@keyframes monitorPowerOn{
+    0%{
+        opacity:0;
+        transform:scaleY(.005) scaleX(.2);
+        filter:brightness(10);
+    }
 
-.monitor {
-    min-height: 100vh;
-    padding: 35px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    50%{
+        opacity:.8;
+        transform:scaleY(1.02) scaleX(1);
+        filter:brightness(2);
+    }
+
+    100%{
+        opacity:1;
+        transform:scale(1);
+        filter:brightness(1);
+    }
 }
 
-.screen {
-    width: min(1250px, 96vw);
-    min-height: 760px;
-    position: relative;
-    overflow: hidden;
-    background: radial-gradient(
-        ellipse at 50% 30%,
-        rgba(13,70,39,.75),
-        rgba(2,14,8,.96) 60%,
-        #010402 100%
-    );
-    border: 1px solid #1d673c;
-    border-radius: 24px;
-    padding: 30px;
-    box-shadow: 0 0 25px rgba(57,255,136,.14), 0 0 100px rgba(57,255,136,.07), inset 0 0 70px rgba(0,0,0,.8);
-    animation: monitorPowerOn 0.6s ease-out;
+@keyframes logoGlow{
+    0%{
+        border-color:var(--green-dark);
+        box-shadow:0 0 5px rgba(57,255,136,.2);
+    }
+
+    100%{
+        border-color:var(--green);
+        box-shadow:0 0 20px rgba(57,255,136,.6);
+    }
 }
 
-@keyframes monitorPowerOn {
-    0% { opacity: 0; transform: scaleY(0.005) scaleX(0.2); filter: brightness(10); }
-    50% { opacity: 0.8; transform: scaleY(1.02) scaleX(1); filter: brightness(2); }
-    100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+@keyframes blink{
+    0%,45%{opacity:1}
+    46%,100%{opacity:.2}
 }
 
-/* =========================================================
-   HEADER
-========================================================= */
+@keyframes modalIn{
+    from{
+        opacity:0;
+        transform:scale(.96) translateY(10px);
+    }
 
-.header {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding-bottom: 20px;
-    margin-bottom: 22px;
-    border-bottom: 1px solid var(--green-dark);
-}
-
-.logo-area {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.logo-symbol {
-    width: 52px;
-    height: 52px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--green-dark);
-    background: rgba(57,255,136,.06);
-    font-size: 30px;
-    box-shadow: 0 0 15px rgba(57,255,136,.08), inset 0 0 15px rgba(57,255,136,.05);
-    animation: logoGlow 3s infinite alternate;
-}
-
-@keyframes logoGlow {
-    0% { border-color: var(--green-dark); box-shadow: 0 0 5px rgba(57,255,136,.2); }
-    100% { border-color: var(--green); box-shadow: 0 0 20px rgba(57,255,136,.6); }
-}
-
-.system-name {
-    font-size: 48px;
-    line-height: .8;
-    letter-spacing: 3px;
-    color: var(--green);
-    text-shadow: 0 0 5px var(--green), 0 0 20px rgba(57,255,136,.45);
-}
-
-.subtitle {
-    margin-top: 8px;
-    color: #269653;
-    font-size: 20px;
-    letter-spacing: 1px;
-}
-
-.status-box {
-    text-align: right;
-}
-
-.status {
-    font-size: 21px;
-    color: var(--green);
-    text-shadow: 0 0 8px var(--green);
-}
-
-.status::before {
-    content: "●";
-    margin-right: 8px;
-    animation: blink 1s infinite;
-}
-
-.status-detail {
-    margin-top: 5px;
-    color: #237f49;
-    font-size: 17px;
-}
-
-@keyframes blink {
-    0%,45% { opacity: 1; }
-    46%,100% { opacity: .2; }
+    to{
+        opacity:1;
+        transform:scale(1) translateY(0);
+    }
 }
 
 /* =========================================================
-   TERMINAL MESSAGE
+   LOGIN
 ========================================================= */
 
-.terminal {
-    position: relative;
-    z-index: 2;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    border-left: 2px solid var(--green);
-    background: rgba(57,255,136,.035);
-    color: #238c4e;
-    font-size: 19px;
-    box-shadow: inset 15px 0 30px rgba(57,255,136,.015);
+#authScreen{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
 }
 
-.terminal strong {
-    color: var(--green);
+.auth-box{
+    width:min(480px,94vw);
+    border:1px solid var(--green-dark);
+    background:
+        radial-gradient(
+            ellipse at 50% 25%,
+            rgba(13,70,39,.7),
+            rgba(2,14,8,.97) 65%,
+            #010402 100%
+        );
+    border-radius:20px;
+    padding:35px;
+    box-shadow:
+        0 0 25px rgba(57,255,136,.14),
+        0 0 100px rgba(57,255,136,.07),
+        inset 0 0 70px rgba(0,0,0,.8);
+    animation:monitorPowerOn .6s ease-out;
 }
 
-.terminal-line {
-    margin: 2px 0;
+.auth-header{
+    text-align:center;
+    margin-bottom:28px;
+}
+
+.auth-logo{
+    width:62px;
+    height:62px;
+    margin:0 auto 15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.06);
+    font-size:34px;
+    animation:logoGlow 3s infinite alternate;
+}
+
+.auth-title{
+    font-size:48px;
+    line-height:.9;
+    letter-spacing:3px;
+    text-shadow:
+        0 0 5px var(--green),
+        0 0 20px rgba(57,255,136,.45);
+}
+
+.auth-subtitle{
+    margin-top:10px;
+    color:#269653;
+    font-size:18px;
+    letter-spacing:1px;
+}
+
+.auth-terminal{
+    padding:12px 14px;
+    margin-bottom:22px;
+    border-left:2px solid var(--green);
+    background:rgba(57,255,136,.035);
+    color:#238c4e;
+    font-size:18px;
+}
+
+.auth-terminal strong{
+    color:var(--green);
+}
+
+.auth-form{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.auth-label{
+    color:#2fb967;
+    font-size:18px;
+    margin-top:4px;
+}
+
+.auth-input{
+    width:100%;
+    border:1px solid var(--green-dark);
+    background:rgba(0,0,0,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:22px;
+    padding:11px 13px;
+    outline:none;
+}
+
+.auth-input::placeholder{
+    color:#176b3b;
+}
+
+.auth-input:focus{
+    border-color:var(--green);
+    box-shadow:
+        0 0 15px rgba(57,255,136,.2),
+        inset 0 0 15px rgba(57,255,136,.04);
+}
+
+.auth-button{
+    margin-top:10px;
+    width:100%;
+    border:1px solid var(--green);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(57,255,136,.16),
+            rgba(57,255,136,.04)
+        );
+    color:var(--green);
+    font-family:var(--font);
+    font-size:23px;
+    padding:11px;
+    cursor:pointer;
+    text-shadow:0 0 6px var(--green);
+    transition:.2s;
+}
+
+.auth-button:hover{
+    background:rgba(57,255,136,.2);
+    box-shadow:0 0 18px rgba(57,255,136,.25);
+    transform:translateY(-2px);
+}
+
+.auth-button:disabled,
+.guest-button:disabled{
+    opacity:.5;
+    cursor:wait;
+    transform:none;
+}
+
+.auth-switch{
+    margin-top:20px;
+    text-align:center;
+    color:#237f49;
+    font-size:18px;
+}
+
+.auth-switch button{
+    border:none;
+    background:none;
+    color:var(--green);
+    font-family:var(--font);
+    font-size:18px;
+    cursor:pointer;
+    text-decoration:underline;
+}
+
+.guest-button{
+    margin-top:18px;
+    width:100%;
+    border:1px dashed var(--green-dark);
+    background:rgba(0,20,10,.3);
+    color:#2fb967;
+    font-family:var(--font);
+    font-size:19px;
+    padding:9px;
+    cursor:pointer;
+}
+
+.guest-button:hover{
+    color:var(--green);
+    border-color:var(--green);
+    background:rgba(57,255,136,.07);
+}
+
+.auth-message{
+    min-height:24px;
+    margin-top:15px;
+    text-align:center;
+    font-size:17px;
+}
+
+.auth-message.error{
+    color:#ff5c5c;
+}
+
+.auth-message.success{
+    color:var(--green);
 }
 
 /* =========================================================
-   TOOLBAR
+   SITE
 ========================================================= */
 
-.toolbar {
-    position: relative;
-    z-index: 3;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
+#siteContent{
+    display:none;
 }
 
-.tabs {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
+.monitor{
+    min-height:100vh;
+    padding:35px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-.tab {
-    border: 1px solid var(--green-dark);
-    background: rgba(0,20,10,.55);
-    color: #238d4e;
-    font-family: var(--font);
-    font-size: 20px;
-    padding: 8px 15px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-block;
+.screen{
+    width:min(1250px,96vw);
+    min-height:760px;
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(
+            ellipse at 50% 30%,
+            rgba(13,70,39,.75),
+            rgba(2,14,8,.96) 60%,
+            #010402 100%
+        );
+    border:1px solid #1d673c;
+    border-radius:24px;
+    padding:30px;
+    box-shadow:
+        0 0 25px rgba(57,255,136,.14),
+        0 0 100px rgba(57,255,136,.07),
+        inset 0 0 70px rgba(0,0,0,.8);
+    animation:monitorPowerOn .6s ease-out;
 }
 
-.tab:hover {
-    color: var(--green);
-    border-color: var(--green);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(57,255,136,.15);
+.header{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding-bottom:20px;
+    margin-bottom:22px;
+    border-bottom:1px solid var(--green-dark);
 }
 
-.tab.active {
-    color: var(--green);
-    background: linear-gradient(135deg, rgba(57,255,136,.17), rgba(57,255,136,.04));
-    border-color: var(--green);
-    box-shadow: 0 0 12px rgba(57,255,136,.2), inset 0 0 12px rgba(57,255,136,.04);
-    text-shadow: 0 0 6px var(--green);
+.logo-area{
+    display:flex;
+    align-items:center;
+    gap:16px;
 }
 
-/* =========================================================
-   SELECT ORDENAÇÃO
-========================================================= */
-
-.sort-select {
-    border: 1px solid var(--green-dark);
-    background: rgba(0,20,10,.55);
-    color: var(--green);
-    font-family: var(--font);
-    font-size: 20px;
-    padding: 8px 12px;
-    cursor: pointer;
-    outline: none;
-    transition: all 0.2s ease;
+.logo-symbol{
+    width:52px;
+    height:52px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.06);
+    font-size:30px;
+    animation:logoGlow 3s infinite alternate;
 }
 
-.sort-select:hover, .sort-select:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 10px rgba(57,255,136,.15);
+.system-name{
+    font-size:48px;
+    line-height:.8;
+    letter-spacing:3px;
+    text-shadow:
+        0 0 5px var(--green),
+        0 0 20px rgba(57,255,136,.45);
 }
 
-.sort-select option {
-    background: #020a05;
-    color: var(--green);
+.subtitle{
+    margin-top:8px;
+    color:#269653;
+    font-size:20px;
+    letter-spacing:1px;
 }
 
-/* =========================================================
-   SEARCH
-========================================================= */
-
-.search-area {
-    position: relative;
-    flex: 1;
-    min-width: 200px;
+.status-box{
+    text-align:right;
 }
 
-.search-icon {
-    position: absolute;
-    left: 13px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--green-dark);
-    font-size: 22px;
+.status{
+    font-size:21px;
+    text-shadow:0 0 8px var(--green);
 }
 
-.search {
-    width: 100%;
-    background: rgba(0,0,0,.5);
-    border: 1px solid var(--green-dark);
-    color: var(--green);
-    font-family: var(--font);
-    font-size: 22px;
-    padding: 9px 42px;
-    outline: none;
-    transition: all 0.2s ease;
-    text-shadow: 0 0 5px var(--green);
+.status::before{
+    content:"●";
+    margin-right:8px;
+    animation:blink 1s infinite;
 }
 
-.search::placeholder {
-    color: #176b3b;
+.status-detail{
+    margin-top:5px;
+    color:#237f49;
+    font-size:17px;
 }
 
-.search:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 15px rgba(57,255,136,.25), inset 0 0 15px rgba(57,255,136,.05);
+.account-box{
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    color:#269653;
+    font-size:16px;
 }
 
-.search-clear {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--green-dark);
-    cursor: pointer;
-    font-size: 20px;
-    display: none;
-    transition: color 0.2s;
+.account-user{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--green);
+    cursor:pointer;
 }
 
-.search-clear:hover {
-    color: var(--green);
+.header-avatar{
+    width:32px;
+    height:32px;
+    position:relative;
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.05);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:20px;
+    overflow:hidden;
 }
 
-/* =========================================================
-   GAME INFO
-========================================================= */
-
-.game-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 5px 2px 10px;
-    color: #247d47;
-    font-size: 18px;
+.header-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
-.game-count {
-    color: var(--green);
+.logout-button{
+    margin-left:5px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.55);
+    color:#2fb967;
+    font-family:var(--font);
+    font-size:16px;
+    padding:2px 8px;
+    cursor:pointer;
 }
 
-/* =========================================================
-   GAME GRID
-========================================================= */
-
-.file-list {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    max-height: 440px;
-    overflow-y: auto;
-    padding-right: 5px;
+.logout-button:hover{
+    color:var(--green);
+    border-color:var(--green);
 }
 
-.file-list::-webkit-scrollbar {
-    width: 7px;
+.terminal{
+    position:relative;
+    z-index:2;
+    padding:14px 16px;
+    margin-bottom:20px;
+    border-left:2px solid var(--green);
+    background:rgba(57,255,136,.035);
+    color:#238c4e;
+    font-size:19px;
 }
 
-.file-list::-webkit-scrollbar-track {
-    background: #020a05;
+.terminal-line{
+    margin:2px 0;
 }
 
-.file-list::-webkit-scrollbar-thumb {
-    background: #125d32;
-    border-radius: 4px;
+.terminal strong{
+    color:var(--green);
 }
 
-.file-list::-webkit-scrollbar-thumb:hover {
-    background: var(--green);
+.toolbar{
+    position:relative;
+    z-index:3;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:18px;
+    flex-wrap:wrap;
 }
 
-/* =========================================================
-   GAME CARD & ANIMATIONS
-========================================================= */
-
-.file {
-    min-height: 95px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    border: 1px solid #0c4827;
-    background: linear-gradient(135deg, rgba(0,28,14,.65), rgba(0,10,5,.55));
-    cursor: pointer;
-    overflow: hidden;
-    animation: fadeInCard 0.25s ease-out forwards;
-    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+.tabs{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
 }
 
-@keyframes fadeInCard {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+.tab{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.55);
+    color:#238d4e;
+    font-family:var(--font);
+    font-size:20px;
+    padding:8px 15px;
+    cursor:pointer;
+    transition:.2s;
+    text-decoration:none;
+    display:inline-block;
 }
 
-.file::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: transparent;
-    transition: all 0.2s ease;
+.tab:hover,
+.tab.active{
+    color:var(--green);
+    border-color:var(--green);
+    background:rgba(57,255,136,.1);
 }
 
-.file::after {
-    content: "";
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    right: -50px;
-    bottom: -50px;
-    border-radius: 50%;
-    background: rgba(57,255,136,.08);
-    filter: blur(20px);
-    transition: transform 0.3s ease;
+.sort-select{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.55);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:20px;
+    padding:8px 12px;
+    cursor:pointer;
+    outline:none;
 }
 
-.file:hover {
-    transform: translateY(-2px) scale(1.005);
-    border-color: #39ff88;
-    background: linear-gradient(135deg, rgba(57,255,136,.12), rgba(0,20,10,.75));
-    box-shadow: 0 6px 20px rgba(57,255,136,.12);
+.sort-select option{
+    background:#020a05;
+    color:var(--green);
 }
 
-.file:hover::before {
-    background: var(--green);
-    box-shadow: 0 0 10px var(--green);
+.search-area{
+    position:relative;
+    flex:1;
+    min-width:200px;
 }
 
-.file:hover::after {
-    transform: scale(2.2);
+.search-icon{
+    position:absolute;
+    left:13px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--green-dark);
+    font-size:22px;
 }
 
-.file.selected {
-    border-color: var(--green);
-    background: linear-gradient(135deg, rgba(57,255,136,.15), rgba(0,25,12,.8));
-    box-shadow: 0 0 18px rgba(57,255,136,.2), inset 0 0 20px rgba(57,255,136,.05);
+.search{
+    width:100%;
+    background:rgba(0,0,0,.5);
+    border:1px solid var(--green-dark);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:22px;
+    padding:9px 42px;
+    outline:none;
 }
 
-.file.selected::before {
-    background: var(--green);
+.search::placeholder{
+    color:#176b3b;
 }
 
-/* =========================================================
-   GAME ICONS & BADGES
-========================================================= */
-
-.icon {
-    width: 55px;
-    height: 55px;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 14px;
-    border: 1px solid #145b31;
-    background: radial-gradient(circle, rgba(57,255,136,.09), rgba(0,0,0,.35));
-    font-size: 30px;
-    transition: all 0.2s ease;
+.search:focus{
+    border-color:var(--green);
+    box-shadow:0 0 15px rgba(57,255,136,.25);
 }
 
-.file:hover .icon {
-    border-color: var(--green);
-    transform: scale(1.08) rotate(-3deg);
-    box-shadow: 0 0 12px rgba(57,255,136,.3);
+.search-clear{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--green-dark);
+    cursor:pointer;
+    font-size:20px;
+    display:none;
 }
 
-.game-content {
-    min-width: 0;
-    flex: 1;
+.game-info{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:5px 2px 10px;
+    color:#247d47;
+    font-size:18px;
 }
 
-.filename-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.game-count{
+    color:var(--green);
 }
 
-.filename {
-    color: var(--green);
-    font-size: 24px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: 1px;
-    text-shadow: 0 0 5px rgba(57,255,136,.35);
+.file-list{
+    position:relative;
+    z-index:2;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    max-height:440px;
+    overflow-y:auto;
+    padding-right:5px;
 }
 
-.description {
-    margin-top: 1px;
-    color: #2fb967;
-    font-size: 15px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.file-list::-webkit-scrollbar{
+    width:7px;
 }
 
-.tags-container {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-    align-items: center;
-    flex-wrap: wrap;
+.file-list::-webkit-scrollbar-track{
+    background:#020a05;
 }
 
-.tag-badge {
-    font-size: 12px;
-    padding: 1px 5px;
-    border-radius: 3px;
-    letter-spacing: 1px;
-    font-weight: bold;
+.file-list::-webkit-scrollbar-thumb{
+    background:#125d32;
+    border-radius:4px;
 }
 
-.tag-pc {
-    border: 1px solid var(--red-pc);
-    color: var(--red-pc);
-    background: rgba(255, 74, 74, 0.1);
-    box-shadow: 0 0 6px rgba(255, 74, 74, 0.2);
+.file{
+    min-height:95px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    padding:12px 15px;
+    border:1px solid #0c4827;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,28,14,.65),
+            rgba(0,10,5,.55)
+        );
+    cursor:pointer;
+    transition:.2s;
 }
 
-.tag-all {
-    border: 1px solid var(--green-dark);
-    color: #237f49;
-    background: rgba(0, 20, 10, 0.4);
+.file::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:transparent;
 }
 
-.tag-category {
-    border: 1px solid var(--green);
-    color: var(--green);
-    background: rgba(57,255,136,0.1);
+.file:hover,
+.file.selected{
+    transform:translateY(-2px);
+    border-color:var(--green);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(57,255,136,.12),
+            rgba(0,20,10,.75)
+        );
 }
 
-.external-tag {
-    color: #176b3b;
-    font-size: 13px;
+.file:hover::before,
+.file.selected::before{
+    background:var(--green);
+    box-shadow:0 0 10px var(--green);
 }
 
-.fav-star {
-    display: none;
-    color: #ffd84a;
-    font-size: 18px;
-    text-shadow: 0 0 8px #ffd84a;
+.icon{
+    width:55px;
+    height:55px;
+    flex-shrink:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-right:14px;
+    border:1px solid #145b31;
+    background:
+        radial-gradient(
+            circle,
+            rgba(57,255,136,.09),
+            rgba(0,0,0,.35)
+        );
+    font-size:30px;
 }
 
-.file.favorite .fav-star {
-    display: inline-block;
+.game-content{
+    min-width:0;
+    flex:1;
 }
 
-/* =========================================================
-   ARROW & EMPTY
-========================================================= */
+.filename-container{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
 
-.arrow {
-    flex-shrink: 0;
-    margin-left: 10px;
-    color: var(--green-dark);
-    font-size: 28px;
-    opacity: .5;
-    transition: all 0.2s ease;
+.filename{
+    color:var(--green);
+    font-size:24px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.description{
+    margin-top:1px;
+    color:#2fb967;
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.tags-container{
+    display:flex;
+    gap:8px;
+    margin-top:4px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.tag-badge{
+    font-size:12px;
+    padding:1px 5px;
+    border-radius:3px;
+    letter-spacing:1px;
+    font-weight:bold;
+}
+
+.tag-pc{
+    border:1px solid var(--red);
+    color:var(--red);
+    background:rgba(255,74,74,.1);
+}
+
+.tag-all{
+    border:1px solid var(--green-dark);
+    color:#237f49;
+}
+
+.tag-category{
+    border:1px solid var(--green);
+    color:var(--green);
+}
+
+.external-tag{
+    color:#176b3b;
+    font-size:13px;
+}
+
+.fav-star{
+    display:none;
+    color:#ffd84a;
+    font-size:18px;
+}
+
+.file.favorite .fav-star{
+    display:inline-block;
+}
+
+.arrow{
+    flex-shrink:0;
+    margin-left:10px;
+    color:var(--green-dark);
+    font-size:28px;
 }
 
 .file:hover .arrow,
-.file.selected .arrow {
-    color: var(--green);
-    opacity: 1;
-    transform: translateX(5px);
-    text-shadow: 0 0 8px var(--green);
+.file.selected .arrow{
+    color:var(--green);
+    transform:translateX(5px);
 }
 
-.empty {
-    display: none;
-    grid-column: 1 / -1;
-    padding: 65px 20px;
-    border: 1px dashed var(--green-dark);
-    text-align: center;
-    color: #21864a;
-    font-size: 25px;
+.empty{
+    display:none;
+    grid-column:1/-1;
+    padding:65px 20px;
+    border:1px dashed var(--green-dark);
+    text-align:center;
+    color:#21864a;
+    font-size:25px;
 }
 
-.empty-big {
-    color: var(--green);
-    font-size: 42px;
-    margin-bottom: 5px;
+.empty-big{
+    color:var(--green);
+    font-size:42px;
+    margin-bottom:5px;
+}
+
+.footer{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+    padding-top:15px;
+    border-top:1px solid var(--green-dark);
+    color:#176b3b;
+    font-size:17px;
 }
 
 /* =========================================================
-   FOOTER
+   FAVORITOS
 ========================================================= */
 
-.footer {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--green-dark);
-    color: #176b3b;
-    font-size: 17px;
+.favorites-panel{
+    display:none;
+    position:relative;
+    z-index:3;
+    margin-bottom:12px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.38);
+    padding:10px;
 }
 
-.footer strong {
-    color: var(--green-dark);
+.favorites-panel.visible{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.favorites-label{
+    color:#237f49;
+    font-size:18px;
+}
+
+.folder-list{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    flex:1;
+}
+
+.folder-button{
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.6);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:18px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+.folder-button:hover,
+.folder-button.active{
+    color:var(--green);
+    border-color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.folder-button.main-folder{
+    color:var(--yellow);
+}
+
+.folder-actions{
+    display:flex;
+    gap:6px;
+}
+
+.folder-action{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:18px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+.folder-action:hover{
+    border-color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+/* =========================================================
+   PERFIL
+========================================================= */
+
+.profile-overlay{
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:rgba(0,0,0,.84);
+    backdrop-filter:blur(7px);
+    overflow:auto;
+}
+
+.profile-overlay.open{
+    display:flex;
+}
+
+.profile-window{
+    width:min(900px,96vw);
+    max-height:92vh;
+    overflow-y:auto;
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(13,70,39,.88),
+            rgba(2,14,8,.99) 65%
+        );
+    box-shadow:
+        0 0 40px rgba(57,255,136,.22),
+        inset 0 0 80px rgba(0,0,0,.85);
+    animation:modalIn .2s ease-out;
+}
+
+.profile-header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 22px;
+    border-bottom:1px solid var(--green-dark);
+    background:rgba(2,14,8,.97);
+}
+
+.profile-title{
+    color:var(--green);
+    font-size:34px;
+    letter-spacing:2px;
+}
+
+.profile-subtitle{
+    margin-top:3px;
+    color:#237f49;
+    font-size:15px;
+}
+
+.profile-close{
+    width:38px;
+    height:38px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:27px;
+    cursor:pointer;
+}
+
+.profile-close:hover{
+    border-color:var(--green);
+    background:rgba(57,255,136,.12);
+}
+
+.profile-body{
+    padding:22px;
+}
+
+.profile-top{
+    display:grid;
+    grid-template-columns:250px minmax(0,1fr);
+    gap:22px;
+}
+
+.profile-avatar-card{
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.035);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.avatar-stage{
+    width:170px;
+    height:170px;
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            rgba(57,255,136,.12),
+            rgba(0,0,0,.8)
+        );
+    box-shadow:
+        0 0 20px rgba(57,255,136,.1),
+        inset 0 0 30px rgba(0,0,0,.8);
+}
+
+.avatar-photo{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:10;
+    display:none;
+}
+
+.avatar-layer{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    user-select:none;
+}
+
+.avatar-face{
+    z-index:1;
+    font-size:100px;
+    line-height:1;
+}
+
+.avatar-accessory{
+    z-index:3;
+    font-size:62px;
+    transform:translateY(-48px);
+}
+
+.avatar-extra{
+    z-index:4;
+    font-size:38px;
+    transform:translate(53px,53px);
+}
+
+.avatar-stage.photo-mode .avatar-photo{
+    display:block;
+}
+
+.avatar-stage.photo-mode .avatar-layer{
+    display:none;
+}
+
+.profile-avatar-name{
+    width:100%;
+    margin-top:14px;
+    text-align:center;
+    color:var(--green);
+    font-size:27px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.profile-avatar-type{
+    margin-top:3px;
+    color:#237f49;
+    font-size:16px;
+}
+
+.profile-editor{
+    min-width:0;
+}
+
+.profile-section{
+    border:1px solid #0d4c29;
+    background:rgba(0,20,10,.25);
+    padding:16px;
+    margin-bottom:14px;
+}
+
+.profile-section-title{
+    color:var(--green);
+    font-size:22px;
+    margin-bottom:12px;
+}
+
+.profile-label{
+    display:block;
+    color:#2fb967;
+    font-size:18px;
+    margin:9px 0 5px;
+}
+
+.profile-input{
+    width:100%;
+    border:1px solid var(--green-dark);
+    background:rgba(0,0,0,.55);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:21px;
+    padding:9px 11px;
+    outline:none;
+}
+
+.profile-input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 12px rgba(57,255,136,.15);
+}
+
+.profile-input:disabled{
+    opacity:.55;
+}
+
+.profile-note{
+    margin-top:7px;
+    color:#176b3b;
+    font-size:15px;
+    line-height:1.1;
+}
+
+.profile-actions{
+    display:flex;
+    gap:10px;
+}
+
+.secondary-button{
+    flex:1;
+    border:1px solid var(--green);
+    background:rgba(57,255,136,.06);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:19px;
+    padding:9px;
+    cursor:pointer;
+}
+
+.secondary-button:hover{
+    background:rgba(57,255,136,.15);
+}
+
+.secondary-button:disabled{
+    opacity:.5;
+    cursor:wait;
+}
+
+.profile-message{
+    min-height:24px;
+    margin-top:12px;
+    text-align:center;
+    font-size:17px;
+}
+
+.profile-message.success{
+    color:var(--green);
+}
+
+.profile-message.error{
+    color:#ff5c5c;
+}
+
+.profile-message.info{
+    color:var(--yellow);
+}
+
+/* =========================================================
+   AVATAR EDITOR
+========================================================= */
+
+.avatar-mode-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    margin-bottom:14px;
+}
+
+.avatar-mode-button{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:19px;
+    padding:8px;
+    cursor:pointer;
+}
+
+.avatar-mode-button.active,
+.avatar-mode-button:hover{
+    border-color:var(--green);
+    color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.avatar-editor,
+.photo-editor{
+    display:none;
+}
+
+.avatar-editor.active,
+.photo-editor.active{
+    display:block;
+}
+
+.avatar-category-tabs{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-bottom:10px;
+}
+
+.avatar-category-button{
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.55);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:17px;
+    padding:6px;
+    cursor:pointer;
+}
+
+.avatar-category-button.active,
+.avatar-category-button:hover{
+    border-color:var(--green);
+    color:var(--green);
+}
+
+.emoji-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:7px;
+}
+
+.emoji-option{
+    min-height:52px;
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.55);
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.emoji-option:hover,
+.emoji-option.selected{
+    border-color:var(--green);
+    background:rgba(57,255,136,.12);
+    transform:translateY(-1px);
+}
+
+.avatar-file{
+    display:none;
+}
+
+.avatar-upload{
+    display:block;
+    width:100%;
+    border:1px dashed var(--green-dark);
+    background:rgba(57,255,136,.04);
+    color:#2fb967;
+    font-family:var(--font);
+    font-size:19px;
+    padding:12px;
+    cursor:pointer;
+    text-align:center;
+}
+
+.avatar-upload:hover{
+    color:var(--green);
+    border-color:var(--green);
+}
+
+.avatar-file-name{
+    margin-top:8px;
+    color:#176b3b;
+    font-size:15px;
+    text-align:center;
+    min-height:18px;
+}
+
+.guest-warning{
+    display:none;
+    border:1px solid #6f5b19;
+    background:rgba(255,216,74,.04);
+    color:#ffd84a;
+    padding:10px;
+    font-size:16px;
+    line-height:1.15;
+    margin-bottom:10px;
+}
+
+.guest-warning.visible{
+    display:block;
+}
+
+/* =========================================================
+   PASTA MODAL
+========================================================= */
+
+.folder-overlay{
+    position:fixed;
+    inset:0;
+    z-index:11000;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:rgba(0,0,0,.84);
+    backdrop-filter:blur(7px);
+}
+
+.folder-overlay.open{
+    display:flex;
+}
+
+.folder-window{
+    width:min(520px,94vw);
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(13,70,39,.88),
+            rgba(2,14,8,.99) 70%
+        );
+    box-shadow:
+        0 0 40px rgba(57,255,136,.2),
+        inset 0 0 80px rgba(0,0,0,.8);
+    animation:modalIn .2s ease-out;
+}
+
+.folder-window-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    border-bottom:1px solid var(--green-dark);
+}
+
+.folder-window-title{
+    color:var(--green);
+    font-size:28px;
+}
+
+.folder-window-close{
+    width:34px;
+    height:34px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:24px;
+    cursor:pointer;
+}
+
+.folder-window-body{
+    padding:18px;
+}
+
+.folder-input{
+    width:100%;
+    border:1px solid var(--green-dark);
+    background:rgba(0,0,0,.55);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:22px;
+    padding:10px 12px;
+    outline:none;
+}
+
+.folder-input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 12px rgba(57,255,136,.15);
+}
+
+.folder-modal-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+
+.folder-modal-button{
+    flex:1;
+    border:1px solid var(--green);
+    background:rgba(57,255,136,.06);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:19px;
+    padding:9px;
+    cursor:pointer;
+}
+
+.folder-modal-button:hover{
+    background:rgba(57,255,136,.15);
+}
+
+.folder-modal-button.cancel{
+    border-color:var(--green-dark);
+    color:#237f49;
+}
+
+.folder-modal-message{
+    min-height:22px;
+    margin-top:10px;
+    color:#ff5c5c;
+    text-align:center;
+    font-size:16px;
+}
+
+/* =========================================================
+   MOVER FAVORITO
+========================================================= */
+
+.move-overlay{
+    position:fixed;
+    inset:0;
+    z-index:11000;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:rgba(0,0,0,.84);
+    backdrop-filter:blur(7px);
+}
+
+.move-overlay.open{
+    display:flex;
+}
+
+.move-window{
+    width:min(520px,94vw);
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(13,70,39,.88),
+            rgba(2,14,8,.99) 70%
+        );
+    box-shadow:
+        0 0 40px rgba(57,255,136,.2),
+        inset 0 0 80px rgba(0,0,0,.8);
+    animation:modalIn .2s ease-out;
+}
+
+.move-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    border-bottom:1px solid var(--green-dark);
+}
+
+.move-title{
+    color:var(--green);
+    font-size:28px;
+}
+
+.move-close{
+    width:34px;
+    height:34px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:24px;
+    cursor:pointer;
+}
+
+.move-body{
+    padding:18px;
+}
+
+.move-game-name{
+    color:#237f49;
+    font-size:19px;
+    margin-bottom:12px;
+}
+
+.move-folder-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    max-height:300px;
+    overflow-y:auto;
+}
+
+.move-folder-button{
+    width:100%;
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.55);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:20px;
+    padding:9px;
+    text-align:left;
+    cursor:pointer;
+}
+
+.move-folder-button:hover{
+    border-color:var(--green);
+    color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.move-message{
+    min-height:22px;
+    margin-top:10px;
+    text-align:center;
+    color:#ff5c5c;
+    font-size:16px;
 }
 
 /* =========================================================
    RESPONSIVO
 ========================================================= */
 
-@media (max-width: 850px) {
-    .screen { padding: 22px; }
-    .file-list { grid-template-columns: 1fr; }
-    .toolbar { flex-direction: column; align-items: stretch; }
-    .tabs { width: 100%; }
-    .tab { flex: 1; text-align: center; }
-    .header { align-items: center; }
+@media(max-width:850px){
+
+    .screen{
+        padding:22px;
+    }
+
+    .file-list{
+        grid-template-columns:1fr;
+    }
+
+    .toolbar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .header{
+        align-items:center;
+    }
+
+    .profile-top{
+        grid-template-columns:1fr;
+    }
+
+    .profile-avatar-card{
+        max-width:400px;
+        width:100%;
+        margin:auto;
+    }
 }
 
-@media (max-width: 600px) {
-    .monitor { padding: 8px; }
-    .screen { min-height: 95vh; padding: 16px; border-radius: 15px; }
-    .system-name { font-size: 35px; }
-    .logo-symbol { width: 43px; height: 43px; font-size: 24px; }
-    .subtitle { font-size: 17px; }
-    .status-box { display: none; }
-    .terminal { font-size: 17px; }
-    .file { min-height: 85px; padding: 10px; }
-    .icon { width: 48px; height: 48px; font-size: 25px; margin-right: 10px; }
-    .filename { font-size: 20px; }
-    .description { font-size: 13px; }
-    .footer { flex-direction: column; align-items: flex-start; gap: 5px; }
+@media(max-width:600px){
+
+    .monitor{
+        padding:8px;
+    }
+
+    .screen{
+        min-height:95vh;
+        padding:16px;
+        border-radius:15px;
+    }
+
+    .system-name{
+        font-size:35px;
+    }
+
+    .logo-symbol{
+        width:43px;
+        height:43px;
+        font-size:24px;
+    }
+
+    .subtitle{
+        font-size:17px;
+    }
+
+    .status-box{
+        display:none;
+    }
+
+    .file{
+        min-height:85px;
+        padding:10px;
+    }
+
+    .icon{
+        width:48px;
+        height:48px;
+        font-size:25px;
+        margin-right:10px;
+    }
+
+    .filename{
+        font-size:20px;
+    }
+
+    .description{
+        font-size:13px;
+    }
+
+    .footer{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:5px;
+    }
+
+    .auth-box{
+        padding:25px 20px;
+    }
+
+    .auth-title{
+        font-size:38px;
+    }
+
+    .profile-overlay{
+        padding:7px;
+        align-items:flex-start;
+    }
+
+    .profile-window{
+        width:100%;
+        max-height:96vh;
+    }
+
+    .profile-header{
+        padding:14px;
+    }
+
+    .profile-title{
+        font-size:28px;
+    }
+
+    .profile-body{
+        padding:12px;
+    }
+
+    .profile-avatar-card{
+        padding:15px;
+    }
+
+    .avatar-stage{
+        width:145px;
+        height:145px;
+    }
+
+    .avatar-face{
+        font-size:85px;
+    }
+
+    .avatar-accessory{
+        font-size:52px;
+        transform:translateY(-40px);
+    }
+
+    .avatar-extra{
+        font-size:32px;
+        transform:translate(45px,45px);
+    }
+
+    .profile-actions{
+        flex-direction:column;
+    }
+
+    .emoji-grid{
+        grid-template-columns:repeat(5,1fr);
+    }
+
+    .emoji-option{
+        min-height:48px;
+        font-size:25px;
+    }
+
+    .favorites-panel.visible{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .folder-list{
+        width:100%;
+    }
+
+    .folder-actions{
+        width:100%;
+    }
+
+    .folder-action{
+        flex:1;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="monitor">
-<div class="screen">
+<!-- =========================================================
+     LOGIN
+========================================================= -->
 
-<!-- HEADER -->
-<header class="header">
-    <div class="logo-area">
-        <div class="logo-symbol">▣</div>
-        <div>
-            <div class="system-name">HTMLGAMES</div>
-            <div class="subtitle">POLAROIDO // DIGITAL GAME ARCHIVE</div>
+<div id="authScreen">
+
+    <div class="auth-box">
+
+        <div class="auth-header">
+
+            <div class="auth-logo">▣</div>
+
+            <div class="auth-title">
+                HTMLGAMES
+            </div>
+
+            <div class="auth-subtitle">
+                SISTEMA DE CONTAS
+            </div>
+
         </div>
+
+        <div class="auth-terminal">
+            C:\SISTEMA&gt;
+            <strong id="authTerminalText">
+                AUTENTICAÇÃO NECESSÁRIA...
+            </strong>
+        </div>
+
+        <form class="auth-form" id="authForm">
+
+            <label class="auth-label">
+                EMAIL
+            </label>
+
+            <input
+                id="authEmail"
+                class="auth-input"
+                type="email"
+                placeholder="SEU@EMAIL.COM"
+                autocomplete="email"
+                required
+            >
+
+            <label class="auth-label">
+                SENHA
+            </label>
+
+            <input
+                id="authPassword"
+                class="auth-input"
+                type="password"
+                placeholder="SENHA"
+                autocomplete="current-password"
+                minlength="6"
+                required
+            >
+
+            <button
+                class="auth-button"
+                id="authSubmit"
+                type="submit"
+            >
+                ENTRAR
+            </button>
+
+        </form>
+
+        <div class="auth-switch">
+
+            <span id="authSwitchText">
+                NÃO TEM UMA CONTA?
+            </span>
+
+            <button
+                type="button"
+                id="authSwitchButton"
+            >
+                CRIAR CONTA
+            </button>
+
+        </div>
+
+        <button
+            class="guest-button"
+            id="guestButton"
+            type="button"
+        >
+            CONTINUAR SEM PERFIL
+        </button>
+
+        <div
+            class="auth-message"
+            id="authMessage"
+        ></div>
+
     </div>
 
-    <div class="status-box">
-        <div class="status">SYSTEM ONLINE</div>
-        <div class="status-detail">CONNECTION: STABLE</div>
+</div>
+
+
+<!-- =========================================================
+     SITE
+========================================================= -->
+
+<div id="siteContent">
+
+    <div class="monitor">
+
+        <div class="screen">
+
+            <header class="header">
+
+                <div class="logo-area">
+
+                    <div class="logo-symbol">
+                        ▣
+                    </div>
+
+                    <div>
+
+                        <div class="system-name">
+                            HTMLGAMES
+                        </div>
+
+                        <div class="subtitle">
+                            POLAROIDO // DIGITAL GAME ARCHIVE
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="status-box">
+
+                    <div class="status">
+                        SISTEMA ONLINE
+                    </div>
+
+                    <div class="status-detail">
+                        CONEXÃO: ESTÁVEL
+                    </div>
+
+                    <div class="account-box">
+
+                        <div
+                            class="account-user"
+                            id="profileButton"
+                        >
+
+                            <div
+                                class="header-avatar"
+                                id="headerAvatar"
+                            >
+                                😀
+                            </div>
+
+                            <span id="accountDisplayName">
+                                PLAYER
+                            </span>
+
+                        </div>
+
+                        <button
+                            class="logout-button"
+                            onclick="fazerLogout()"
+                            type="button"
+                        >
+                            SAIR
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            <div class="terminal">
+
+                <div class="terminal-line">
+                    C:\JOGOS&gt;
+                    <strong>
+                        ACESSANDO BANCO DE JOGOS...
+                    </strong>
+                </div>
+
+                <div class="terminal-line">
+                    C:\JOGOS&gt;
+                    BANCO CARREGADO // SELECIONE UM JOGO
+                </div>
+
+            </div>
+
+            <div class="toolbar">
+
+                <div class="tabs">
+
+                    <button
+                        class="tab active"
+                        onclick="mudarAba('todos')"
+                        id="tabTodos"
+                        type="button"
+                    >
+                        TODOS
+                    </button>
+
+                    <button
+                        class="tab"
+                        onclick="mudarAba('gemini')"
+                        id="tabGemini"
+                        type="button"
+                    >
+                        GEMINI
+                    </button>
+
+                    <button
+                        class="tab"
+                        onclick="mudarAba('ports')"
+                        id="tabPorts"
+                        type="button"
+                    >
+                        PORTS
+                    </button>
+
+                    <button
+                        class="tab"
+                        onclick="mudarAba('favoritos')"
+                        id="tabFavoritos"
+                        type="button"
+                    >
+                        ★ FAVORITOS
+                    </button>
+
+                    <a
+                        class="tab"
+                        href="https://forms.gle/boRAUm1VEiJNdS5DA"
+                        target="_blank"
+                    >
+                        SUPORTE
+                    </a>
+
+                </div>
+
+                <select
+                    id="sortSelect"
+                    class="sort-select"
+                    onchange="mudarOrdenacao()"
+                >
+                    <option value="padrao">
+                        ORDEM: PADRÃO
+                    </option>
+
+                    <option value="alfabetica">
+                        ORDEM: A-Z
+                    </option>
+
+                    <option value="reversa">
+                        ORDEM: Z-A
+                    </option>
+                </select>
+
+                <div class="search-area">
+
+                    <span class="search-icon">
+                        &gt;_
+                    </span>
+
+                    <input
+                        id="search"
+                        class="search"
+                        type="text"
+                        placeholder="PROCURAR JOGO..."
+                        autocomplete="off"
+                    >
+
+                    <span
+                        id="searchClear"
+                        class="search-clear"
+                        onclick="limparBusca()"
+                    >
+                        ×
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 PAINEL DE FAVORITOS
+            ================================================== -->
+
+            <div
+                class="favorites-panel"
+                id="favoritesPanel"
+            >
+
+                <div class="favorites-label">
+                    PASTAS:
+                </div>
+
+                <div
+                    class="folder-list"
+                    id="folderList"
+                ></div>
+
+                <div class="folder-actions">
+
+                    <button
+                        class="folder-action"
+                        id="createFolderButton"
+                        type="button"
+                    >
+                        + PASTA
+                    </button>
+
+                    <button
+                        class="folder-action"
+                        id="renameFolderButton"
+                        type="button"
+                    >
+                        ✎ RENOMEAR
+                    </button>
+
+                    <button
+                        class="folder-action"
+                        id="deleteFolderButton"
+                        type="button"
+                    >
+                        × EXCLUIR
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="game-info">
+
+                <div>
+                    BANCO /
+                    <span
+                        class="game-count"
+                        id="gameCount"
+                    >
+                        0 JOGOS
+                    </span>
+                </div>
+
+                <div>
+                    CLIQUE DIREITO = ★ FAVORITO
+                </div>
+
+            </div>
+
+            <div
+                class="file-list"
+                id="fileList"
+            >
+
+                <div
+                    class="empty"
+                    id="empty"
+                >
+
+                    <div class="empty-big">
+                        [ 404 ]
+                    </div>
+
+                    NENHUM JOGO ENCONTRADO.
+
+                </div>
+
+            </div>
+
+            <footer class="footer">
+
+                <div>
+                    <strong>●</strong>
+                    SISTEMA PRONTO
+                </div>
+
+                <div>
+                    ↑ ↓ NAVEGAR
+                    &nbsp;//&nbsp;
+                    ENTER ABRIR
+                </div>
+
+                <div>
+                    ESC LIMPAR BUSCA
+                </div>
+
+            </footer>
+
+        </div>
+
     </div>
-</header>
 
-<!-- TERMINAL -->
-<div class="terminal">
-    <div class="terminal-line">C:\GAMES&gt; <strong>ACCESSING GAME DATABASE...</strong></div>
-    <div class="terminal-line">C:\GAMES&gt; DATABASE LOADED // SELECT AN APPLICATION TO EXECUTE</div>
 </div>
 
-<!-- TOOLBAR -->
-<div class="toolbar">
-    <div class="tabs">
-        <button class="tab active" onclick="mudarAba('todos')" id="tabTodos">ALL</button>
-        <button class="tab" onclick="mudarAba('gemini')" id="tabGemini">GEMINI</button>
-        <button class="tab" onclick="mudarAba('ports')" id="tabPorts">PORTS</button>
-        <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos">★ FAVORITES</button>
-        <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">SUPORTE</a>
+
+<!-- =========================================================
+     PERFIL
+========================================================= -->
+
+<div
+    class="profile-overlay"
+    id="profileModal"
+>
+
+    <div class="profile-window">
+
+        <div class="profile-header">
+
+            <div>
+
+                <div class="profile-title">
+                    MEU PERFIL
+                </div>
+
+                <div class="profile-subtitle">
+                    C:\USUARIO&gt; CONFIGURAÇÃO DO PERFIL
+                </div>
+
+            </div>
+
+            <button
+                class="profile-close"
+                id="profileClose"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="profile-body">
+
+            <div class="profile-top">
+
+                <div class="profile-avatar-card">
+
+                    <div
+                        class="avatar-stage"
+                        id="avatarStage"
+                    >
+
+                        <img
+                            id="avatarPhoto"
+                            class="avatar-photo"
+                            alt="Avatar"
+                        >
+
+                        <div
+                            class="avatar-layer avatar-face"
+                            id="avatarFace"
+                        >
+                            😀
+                        </div>
+
+                        <div
+                            class="avatar-layer avatar-accessory"
+                            id="avatarAccessory"
+                        ></div>
+
+                        <div
+                            class="avatar-layer avatar-extra"
+                            id="avatarExtra"
+                        ></div>
+
+                    </div>
+
+                    <div
+                        class="profile-avatar-name"
+                        id="profilePreviewName"
+                    >
+                        PLAYER
+                    </div>
+
+                    <div
+                        class="profile-avatar-type"
+                        id="profileAvatarType"
+                    >
+                        AVATAR EMOJI
+                    </div>
+
+                </div>
+
+                <div class="profile-editor">
+
+                    <div class="profile-section">
+
+                        <div class="profile-section-title">
+                            IDENTIDADE
+                        </div>
+
+                        <label class="profile-label">
+                            NOME DE EXIBIÇÃO
+                        </label>
+
+                        <input
+                            id="profileNameInput"
+                            class="profile-input"
+                            maxlength="24"
+                            placeholder="SEU NOME"
+                            autocomplete="nickname"
+                        >
+
+                        <div class="profile-note">
+                            Esse nome será mostrado no HTMLGames.
+                        </div>
+
+                    </div>
+
+                    <div class="profile-section">
+
+                        <div class="profile-section-title">
+                            AVATAR
+                        </div>
+
+                        <div class="avatar-mode-tabs">
+
+                            <button
+                                class="avatar-mode-button active"
+                                id="avatarEmojiMode"
+                                type="button"
+                            >
+                                EMOJI
+                            </button>
+
+                            <button
+                                class="avatar-mode-button"
+                                id="avatarPhotoMode"
+                                type="button"
+                            >
+                                FOTO
+                            </button>
+
+                        </div>
+
+                        <div
+                            class="avatar-editor active"
+                            id="emojiEditor"
+                        >
+
+                            <div class="avatar-category-tabs">
+
+                                <button
+                                    class="avatar-category-button active"
+                                    data-category="face"
+                                    type="button"
+                                >
+                                    ROSTO
+                                </button>
+
+                                <button
+                                    class="avatar-category-button"
+                                    data-category="accessory"
+                                    type="button"
+                                >
+                                    ACESSÓRIO
+                                </button>
+
+                                <button
+                                    class="avatar-category-button"
+                                    data-category="extra"
+                                    type="button"
+                                >
+                                    EXTRA
+                                </button>
+
+                            </div>
+
+                            <div
+                                class="emoji-grid"
+                                id="emojiGrid"
+                            ></div>
+
+                        </div>
+
+                        <div
+                            class="photo-editor"
+                            id="photoEditor"
+                        >
+
+                            <label class="avatar-upload">
+
+                                📷 ESCOLHER FOTO DO PC
+
+                                <input
+                                    id="avatarFileInput"
+                                    class="avatar-file"
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                >
+
+                            </label>
+
+                            <div
+                                class="avatar-file-name"
+                                id="avatarFileName"
+                            >
+                                NENHUMA FOTO SELECIONADA.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="profile-section"
+                        id="accountSection"
+                    >
+
+                        <div class="profile-section-title">
+                            CONTA
+                        </div>
+
+                        <div
+                            class="guest-warning"
+                            id="guestWarning"
+                        >
+                            ⚠ MODO CONVIDADO — este perfil não possui email e senha. Ele não pode ser recuperado em outro dispositivo.
+                        </div>
+
+                        <label class="profile-label">
+                            EMAIL
+                        </label>
+
+                        <input
+                            id="profileEmailInput"
+                            class="profile-input"
+                            type="email"
+                            autocomplete="email"
+                        >
+
+                        <label class="profile-label">
+                            NOVA SENHA
+                        </label>
+
+                        <input
+                            id="profilePasswordInput"
+                            class="profile-input"
+                            type="password"
+                            minlength="6"
+                            placeholder="DEIXE VAZIO PARA NÃO ALTERAR"
+                            autocomplete="new-password"
+                        >
+
+                        <div class="profile-note">
+                            Alterar o email pode exigir uma confirmação enviada pelo Supabase.
+                        </div>
+
+                    </div>
+
+                    <div class="profile-actions">
+
+                        <button
+                            class="secondary-button"
+                            id="saveProfileButton"
+                            type="button"
+                        >
+                            SALVAR ALTERAÇÕES
+                        </button>
+
+                        <button
+                            class="secondary-button"
+                            id="closeProfileButton"
+                            type="button"
+                        >
+                            FECHAR
+                        </button>
+
+                    </div>
+
+                    <div
+                        class="profile-message"
+                        id="profileMessage"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- SELETOR DE ORDENAÇÃO -->
-    <select id="sortSelect" class="sort-select" onchange="mudarOrdenacao()">
-        <option value="padrao">ORDEM: PADRÃO</option>
-        <option value="alfabetica">ORDEM: A-Z</option>
-        <option value="reversa">ORDEM: Z-A</option>
-    </select>
+</div>
 
-    <div class="search-area">
-        <span class="search-icon">&gt;_</span>
-        <input id="search" class="search" type="text" placeholder="SEARCH DATABASE..." autocomplete="off">
-        <span id="searchClear" class="search-clear" onclick="limparBusca()">×</span>
+
+<!-- =========================================================
+     MODAL DE PASTA
+========================================================= -->
+
+<div
+    class="folder-overlay"
+    id="folderModal"
+>
+
+    <div class="folder-window">
+
+        <div class="folder-window-header">
+
+            <div
+                class="folder-window-title"
+                id="folderModalTitle"
+            >
+                NOVA PASTA
+            </div>
+
+            <button
+                class="folder-window-close"
+                id="folderModalClose"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="folder-window-body">
+
+            <input
+                id="folderNameInput"
+                class="folder-input"
+                maxlength="32"
+                placeholder="NOME DA PASTA..."
+                autocomplete="off"
+            >
+
+            <div class="folder-modal-actions">
+
+                <button
+                    class="folder-modal-button"
+                    id="folderModalConfirm"
+                    type="button"
+                >
+                    CONFIRMAR
+                </button>
+
+                <button
+                    class="folder-modal-button cancel"
+                    id="folderModalCancel"
+                    type="button"
+                >
+                    CANCELAR
+                </button>
+
+            </div>
+
+            <div
+                class="folder-modal-message"
+                id="folderModalMessage"
+            ></div>
+
+        </div>
+
     </div>
+
 </div>
 
-<!-- GAME INFO -->
-<div class="game-info">
-    <div>DATABASE / <span class="game-count" id="gameCount">0 GAMES</span></div>
-    <div>RIGHT CLICK = ★ FAVORITE</div>
-</div>
 
-<!-- GAME LIST -->
-<div class="file-list" id="fileList">
-    <div class="empty" id="empty">
-        <div class="empty-big">[ 404 ]</div>
-        NO GAMES FOUND.
+<!-- =========================================================
+     MODAL DE MOVER FAVORITO
+========================================================= -->
+
+<div
+    class="move-overlay"
+    id="moveModal"
+>
+
+    <div class="move-window">
+
+        <div class="move-header">
+
+            <div class="move-title">
+                MOVER FAVORITO
+            </div>
+
+            <button
+                class="move-close"
+                id="moveModalClose"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="move-body">
+
+            <div
+                class="move-game-name"
+                id="moveGameName"
+            ></div>
+
+            <div
+                class="move-folder-list"
+                id="moveFolderList"
+            ></div>
+
+            <div
+                class="move-message"
+                id="moveMessage"
+            ></div>
+
+        </div>
+
     </div>
-</div>
-
-<!-- FOOTER -->
-<footer class="footer">
-    <div><strong>●</strong> SYSTEM READY</div>
-    <div>↑ ↓ NAVIGATE &nbsp; // &nbsp; ENTER EXECUTE</div>
-    <div>ESC CLEAR SEARCH</div>
-</footer>
 
 </div>
-</div>
+
 
 <script>
 
 /* =========================================================
-   ⚙️ CONFIGURAÇÃO DOS JOGOS E DESCRIÇÕES
-   Formato: [Descrição, Emoji, URL, ApenasPC, Externo, Categoria ('gemini' ou 'ports')]
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://xsbbgoohvlgpprhqevyo.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let usuarioAtual = null;
+
+let avatarDraft = {
+    type:"emoji",
+    face:"😀",
+    accessory:"",
+    extra:"",
+    file:null,
+    url:null
+};
+
+let avatarCategoria = "face";
+let modoCadastro = false;
+
+let favoritosConta = [];
+let pastasFavoritos = [];
+
+let pastaFavoritosAtual = null;
+
+let pastaModalModo = "criar";
+let pastaModalId = null;
+
+let favoritoMovendo = null;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const authScreen =
+    document.getElementById("authScreen");
+
+const siteContent =
+    document.getElementById("siteContent");
+
+const authForm =
+    document.getElementById("authForm");
+
+const authEmail =
+    document.getElementById("authEmail");
+
+const authPassword =
+    document.getElementById("authPassword");
+
+const authSubmit =
+    document.getElementById("authSubmit");
+
+const authMessage =
+    document.getElementById("authMessage");
+
+const authSwitchButton =
+    document.getElementById("authSwitchButton");
+
+const authSwitchText =
+    document.getElementById("authSwitchText");
+
+const authTerminalText =
+    document.getElementById("authTerminalText");
+
+const guestButton =
+    document.getElementById("guestButton");
+
+const accountDisplayName =
+    document.getElementById("accountDisplayName");
+
+const headerAvatar =
+    document.getElementById("headerAvatar");
+
+const profileButton =
+    document.getElementById("profileButton");
+
+const profileModal =
+    document.getElementById("profileModal");
+
+const profileNameInput =
+    document.getElementById("profileNameInput");
+
+const profileEmailInput =
+    document.getElementById("profileEmailInput");
+
+const profilePasswordInput =
+    document.getElementById("profilePasswordInput");
+
+const profileMessage =
+    document.getElementById("profileMessage");
+
+const avatarStage =
+    document.getElementById("avatarStage");
+
+const avatarPhoto =
+    document.getElementById("avatarPhoto");
+
+const avatarFace =
+    document.getElementById("avatarFace");
+
+const avatarAccessory =
+    document.getElementById("avatarAccessory");
+
+const avatarExtra =
+    document.getElementById("avatarExtra");
+
+const avatarFileInput =
+    document.getElementById("avatarFileInput");
+
+const avatarFileName =
+    document.getElementById("avatarFileName");
+
+const emojiGrid =
+    document.getElementById("emojiGrid");
+
+const emojiEditor =
+    document.getElementById("emojiEditor");
+
+const photoEditor =
+    document.getElementById("photoEditor");
+
+const avatarEmojiMode =
+    document.getElementById("avatarEmojiMode");
+
+const avatarPhotoMode =
+    document.getElementById("avatarPhotoMode");
+
+const guestWarning =
+    document.getElementById("guestWarning");
+
+const profileAvatarType =
+    document.getElementById("profileAvatarType");
+
+const favoritesPanel =
+    document.getElementById("favoritesPanel");
+
+const folderList =
+    document.getElementById("folderList");
+
+const folderModal =
+    document.getElementById("folderModal");
+
+const folderModalTitle =
+    document.getElementById("folderModalTitle");
+
+const folderNameInput =
+    document.getElementById("folderNameInput");
+
+const folderModalMessage =
+    document.getElementById("folderModalMessage");
+
+const folderModalConfirm =
+    document.getElementById("folderModalConfirm");
+
+const moveModal =
+    document.getElementById("moveModal");
+
+const moveGameName =
+    document.getElementById("moveGameName");
+
+const moveFolderList =
+    document.getElementById("moveFolderList");
+
+const moveMessage =
+    document.getElementById("moveMessage");
+
+
+/* =========================================================
+   METADATA DO USUÁRIO
+========================================================= */
+
+function obterMetadata(user){
+
+    return user?.user_metadata || {};
+}
+
+
+function obterPerfilDoUsuario(user){
+
+    const metadata =
+        obterMetadata(user);
+
+    return {
+
+        display_name:
+            metadata.display_name ||
+            "PLAYER",
+
+        avatar_type:
+            metadata.avatar_type ||
+            "emoji",
+
+        avatar_face:
+            metadata.avatar_face ||
+            "😀",
+
+        avatar_accessory:
+            metadata.avatar_accessory ||
+            "",
+
+        avatar_extra:
+            metadata.avatar_extra ||
+            "",
+
+        avatar_url:
+            metadata.avatar_url ||
+            null
+    };
+}
+
+
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
+function mostrarMensagemAuth(texto,tipo=""){
+
+    authMessage.textContent = texto;
+
+    authMessage.className =
+        "auth-message";
+
+    if(tipo)
+        authMessage.classList.add(tipo);
+}
+
+
+function mostrarMensagemPerfil(texto,tipo=""){
+
+    profileMessage.textContent = texto;
+
+    profileMessage.className =
+        "profile-message";
+
+    if(tipo)
+        profileMessage.classList.add(tipo);
+}
+
+
+function traduzirErro(error){
+
+    const msg =
+        String(
+            error?.message ||
+            error ||
+            ""
+        ).toLowerCase();
+
+    if(msg.includes("invalid login credentials"))
+        return "EMAIL OU SENHA INCORRETOS.";
+
+    if(msg.includes("user already registered"))
+        return "ESTE EMAIL JÁ POSSUI UMA CONTA.";
+
+    if(msg.includes("email not confirmed"))
+        return "ESTE EMAIL AINDA NÃO FOI CONFIRMADO.";
+
+    if(msg.includes("anonymous sign-ins"))
+        return "O LOGIN SEM PERFIL NÃO ESTÁ ATIVADO NO SUPABASE.";
+
+    if(msg.includes("password should be at least"))
+        return "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.";
+
+    if(msg.includes("invalid email"))
+        return "O EMAIL INFORMADO NÃO É VÁLIDO.";
+
+    if(msg.includes("same password"))
+        return "A NOVA SENHA PRECISA SER DIFERENTE.";
+
+    if(msg.includes("rate limit"))
+        return "MUITAS TENTATIVAS. AGUARDE UM POUCO.";
+
+    if(msg.includes("failed to fetch"))
+        return "NÃO FOI POSSÍVEL CONECTAR AO SUPABASE.";
+
+    if(msg.includes("row-level security"))
+        return "O SUPABASE BLOQUEOU ESTA OPERAÇÃO.";
+
+    if(msg.includes("duplicate key"))
+        return "ESTE FAVORITO JÁ ESTÁ NESSA PASTA.";
+
+    if(msg.includes("bucket"))
+        return "NÃO FOI POSSÍVEL ACESSAR O ARMAZENAMENTO.";
+
+    return String(
+        error?.message ||
+        "OCORREU UM ERRO."
+    ).toUpperCase();
+}
+
+
+/* =========================================================
+   AUTENTICAÇÃO
+========================================================= */
+
+function trocarModoAuth(){
+
+    modoCadastro =
+        !modoCadastro;
+
+    mostrarMensagemAuth("");
+
+    authPassword.value = "";
+
+    if(modoCadastro){
+
+        authSubmit.textContent =
+            "CRIAR CONTA";
+
+        authSwitchText.textContent =
+            "JÁ POSSUI UMA CONTA?";
+
+        authSwitchButton.textContent =
+            "ENTRAR";
+
+        authTerminalText.textContent =
+            "CRIANDO NOVA CONTA...";
+
+    }else{
+
+        authSubmit.textContent =
+            "ENTRAR";
+
+        authSwitchText.textContent =
+            "NÃO TEM UMA CONTA?";
+
+        authSwitchButton.textContent =
+            "CRIAR CONTA";
+
+        authTerminalText.textContent =
+            "AUTENTICAÇÃO NECESSÁRIA...";
+    }
+}
+
+
+authSwitchButton.addEventListener(
+    "click",
+    trocarModoAuth
+);
+
+
+authForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const email =
+            authEmail.value.trim();
+
+        const password =
+            authPassword.value;
+
+        if(!email || !password){
+
+            mostrarMensagemAuth(
+                "PREENCHA EMAIL E SENHA.",
+                "error"
+            );
+
+            return;
+        }
+
+        if(password.length < 6){
+
+            mostrarMensagemAuth(
+                "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.",
+                "error"
+            );
+
+            return;
+        }
+
+        authSubmit.disabled = true;
+
+        try{
+
+            if(modoCadastro){
+
+                authSubmit.textContent =
+                    "CRIANDO...";
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth.signUp({
+                        email,
+                        password
+                    });
+
+                if(error)
+                    throw error;
+
+                if(!data.user)
+                    throw new Error(
+                        "A conta não foi criada."
+                    );
+
+                if(data.session){
+
+                    usuarioAtual =
+                        data.user;
+
+                    await inicializarPerfil(
+                        usuarioAtual
+                    );
+
+                    await carregarDadosFavoritos();
+
+                    mostrarSite();
+
+                }else{
+
+                    mostrarMensagemAuth(
+                        "CONTA CRIADA. CONFIRME O EMAIL SE NECESSÁRIO E DEPOIS ENTRE.",
+                        "success"
+                    );
+
+                }
+
+            }else{
+
+                authSubmit.textContent =
+                    "ENTRANDO...";
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+
+                if(error)
+                    throw error;
+
+                usuarioAtual =
+                    data.user;
+
+                await inicializarPerfil(
+                    usuarioAtual
+                );
+
+                await carregarDadosFavoritos();
+
+                mostrarSite();
+            }
+
+        }catch(error){
+
+            console.error(
+                "AUTH ERROR:",
+                error
+            );
+
+            mostrarMensagemAuth(
+                traduzirErro(error),
+                "error"
+            );
+
+        }finally{
+
+            authSubmit.disabled = false;
+
+            authSubmit.textContent =
+                modoCadastro
+                    ? "CRIAR CONTA"
+                    : "ENTRAR";
+        }
+    }
+);
+
+
+/* =========================================================
+   CONVIDADO
+========================================================= */
+
+guestButton.addEventListener(
+    "click",
+    entrarComoConvidado
+);
+
+
+async function entrarComoConvidado(){
+
+    guestButton.disabled = true;
+
+    guestButton.textContent =
+        "ENTRANDO...";
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.signInAnonymously();
+
+        if(error)
+            throw error;
+
+        usuarioAtual =
+            data.user;
+
+        await inicializarPerfil(
+            usuarioAtual
+        );
+
+        carregarDadosFavoritosLocais();
+
+        mostrarSite();
+
+    }catch(error){
+
+        console.error(
+            "GUEST ERROR:",
+            error
+        );
+
+        mostrarMensagemAuth(
+            traduzirErro(error),
+            "error"
+        );
+
+    }finally{
+
+        guestButton.disabled = false;
+
+        guestButton.textContent =
+            "CONTINUAR SEM PERFIL";
+    }
+}
+
+
+/* =========================================================
+   PERFIL
+========================================================= */
+
+async function inicializarPerfil(user){
+
+    if(!user)
+        return;
+
+    const metadata =
+        obterMetadata(user);
+
+    const precisaInicializar =
+        !metadata.display_name;
+
+    if(!precisaInicializar)
+        return;
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.updateUser({
+            data:{
+                display_name:
+                    user.is_anonymous
+                        ? "GUEST"
+                        : "PLAYER",
+
+                avatar_type:"emoji",
+
+                avatar_face:"😀",
+
+                avatar_accessory:"",
+
+                avatar_extra:"",
+
+                avatar_url:null
+            }
+        });
+
+    if(error)
+        throw error;
+
+    if(data?.user)
+        usuarioAtual =
+            data.user;
+}
+
+
+function atualizarInterfacePerfil(){
+
+    if(!usuarioAtual)
+        return;
+
+    const perfil =
+        obterPerfilDoUsuario(
+            usuarioAtual
+        );
+
+    accountDisplayName.textContent =
+        perfil.display_name;
+
+    profileNameInput.value =
+        perfil.display_name;
+
+    profileEmailInput.value =
+        usuarioAtual.email || "";
+
+    profileEmailInput.disabled =
+        usuarioAtual.is_anonymous;
+
+    profilePasswordInput.disabled =
+        usuarioAtual.is_anonymous;
+
+    guestWarning.classList.toggle(
+        "visible",
+        usuarioAtual.is_anonymous
+    );
+
+    avatarDraft = {
+
+        type:perfil.avatar_type,
+
+        face:perfil.avatar_face,
+
+        accessory:perfil.avatar_accessory,
+
+        extra:perfil.avatar_extra,
+
+        file:null,
+
+        url:perfil.avatar_url
+    };
+
+    atualizarAvatarDraft();
+    renderizarAvatarHeader();
+    renderizarOpcoesAvatar();
+}
+
+
+function atualizarAvatarDraft(){
+
+    if(
+        avatarDraft.type === "photo" &&
+        avatarDraft.url
+    ){
+
+        avatarStage.classList.add(
+            "photo-mode"
+        );
+
+        avatarPhoto.src =
+            avatarDraft.url;
+
+    }else{
+
+        avatarStage.classList.remove(
+            "photo-mode"
+        );
+
+        avatarPhoto.removeAttribute(
+            "src"
+        );
+
+        avatarFace.textContent =
+            avatarDraft.face || "😀";
+
+        avatarAccessory.textContent =
+            avatarDraft.accessory || "";
+
+        avatarExtra.textContent =
+            avatarDraft.extra || "";
+    }
+
+    document.getElementById(
+        "profilePreviewName"
+    ).textContent =
+        profileNameInput.value ||
+        "PLAYER";
+
+    profileAvatarType.textContent =
+        avatarDraft.type === "photo"
+            ? "AVATAR COM FOTO"
+            : "AVATAR EMOJI";
+}
+
+
+function renderizarAvatarHeader(){
+
+    const perfil =
+        obterPerfilDoUsuario(
+            usuarioAtual
+        );
+
+    if(
+        perfil.avatar_type === "photo" &&
+        perfil.avatar_url
+    ){
+
+        headerAvatar.innerHTML = "";
+
+        const img =
+            document.createElement("img");
+
+        img.src =
+            perfil.avatar_url;
+
+        img.alt =
+            "Avatar";
+
+        headerAvatar.appendChild(
+            img
+        );
+
+    }else{
+
+        headerAvatar.textContent =
+            perfil.avatar_face ||
+            "😀";
+    }
+}
+
+
+function abrirPerfil(){
+
+    if(!usuarioAtual)
+        return;
+
+    mostrarMensagemPerfil("");
+
+    atualizarInterfacePerfil();
+
+    definirModoAvatar(
+        avatarDraft.type === "photo"
+            ? "photo"
+            : "emoji"
+    );
+
+    profileModal.classList.add(
+        "open"
+    );
+}
+
+
+function fecharPerfil(){
+
+    profileModal.classList.remove(
+        "open"
+    );
+
+    avatarFileInput.value = "";
+
+    avatarFileName.textContent =
+        "NENHUMA FOTO SELECIONADA.";
+
+    mostrarMensagemPerfil("");
+}
+
+
+profileButton.addEventListener(
+    "click",
+    abrirPerfil
+);
+
+
+document
+    .getElementById("profileClose")
+    .addEventListener(
+        "click",
+        fecharPerfil
+    );
+
+
+document
+    .getElementById("closeProfileButton")
+    .addEventListener(
+        "click",
+        fecharPerfil
+    );
+
+
+profileModal.addEventListener(
+    "click",
+    event => {
+
+        if(
+            event.target ===
+            profileModal
+        )
+            fecharPerfil();
+    }
+);
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+const AVATAR_OPTIONS = {
+
+    face:[
+        "😀",
+        "😎",
+        "🤓",
+        "😈",
+        "👽",
+        "🤖",
+        "👻",
+        "💀",
+        "😺",
+        "🐸",
+        "👾",
+        "😶",
+        "😡",
+        "🥶",
+        "🥸",
+        "🤠",
+        "😴",
+        "🤡"
+    ],
+
+    accessory:[
+        "",
+        "🧢",
+        "🎩",
+        "👑",
+        "👒",
+        "🎓",
+        "🪖",
+        "🕶️",
+        "🥽",
+        "🎧",
+        "👓"
+    ],
+
+    extra:[
+        "",
+        "⭐",
+        "🔥",
+        "⚡",
+        "💥",
+        "❤️",
+        "🎮",
+        "👾",
+        "💎",
+        "🌟",
+        "☠️",
+        "🍀"
+    ]
+};
+
+
+function definirModoAvatar(modo){
+
+    const emoji =
+        modo === "emoji";
+
+    avatarEmojiMode.classList.toggle(
+        "active",
+        emoji
+    );
+
+    avatarPhotoMode.classList.toggle(
+        "active",
+        !emoji
+    );
+
+    emojiEditor.classList.toggle(
+        "active",
+        emoji
+    );
+
+    photoEditor.classList.toggle(
+        "active",
+        !emoji
+    );
+
+    if(emoji){
+
+        avatarDraft.type =
+            "emoji";
+
+        avatarDraft.file =
+            null;
+
+        avatarDraft.url =
+            null;
+
+        atualizarAvatarDraft();
+
+    }else{
+
+        avatarDraft.type =
+            "photo";
+
+        if(avatarDraft.url){
+
+            avatarStage.classList.add(
+                "photo-mode"
+            );
+
+            avatarPhoto.src =
+                avatarDraft.url;
+        }
+    }
+
+    renderizarOpcoesAvatar();
+}
+
+
+avatarEmojiMode.addEventListener(
+    "click",
+    () => definirModoAvatar("emoji")
+);
+
+
+avatarPhotoMode.addEventListener(
+    "click",
+    () => definirModoAvatar("photo")
+);
+
+
+document
+    .querySelectorAll(
+        ".avatar-category-button"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                avatarCategoria =
+                    button.dataset.category;
+
+                document
+                    .querySelectorAll(
+                        ".avatar-category-button"
+                    )
+                    .forEach(
+                        item =>
+                            item.classList.toggle(
+                                "active",
+                                item === button
+                            )
+                    );
+
+                renderizarOpcoesAvatar();
+            }
+        );
+    });
+
+
+function renderizarOpcoesAvatar(){
+
+    emojiGrid.innerHTML = "";
+
+    const opcoes =
+        AVATAR_OPTIONS[
+            avatarCategoria
+        ];
+
+    opcoes.forEach(
+        emoji => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "emoji-option";
+
+            let selecionado = false;
+
+            if(
+                avatarCategoria === "face"
+            )
+                selecionado =
+                    avatarDraft.face === emoji;
+
+            if(
+                avatarCategoria === "accessory"
+            )
+                selecionado =
+                    avatarDraft.accessory === emoji;
+
+            if(
+                avatarCategoria === "extra"
+            )
+                selecionado =
+                    avatarDraft.extra === emoji;
+
+            if(selecionado)
+                button.classList.add(
+                    "selected"
+                );
+
+            button.textContent =
+                emoji || "∅";
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    definirModoAvatar(
+                        "emoji"
+                    );
+
+                    if(
+                        avatarCategoria === "face"
+                    )
+                        avatarDraft.face =
+                            emoji;
+
+                    else if(
+                        avatarCategoria === "accessory"
+                    )
+                        avatarDraft.accessory =
+                            emoji;
+
+                    else
+                        avatarDraft.extra =
+                            emoji;
+
+                    atualizarAvatarDraft();
+                    renderizarOpcoesAvatar();
+                }
+            );
+
+            emojiGrid.appendChild(
+                button
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   FOTO
+========================================================= */
+
+avatarFileInput.addEventListener(
+    "change",
+    event => {
+
+        const file =
+            event.target.files[0];
+
+        if(!file)
+            return;
+
+        if(
+            !file.type.startsWith(
+                "image/"
+            )
+        ){
+
+            mostrarMensagemPerfil(
+                "ESCOLHA UMA IMAGEM VÁLIDA.",
+                "error"
+            );
+
+            avatarFileInput.value = "";
+
+            return;
+        }
+
+        if(
+            file.size >
+            5 * 1024 * 1024
+        ){
+
+            mostrarMensagemPerfil(
+                "A FOTO PRECISA TER NO MÁXIMO 5 MB.",
+                "error"
+            );
+
+            avatarFileInput.value = "";
+
+            return;
+        }
+
+        avatarDraft.type =
+            "photo";
+
+        avatarDraft.file =
+            file;
+
+        const reader =
+            new FileReader();
+
+        reader.onload =
+            () => {
+
+                avatarDraft.url =
+                    reader.result;
+
+                avatarStage.classList.add(
+                    "photo-mode"
+                );
+
+                avatarPhoto.src =
+                    reader.result;
+
+                avatarEmojiMode.classList.remove(
+                    "active"
+                );
+
+                avatarPhotoMode.classList.add(
+                    "active"
+                );
+
+                emojiEditor.classList.remove(
+                    "active"
+                );
+
+                photoEditor.classList.add(
+                    "active"
+                );
+
+                avatarFileName.textContent =
+                    file.name;
+
+                profileAvatarType.textContent =
+                    "AVATAR COM FOTO";
+
+                mostrarMensagemPerfil(
+                    "FOTO SELECIONADA. CLIQUE EM SALVAR ALTERAÇÕES.",
+                    "success"
+                );
+            };
+
+        reader.readAsDataURL(file);
+    }
+);
+
+
+/* =========================================================
+   UPLOAD DA FOTO
+========================================================= */
+
+async function enviarFotoAvatar(file){
+
+    if(!usuarioAtual)
+        throw new Error(
+            "NENHUM USUÁRIO CONECTADO."
+        );
+
+    const extensaoOriginal =
+        file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+    const extensao =
+        ["png","jpg","jpeg","webp"]
+            .includes(extensaoOriginal)
+            ? extensaoOriginal
+            : "png";
+
+    const nomeArquivo =
+        `avatar_${Date.now()}.${extensao}`;
+
+    const caminho =
+        `${usuarioAtual.id}/${nomeArquivo}`;
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .storage
+            .from("avatars")
+            .upload(
+                caminho,
+                file,
+                {
+                    upsert:false,
+                    contentType:file.type,
+                    cacheControl:"3600"
+                }
+            );
+
+    if(error)
+        throw error;
+
+    const {
+        data
+    } =
+        supabaseClient
+            .storage
+            .from("avatars")
+            .getPublicUrl(
+                caminho
+            );
+
+    if(
+        !data ||
+        !data.publicUrl
+    )
+        throw new Error(
+            "NÃO FOI POSSÍVEL OBTER A URL DA FOTO."
+        );
+
+    return data.publicUrl;
+}
+
+
+/* =========================================================
+   SALVAR PERFIL
+========================================================= */
+
+document
+    .getElementById(
+        "saveProfileButton"
+    )
+    .addEventListener(
+        "click",
+        salvarPerfil
+    );
+
+
+async function salvarPerfil(){
+
+    if(!usuarioAtual)
+        return;
+
+    const nome =
+        profileNameInput.value.trim();
+
+    if(!nome){
+
+        mostrarMensagemPerfil(
+            "ESCOLHA UM NOME.",
+            "error"
+        );
+
+        return;
+    }
+
+    if(nome.length > 24){
+
+        mostrarMensagemPerfil(
+            "O NOME PODE TER NO MÁXIMO 24 CARACTERES.",
+            "error"
+        );
+
+        return;
+    }
+
+    const novaSenha =
+        profilePasswordInput.value;
+
+    if(
+        !usuarioAtual.is_anonymous &&
+        novaSenha &&
+        novaSenha.length < 6
+    ){
+
+        mostrarMensagemPerfil(
+            "A NOVA SENHA PRECISA TER PELO MENOS 6 CARACTERES.",
+            "error"
+        );
+
+        return;
+    }
+
+    const botao =
+        document.getElementById(
+            "saveProfileButton"
+        );
+
+    botao.disabled = true;
+
+    botao.textContent =
+        "SALVANDO...";
+
+    try{
+
+        let avatarUrl =
+            avatarDraft.url;
+
+        if(
+            avatarDraft.type === "photo" &&
+            avatarDraft.file
+        ){
+
+            avatarUrl =
+                await enviarFotoAvatar(
+                    avatarDraft.file
+                );
+        }
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.updateUser({
+
+                email:
+                    !usuarioAtual.is_anonymous
+                    ? profileEmailInput.value.trim()
+                    : undefined,
+
+                password:
+                    !usuarioAtual.is_anonymous &&
+                    novaSenha
+                    ? novaSenha
+                    : undefined,
+
+                data:{
+
+                    display_name:
+                        nome,
+
+                    avatar_type:
+                        avatarDraft.type,
+
+                    avatar_face:
+                        avatarDraft.face,
+
+                    avatar_accessory:
+                        avatarDraft.accessory,
+
+                    avatar_extra:
+                        avatarDraft.extra,
+
+                    avatar_url:
+                        avatarDraft.type === "photo"
+                            ? avatarUrl
+                            : null
+                }
+            });
+
+        if(error)
+            throw error;
+
+        if(!data?.user)
+            throw new Error(
+                "O SUPABASE NÃO RETORNOU O USUÁRIO ATUALIZADO."
+            );
+
+        usuarioAtual =
+            data.user;
+
+        profilePasswordInput.value =
+            "";
+
+        avatarDraft.file =
+            null;
+
+        avatarFileInput.value =
+            "";
+
+        avatarFileName.textContent =
+            "NENHUMA FOTO SELECIONADA.";
+
+        atualizarInterfacePerfil();
+
+        mostrarMensagemPerfil(
+            "ALTERAÇÕES SALVAS COM SUCESSO.",
+            "success"
+        );
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "PROFILE SAVE ERROR:",
+            error
+        );
+
+        mostrarMensagemPerfil(
+            "ERRO AO SALVAR: " +
+            traduzirErro(error),
+            "error"
+        );
+
+    }finally{
+
+        botao.disabled =
+            false;
+
+        botao.textContent =
+            "SALVAR ALTERAÇÕES";
+    }
+}
+
+
+/* =========================================================
+   FAVORITOS — LOCAL
+   Usado somente para convidados.
+========================================================= */
+
+function obterFavoritosLocais(){
+
+    try{
+
+        return JSON.parse(
+            localStorage.getItem(
+                "htmlgames_favs"
+            )
+        ) || [];
+
+    }catch(error){
+
+        return [];
+    }
+}
+
+
+function salvarFavoritosLocais(favoritos){
+
+    localStorage.setItem(
+        "htmlgames_favs",
+        JSON.stringify(
+            favoritos
+        )
+    );
+}
+
+
+function carregarDadosFavoritosLocais(){
+
+    const favoritos =
+        obterFavoritosLocais();
+
+    favoritosConta =
+        favoritos.map(
+            id => ({
+                id:`local-${id}`,
+                user_id:null,
+                game_id:id,
+                folder_id:null
+            })
+        );
+
+    pastasFavoritos = [];
+
+    pastaFavoritosAtual =
+        null;
+}
+
+
+/* =========================================================
+   FAVORITOS — SUPABASE
+========================================================= */
+
+async function carregarDadosFavoritos(){
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        carregarDadosFavoritosLocais();
+
+        return;
+    }
+
+    const [
+        favoritosResult,
+        pastasResult
+    ] =
+        await Promise.all([
+
+            supabaseClient
+                .from("favorites")
+                .select(
+                    "id,user_id,game_id,folder_id,created_at"
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending:true
+                    }
+                ),
+
+            supabaseClient
+                .from("favorite_folders")
+                .select(
+                    "id,user_id,name,created_at"
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending:true
+                    }
+                )
+        ]);
+
+    if(favoritosResult.error)
+        throw favoritosResult.error;
+
+    if(pastasResult.error)
+        throw pastasResult.error;
+
+    favoritosConta =
+        favoritosResult.data || [];
+
+    pastasFavoritos =
+        pastasResult.data || [];
+
+    /*
+        A pasta atual volta para a principal
+        quando uma nova sessão é carregada.
+    */
+
+    pastaFavoritosAtual =
+        null;
+
+    renderizarPastas();
+}
+
+
+/* =========================================================
+   DADOS DE FAVORITOS
+========================================================= */
+
+function obterFavoritosIds(){
+
+    return favoritosConta.map(
+        favorito =>
+            favorito.game_id
+    );
+}
+
+
+function jogoEstaFavoritado(id){
+
+    return favoritosConta.some(
+        favorito =>
+            favorito.game_id === id
+    );
+}
+
+
+function favoritoDoJogo(id){
+
+    return favoritosConta.find(
+        favorito =>
+            favorito.game_id === id
+    );
+}
+
+
+/* =========================================================
+   ADICIONAR / REMOVER FAVORITO
+========================================================= */
+
+async function alternarFavorito(id){
+
+    if(!usuarioAtual)
+        return;
+
+    const existente =
+        favoritoDoJogo(id);
+
+    try{
+
+        if(
+            usuarioAtual.is_anonymous
+        ){
+
+            let favoritos =
+                obterFavoritosLocais();
+
+            if(
+                favoritos.includes(id)
+            ){
+
+                favoritos =
+                    favoritos.filter(
+                        item =>
+                            item !== id
+                    );
+
+            }else{
+
+                favoritos.push(id);
+            }
+
+            salvarFavoritosLocais(
+                favoritos
+            );
+
+            carregarDadosFavoritosLocais();
+
+        }else{
+
+            if(existente){
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from("favorites")
+                        .delete()
+                        .eq(
+                            "id",
+                            existente.id
+                        )
+                        .eq(
+                            "user_id",
+                            usuarioAtual.id
+                        );
+
+                if(error)
+                    throw error;
+
+                favoritosConta =
+                    favoritosConta.filter(
+                        item =>
+                            item.id !==
+                            existente.id
+                    );
+
+            }else{
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("favorites")
+                        .insert({
+                            user_id:
+                                usuarioAtual.id,
+
+                            game_id:
+                                id,
+
+                            folder_id:
+                                pastaFavoritosAtual
+                        })
+                        .select()
+                        .single();
+
+                if(error)
+                    throw error;
+
+                favoritosConta.push(
+                    data
+                );
+            }
+        }
+
+        playSound("fav");
+
+        carregarFavoritos();
+        filtrarJogos();
+
+    }catch(error){
+
+        console.error(
+            "FAVORITE ERROR:",
+            error
+        );
+
+        alert(
+            "ERRO AO ALTERAR FAVORITO:\n\n" +
+            traduzirErro(error)
+        );
+    }
+}
+
+
+/* =========================================================
+   MARCAR FAVORITOS NA LISTA
+========================================================= */
+
+function carregarFavoritos(){
+
+    const favoritos =
+        obterFavoritosIds();
+
+    files.forEach(
+        file => {
+
+            file.classList.toggle(
+                "favorite",
+                favoritos.includes(
+                    file.dataset.id
+                )
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   PASTAS
+========================================================= */
+
+function renderizarPastas(){
+
+    folderList.innerHTML =
+        "";
+
+    const botaoTodos =
+        document.createElement(
+            "button"
+        );
+
+    botaoTodos.type =
+        "button";
+
+    botaoTodos.className =
+        "folder-button main-folder";
+
+    if(
+        pastaFavoritosAtual === null
+    )
+        botaoTodos.classList.add(
+            "active"
+        );
+
+    botaoTodos.textContent =
+        "★ TODOS";
+
+    botaoTodos.addEventListener(
+        "click",
+        () => {
+
+            pastaFavoritosAtual =
+                null;
+
+            renderizarPastas();
+            filtrarJogos();
+        }
+    );
+
+    folderList.appendChild(
+        botaoTodos
+    );
+
+    pastasFavoritos.forEach(
+        pasta => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "folder-button";
+
+            if(
+                pastaFavoritosAtual ===
+                pasta.id
+            )
+                button.classList.add(
+                    "active"
+                );
+
+            button.textContent =
+                "📁 " +
+                pasta.name;
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    pastaFavoritosAtual =
+                        pasta.id;
+
+                    renderizarPastas();
+                    filtrarJogos();
+                }
+            );
+
+            folderList.appendChild(
+                button
+            );
+        }
+    );
+}
+
+
+function atualizarPainelFavoritos(){
+
+    const mostrar =
+        abaAtual ===
+        "favoritos";
+
+    favoritesPanel.classList.toggle(
+        "visible",
+        mostrar
+    );
+
+    if(mostrar)
+        renderizarPastas();
+}
+
+
+/* =========================================================
+   CRIAR / EDITAR PASTA
+========================================================= */
+
+function abrirModalPasta(
+    modo,
+    pasta=null
+){
+
+    pastaModalModo =
+        modo;
+
+    pastaModalId =
+        pasta?.id || null;
+
+    folderModalMessage.textContent =
+        "";
+
+    folderNameInput.value =
+        pasta?.name || "";
+
+    folderModalTitle.textContent =
+        modo === "criar"
+            ? "NOVA PASTA"
+            : "RENOMEAR PASTA";
+
+    folderModalConfirm.textContent =
+        modo === "criar"
+            ? "CRIAR"
+            : "SALVAR";
+
+    folderModal.classList.add(
+        "open"
+    );
+
+    setTimeout(
+        () =>
+            folderNameInput.focus(),
+        50
+    );
+}
+
+
+function fecharModalPasta(){
+
+    folderModal.classList.remove(
+        "open"
+    );
+
+    folderNameInput.value =
+        "";
+
+    folderModalMessage.textContent =
+        "";
+}
+
+
+async function confirmarPasta(){
+
+    const nome =
+        folderNameInput.value.trim();
+
+    if(!nome){
+
+        folderModalMessage.textContent =
+            "DIGITE UM NOME PARA A PASTA.";
+
+        return;
+    }
+
+    if(nome.length > 32){
+
+        folderModalMessage.textContent =
+            "O NOME PODE TER NO MÁXIMO 32 CARACTERES.";
+
+        return;
+    }
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        folderModalMessage.textContent =
+            "ENTRE EM UMA CONTA PARA CRIAR PASTAS.";
+
+        return;
+    }
+
+    folderModalConfirm.disabled =
+        true;
+
+    try{
+
+        if(
+            pastaModalModo ===
+            "criar"
+        ){
+
+            const existe =
+                pastasFavoritos.some(
+                    pasta =>
+                        pasta.name
+                            .toLowerCase() ===
+                        nome.toLowerCase()
+                );
+
+            if(existe){
+
+                folderModalMessage.textContent =
+                    "JÁ EXISTE UMA PASTA COM ESSE NOME.";
+
+                return;
+            }
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "favorite_folders"
+                    )
+                    .insert({
+                        user_id:
+                            usuarioAtual.id,
+
+                        name:
+                            nome
+                    })
+                    .select()
+                    .single();
+
+            if(error)
+                throw error;
+
+            pastasFavoritos.push(
+                data
+            );
+
+            pastaFavoritosAtual =
+                data.id;
+
+        }else{
+
+            const pasta =
+                pastasFavoritos.find(
+                    item =>
+                        item.id ===
+                        pastaModalId
+                );
+
+            if(!pasta)
+                throw new Error(
+                    "PASTA NÃO ENCONTRADA."
+                );
+
+            const existe =
+                pastasFavoritos.some(
+                    item =>
+                        item.id !== pasta.id &&
+                        item.name
+                            .toLowerCase() ===
+                        nome.toLowerCase()
+                );
+
+            if(existe){
+
+                folderModalMessage.textContent =
+                    "JÁ EXISTE UMA PASTA COM ESSE NOME.";
+
+                return;
+            }
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "favorite_folders"
+                    )
+                    .update({
+                        name:
+                            nome
+                    })
+                    .eq(
+                        "id",
+                        pasta.id
+                    )
+                    .eq(
+                        "user_id",
+                        usuarioAtual.id
+                    )
+                    .select()
+                    .single();
+
+            if(error)
+                throw error;
+
+            Object.assign(
+                pasta,
+                data
+            );
+        }
+
+        fecharModalPasta();
+
+        renderizarPastas();
+        filtrarJogos();
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "FOLDER ERROR:",
+            error
+        );
+
+        folderModalMessage.textContent =
+            traduzirErro(error);
+
+    }finally{
+
+        folderModalConfirm.disabled =
+            false;
+    }
+}
+
+
+document
+    .getElementById(
+        "createFolderButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if(
+                usuarioAtual?.is_anonymous
+            ){
+
+                alert(
+                    "ENTRE EM UMA CONTA PARA CRIAR SUBPASTAS."
+                );
+
+                return;
+            }
+
+            abrirModalPasta(
+                "criar"
+            );
+        }
+    );
+
+
+document
+    .getElementById(
+        "renameFolderButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if(
+                !pastaFavoritosAtual
+            ){
+
+                alert(
+                    "SELECIONE UMA SUBPASTA PRIMEIRO."
+                );
+
+                return;
+            }
+
+            const pasta =
+                pastasFavoritos.find(
+                    item =>
+                        item.id ===
+                        pastaFavoritosAtual
+                );
+
+            if(pasta)
+                abrirModalPasta(
+                    "editar",
+                    pasta
+                );
+        }
+    );
+
+
+document
+    .getElementById(
+        "deleteFolderButton"
+    )
+    .addEventListener(
+        "click",
+        excluirPasta
+    );
+
+
+folderModalConfirm.addEventListener(
+    "click",
+    confirmarPasta
+);
+
+
+document
+    .getElementById(
+        "folderModalCancel"
+    )
+    .addEventListener(
+        "click",
+        fecharModalPasta
+    );
+
+
+document
+    .getElementById(
+        "folderModalClose"
+    )
+    .addEventListener(
+        "click",
+        fecharModalPasta
+    );
+
+
+folderModal.addEventListener(
+    "click",
+    event => {
+
+        if(
+            event.target ===
+            folderModal
+        )
+            fecharModalPasta();
+    }
+);
+
+
+folderNameInput.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key ===
+            "Enter"
+        ){
+
+            event.preventDefault();
+
+            confirmarPasta();
+        }
+
+        if(
+            event.key ===
+            "Escape"
+        ){
+
+            event.preventDefault();
+
+            fecharModalPasta();
+        }
+    }
+);
+
+
+/* =========================================================
+   EXCLUIR PASTA
+========================================================= */
+
+async function excluirPasta(){
+
+    if(
+        !pastaFavoritosAtual
+    ){
+
+        alert(
+            "SELECIONE UMA SUBPASTA PRIMEIRO."
+        );
+
+        return;
+    }
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        alert(
+            "ENTRE EM UMA CONTA PARA GERENCIAR PASTAS."
+        );
+
+        return;
+    }
+
+    const pasta =
+        pastasFavoritos.find(
+            item =>
+                item.id ===
+                pastaFavoritosAtual
+        );
+
+    if(!pasta)
+        return;
+
+    const confirmar =
+        confirm(
+            `EXCLUIR A PASTA "${pasta.name}"?\n\nOS JOGOS NÃO SERÃO APAGADOS. ELES VOLTARÃO PARA "TODOS".`
+        );
+
+    if(!confirmar)
+        return;
+
+    try{
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from(
+                    "favorite_folders"
+                )
+                .delete()
+                .eq(
+                    "id",
+                    pasta.id
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                );
+
+        if(error)
+            throw error;
+
+        /*
+            O banco está configurado com
+            ON DELETE SET NULL.
+            Portanto os favoritos dessa pasta
+            voltam para a pasta principal.
+        */
+
+        favoritosConta =
+            favoritosConta.map(
+                favorito => {
+
+                    if(
+                        favorito.folder_id ===
+                        pasta.id
+                    )
+                        favorito.folder_id =
+                            null;
+
+                    return favorito;
+                }
+            );
+
+        pastasFavoritos =
+            pastasFavoritos.filter(
+                item =>
+                    item.id !==
+                    pasta.id
+            );
+
+        pastaFavoritosAtual =
+            null;
+
+        renderizarPastas();
+        filtrarJogos();
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "DELETE FOLDER ERROR:",
+            error
+        );
+
+        alert(
+            "ERRO AO EXCLUIR PASTA:\n\n" +
+            traduzirErro(error)
+        );
+    }
+}
+
+
+/* =========================================================
+   MOVER FAVORITO
+========================================================= */
+
+function abrirMoverFavorito(gameId){
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        alert(
+            "ENTRE EM UMA CONTA PARA ORGANIZAR FAVORITOS EM SUBPASTAS."
+        );
+
+        return;
+    }
+
+    const jogo =
+        listaDeJogosOriginal.find(
+            item =>
+                item.id ===
+                gameId
+        );
+
+    if(!jogo)
+        return;
+
+    favoritoMovendo =
+        gameId;
+
+    moveGameName.textContent =
+        "JOGO: " +
+        jogo.nome;
+
+    moveMessage.textContent =
+        "";
+
+    moveFolderList.innerHTML =
+        "";
+
+    const criarBotaoPasta =
+        (
+            id,
+            nome,
+            icone
+        ) => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "move-folder-button";
+
+            button.textContent =
+                icone +
+                " " +
+                nome;
+
+            button.addEventListener(
+                "click",
+                () =>
+                    moverFavorito(
+                        gameId,
+                        id
+                    )
+            );
+
+            moveFolderList.appendChild(
+                button
+            );
+        };
+
+    criarBotaoPasta(
+        null,
+        "TODOS",
+        "★"
+    );
+
+    pastasFavoritos.forEach(
+        pasta => {
+
+            criarBotaoPasta(
+                pasta.id,
+                pasta.name,
+                "📁"
+            );
+        }
+    );
+
+    moveModal.classList.add(
+        "open"
+    );
+}
+
+
+function fecharMoverFavorito(){
+
+    moveModal.classList.remove(
+        "open"
+    );
+
+    favoritoMovendo =
+        null;
+
+    moveFolderList.innerHTML =
+        "";
+
+    moveMessage.textContent =
+        "";
+}
+
+
+async function moverFavorito(
+    gameId,
+    folderId
+){
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    )
+        return;
+
+    const favorito =
+        favoritoDoJogo(gameId);
+
+    if(!favorito)
+        return;
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("favorites")
+                .update({
+                    folder_id:
+                        folderId
+                })
+                .eq(
+                    "id",
+                    favorito.id
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                )
+                .select()
+                .single();
+
+        if(error)
+            throw error;
+
+        Object.assign(
+            favorito,
+            data
+        );
+
+        fecharMoverFavorito();
+
+        renderizarPastas();
+        filtrarJogos();
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "MOVE FAVORITE ERROR:",
+            error
+        );
+
+        moveMessage.textContent =
+            "ERRO: " +
+            traduzirErro(error);
+    }
+}
+
+
+moveModal.addEventListener(
+    "click",
+    event => {
+
+        if(
+            event.target ===
+            moveModal
+        )
+            fecharMoverFavorito();
+    }
+);
+
+
+document
+    .getElementById(
+        "moveModalClose"
+    )
+    .addEventListener(
+        "click",
+        fecharMoverFavorito
+    );
+
+
+/* =========================================================
+   LISTA DE JOGOS
 ========================================================= */
 
 const CONFIG_JOGOS = {
-    "FNAF GEMINI":         ["Monitore as câmeras, gerencie a energia e sobrevivam à noite.", "🐻", "games/fnaf/index.html", false, false, "gemini"],
-    "MINESWEEPER":         ["Desarme o campo usando lógica pura sem explodir nenhuma mina.", "💣", "games/campo-minado/index.html", false, false, "gemini"],
-    "SNAKE":               ["Cresça comendo maçãs e desvie das próprias curvas nesta versão moderna.", "🐍", "games/snake/index.html", false, false, "gemini"],
-    "TIGRINHO":            ["Simulador de caça-níqueis retrô. Teste a sua sorte na roleta do tigre.", "🎰", "games/tigre/index.html", false, false, "gemini"],
-    "COUNT-CHAOS":         ["Conte até 10 sem errar enquanto o jogo muda os botões de lugar.", "🔢", "games/countchaos/index.html", false, false, "gemini"],
-    "NOVA-TERMINAL":       ["Opere no mercado de ações de alto risco através de uma interface terminal.", "📈", "games/novaterminal/index.html", false, false, "gemini"],
-    "THE-PASSWORD":        ["Crie uma senha perfeita que atenda a dezenas de regras absurdas simultaneamente.", "🔑", "games/password/index.html", false, false, "gemini"],
-    "SYMBOL MEMORY":       ["Treine sua mente memorizando sequências de símbolos em ritmo acelerado.", "🧠", "games/symbol/index.html", false, false, "gemini"],
-    "COLOR MATCH":         ["Misture, combine e encontre os tons exatos contra o relógio.", "🎨", "games/colormatch/index.html", false, false, "gemini"],
-    "CODE BREAKER":        ["Use raciocínio lógico para hackear e quebrar o código de segurança secreto.", "👨🏻‍💻", "games/codebreaker/index.html", false, false, "gemini"],
-    "MINI MARKET":         ["Atenda clientes, gerencie seu estoque e expanda seu império de mercado.", "🛒", "games/minimart/index.html", false, false, "gemini"],
-    "DÚVIDO":              ["Jogo tenso de tempo e intuição: pare o cronômetro no limite sem ultrapassar.", "⏱️", "games/duvido/index.html", false, false, "gemini"],
-    "BOMB DISPOSAL":        ["Se comunique com seu alidado para desarmar uma bomba.", "🧨", "games/bombdisposal/index.html", false, false, "gemini"],
-    "THE BINDING OF ISAAC":    ["Roguelike de ação: explore calabouços aleatórios, derrote monstros e colete itens.", "😭", "https://patlamontagne.github.io/the-binding-of-isaac-js/", true, true, "ports"],
-    "BALATRO":   ["Roguelike de construção de baralho no qual você deve jogar mãos de pôquer e ganhar fichas para derrotar os *blinds* inimigos.", "🃏", "balatro.html", false, false, "ports"],
-    "HOLLOW KNIGHT":   ["Desça no mundo de Hollow Knight! O premiado jogo de ação e aventura de insetos e heróis.", "💀", "Hollow Knight.html", true, false, "ports"],
-    "FNAF 1":              ["A pizzaria clássica. Sobreviva até as 6h economizando energia das portas.", "🐻", "https://irv77.github.io/hd_fnaf/1/", true, true, "ports"],
-    "FNAF 2":              ["Sem portas e com novos animatrônicos. Use a máscara de Freddy para sobreviver.", "🐻", "https://irv77.github.io/hd_fnaf/2/", true, true, "ports"],
-    "FNAF 3":              ["30 anos depois: gerencie os sistemas de áudio e ventilação contra o Springtrap.", "🐰", "https://irv77.github.io/hd_fnaf/3/", true, true, "ports"],
-    "FNAF 4":              ["O pesadelo em casa. Escute atentamente a respiração nas portas para sobreviver.", "👹", "https://irv77.github.io/hd_fnaf/4/", true, true, "ports"],
-    "CELESTE CLASSIC":     ["Desafio de plataforma 2D extrema: escala com pulos e impulsos de alta precisão.", "🍓", "https://verdini.github.io/celeste-classic-web/", true, true, "ports"],
-    "ULTRAKILL":           ["FPS acelerado e ultra-violento estilo retrô em busca do sangue no inferno.", "🔫", "https://chickenstrips05.github.io/Ultrakill-web/", true, true, "ports"],
-    "BALDI’S BASICS":      ["Colete os cadernos e fuja da escola enquanto resolve problemas de matemática.", "📏", "https://michaelsoft1853.github.io/baldi-s-basics-webgl/", true, true, "ports"]
+
+    "FNAF GEMINI":[
+        "Monitore as câmeras, gerencie a energia e sobreviva à noite.",
+        "🐻",
+        "games/fnaf/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "MINESWEEPER":[
+        "Desarme o campo usando lógica pura sem explodir nenhuma mina.",
+        "💣",
+        "games/campo-minado/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "SNAKE":[
+        "Cresça comendo maçãs e desvie das próprias curvas.",
+        "🐍",
+        "games/snake/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "TIGRINHO":[
+        "Simulador de caça-níqueis retrô. Teste sua sorte.",
+        "🎰",
+        "games/tigre/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "COUNT-CHAOS":[
+        "Conte até 10 sem errar enquanto o jogo muda os botões.",
+        "🔢",
+        "games/countchaos/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "NOVA-TERMINAL":[
+        "Opere no mercado de ações através de uma interface terminal.",
+        "📈",
+        "games/novaterminal/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "THE-PASSWORD":[
+        "Crie uma senha perfeita que atenda a dezenas de regras.",
+        "🔑",
+        "games/password/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "SYMBOL MEMORY":[
+        "Memorize sequências de símbolos em ritmo acelerado.",
+        "🧠",
+        "games/symbol/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "COLOR MATCH":[
+        "Misture, combine e encontre os tons exatos contra o relógio.",
+        "🎨",
+        "games/colormatch/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "CODE BREAKER":[
+        "Use raciocínio lógico para quebrar o código de segurança.",
+        "👨🏻‍💻",
+        "games/codebreaker/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "MINI MARKET":[
+        "Atenda clientes, gerencie seu estoque e expanda seu mercado.",
+        "🛒",
+        "games/minimart/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "DÚVIDO":[
+        "Pare o cronômetro no limite sem ultrapassar.",
+        "⏱️",
+        "games/duvido/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "BOMB DISPOSAL":[
+        "Comunique-se com seu aliado para desarmar uma bomba.",
+        "🧨",
+        "games/bombdisposal/index.html",
+        false,
+        false,
+        "gemini"
+    ],
+
+    "THE BINDING OF ISAAC":[
+        "Explore salas aleatórias, derrote monstros e colete itens.",
+        "😭",
+        "https://patlamontagne.github.io/the-binding-of-isaac-js/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "BALATRO":[
+        "Monte mãos de pôquer e derrote os blinds inimigos.",
+        "🃏",
+        "balatro.html",
+        false,
+        false,
+        "ports"
+    ],
+
+    "HOLLOW KNIGHT":[
+        "Explore o mundo de Hollow Knight nesta aventura de ação.",
+        "💀",
+        "Hollow Knight.html",
+        true,
+        false,
+        "ports"
+    ],
+
+    "FNAF 1":[
+        "Sobreviva até as 6h economizando energia das portas.",
+        "🐻",
+        "https://irv77.github.io/hd_fnaf/1/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "FNAF 2":[
+        "Use a máscara de Freddy e sobreviva aos novos animatrônicos.",
+        "🐻",
+        "https://irv77.github.io/hd_fnaf/2/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "FNAF 3":[
+        "Gerencie os sistemas de áudio e ventilação contra Springtrap.",
+        "🐰",
+        "https://irv77.github.io/hd_fnaf/3/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "FNAF 4":[
+        "Escute atentamente a respiração nas portas para sobreviver.",
+        "👹",
+        "https://irv77.github.io/hd_fnaf/4/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "CELESTE CLASSIC":[
+        "Desafio de plataforma 2D com pulos e impulsos de precisão.",
+        "🍓",
+        "https://verdini.github.io/celeste-classic-web/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "ULTRAKILL":[
+        "FPS acelerado e ultra-violento inspirado nos clássicos retrô.",
+        "🔫",
+        "https://chickenstrips05.github.io/Ultrakill-web/",
+        true,
+        true,
+        "ports"
+    ],
+
+    "BALDI'S BASICS":[
+        "Colete os cadernos e fuja da escola resolvendo matemática.",
+        "📏",
+        "https://michaelsoft1853.github.io/baldi-s-basics-webgl/",
+        true,
+        true,
+        "ports"
+    ]
 };
 
+
+const listaDeJogosOriginal =
+    Object.entries(
+        CONFIG_JOGOS
+    ).map(
+        ([nome,dados],index) => ({
+
+            id:
+                `game-${index}`,
+
+            nome,
+
+            desc:
+                dados[0],
+
+            icone:
+                dados[1],
+
+            url:
+                dados[2],
+
+            apenasPC:
+                dados[3],
+
+            externo:
+                dados[4],
+
+            categoria:
+                dados[5],
+
+            indiceOriginal:
+                index
+        })
+    );
+
+
 /* =========================================================
-   🔊 SISTEMA DE ÁUDIO RETRO ROBUSTO (Web Audio API)
+   ÁUDIO
 ========================================================= */
 
 let audioCtx = null;
 
-function getAudioContext() {
-    if (!audioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-            audioCtx = new AudioContextClass();
-        }
+
+function getAudioContext(){
+
+    if(!audioCtx){
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if(AudioContextClass)
+            audioCtx =
+                new AudioContextClass();
     }
-    if (audioCtx && audioCtx.state === 'suspended') {
+
+    if(
+        audioCtx &&
+        audioCtx.state === "suspended"
+    )
         audioCtx.resume();
-    }
+
     return audioCtx;
 }
 
-function unlockAudio() {
-    getAudioContext();
-    window.removeEventListener('pointerdown', unlockAudio);
-    window.removeEventListener('keydown', unlockAudio);
-}
-window.addEventListener('pointerdown', unlockAudio);
-window.addEventListener('keydown', unlockAudio);
 
-function playSound(type) {
-    try {
-        const ctx = getAudioContext();
-        if (!ctx || ctx.state !== 'running') return;
+function playSound(tipo){
 
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
+    try{
+
+        const ctx =
+            getAudioContext();
+
+        if(
+            !ctx ||
+            ctx.state !== "running"
+        )
+            return;
+
+        const osc =
+            ctx.createOscillator();
+
+        const gain =
+            ctx.createGain();
+
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(
+            ctx.destination
+        );
 
-        const now = ctx.currentTime;
+        const now =
+            ctx.currentTime;
 
-        if (type === 'hover') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(320, now);
-            gain.gain.setValueAtTime(0.015, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        if(tipo === "hover"){
+
+            osc.type =
+                "triangle";
+
+            osc.frequency.setValueAtTime(
+                320,
+                now
+            );
+
+            gain.gain.setValueAtTime(
+                .015,
+                now
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .0001,
+                now + .04
+            );
+
             osc.start(now);
-            osc.stop(now + 0.04);
-        } else if (type === 'click') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(520, now);
-            osc.frequency.setValueAtTime(800, now + 0.03);
-            gain.gain.setValueAtTime(0.04, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-            osc.start(now);
-            osc.stop(now + 0.1);
-        } else if (type === 'fav') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(523.25, now);
-            osc.frequency.setValueAtTime(659.25, now + 0.05);
-            osc.frequency.setValueAtTime(783.99, now + 0.10);
-            gain.gain.setValueAtTime(0.04, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-            osc.start(now);
-            osc.stop(now + 0.18);
+            osc.stop(
+                now + .04
+            );
         }
-    } catch(e) {}
+
+        if(tipo === "click"){
+
+            osc.type =
+                "square";
+
+            osc.frequency.setValueAtTime(
+                520,
+                now
+            );
+
+            osc.frequency.setValueAtTime(
+                800,
+                now + .03
+            );
+
+            gain.gain.setValueAtTime(
+                .04,
+                now
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .0001,
+                now + .1
+            );
+
+            osc.start(now);
+            osc.stop(
+                now + .1
+            );
+        }
+
+        if(tipo === "fav"){
+
+            osc.type =
+                "sine";
+
+            osc.frequency.setValueAtTime(
+                523.25,
+                now
+            );
+
+            osc.frequency.setValueAtTime(
+                659.25,
+                now + .05
+            );
+
+            osc.frequency.setValueAtTime(
+                783.99,
+                now + .1
+            );
+
+            gain.gain.setValueAtTime(
+                .04,
+                now
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .0001,
+                now + .18
+            );
+
+            osc.start(now);
+            osc.stop(
+                now + .18
+            );
+        }
+
+    }catch(error){}
 }
+
 
 /* =========================================================
-   PROCESSAMENTO DA CONFIGURAÇÃO
+   RENDERIZAÇÃO
 ========================================================= */
-
-const listaDeJogosOriginal = Object.entries(CONFIG_JOGOS).map(([nome, dados], index) => ({
-    id: `game-${index}`,
-    nome: nome,
-    desc: dados[0],
-    icone: dados[1],
-    url: dados[2],
-    apenasPC: dados[3],
-    externo: dados[4],
-    categoria: dados[5] || 'gemini',
-    indiceOriginal: index
-}));
 
 let files = [];
-let abaAtual = 'todos';
-let ordemAtual = 'padrao';
-let selectedIndex = 0;
 
-const fileListContainer = document.getElementById('fileList');
-const search = document.getElementById('search');
-const empty = document.getElementById('empty');
-const gameCount = document.getElementById('gameCount');
-const searchClear = document.getElementById('searchClear');
-const sortSelect = document.getElementById('sortSelect');
+let abaAtual =
+    "todos";
 
-/* =========================================================
-   FAVORITOS
-========================================================= */
+let ordemAtual =
+    "padrao";
 
-function obterFavoritos() {
-    try { return JSON.parse(localStorage.getItem('htmlgames_favs')) || []; } 
-    catch { return []; }
-}
+let selectedIndex =
+    0;
 
-function salvarFavoritos(favoritos) {
-    localStorage.setItem('htmlgames_favs', JSON.stringify(favoritos));
-}
 
-function carregarFavoritos() {
-    const favoritos = obterFavoritos();
-    files.forEach(file => {
-        if (favoritos.includes(file.dataset.id)) {
-            file.classList.add('favorite');
-        } else {
-            file.classList.remove('favorite');
-        }
-    });
-}
+const fileListContainer =
+    document.getElementById(
+        "fileList"
+    );
 
-function alternarFavorito(id) {
-    playSound('fav');
-    let favoritos = obterFavoritos();
-    if (favoritos.includes(id)) {
-        favoritos = favoritos.filter(fav => fav !== id);
-    } else {
-        favoritos.push(id);
-    }
-    salvarFavoritos(favoritos);
-    carregarFavoritos();
-    filtrarJogos();
-}
+const search =
+    document.getElementById(
+        "search"
+    );
 
-/* =========================================================
-   ABRIR JOGO
-========================================================= */
+const empty =
+    document.getElementById(
+        "empty"
+    );
 
-function abrirJogo(jogo) {
-    playSound('click');
-    setTimeout(() => {
-        if (jogo.externo) {
-            window.open(jogo.url, '_blank');
-        } else {
-            window.location.href = jogo.url;
-        }
-    }, 90);
-}
+const gameCount =
+    document.getElementById(
+        "gameCount"
+    );
 
-/* =========================================================
-   RENDERIZAÇÃO E ORDENAÇÃO
-========================================================= */
+const searchClear =
+    document.getElementById(
+        "searchClear"
+    );
 
-function obterListaOrdenada() {
-    let lista = [...listaDeJogosOriginal];
+const sortSelect =
+    document.getElementById(
+        "sortSelect"
+    );
 
-    if (ordemAtual === 'alfabetica') {
-        lista.sort((a, b) => a.nome.localeCompare(b.nome));
-    } else if (ordemAtual === 'reversa') {
-        lista.sort((a, b) => b.nome.localeCompare(a.nome));
-    } else {
-        // Ordem padrão baseada no índice original
-        lista.sort((a, b) => a.indiceOriginal - b.indiceOriginal);
+
+function obterListaOrdenada(){
+
+    const lista =
+        [...listaDeJogosOriginal];
+
+    if(
+        ordemAtual ===
+        "alfabetica"
+    ){
+
+        lista.sort(
+            (a,b) =>
+                a.nome.localeCompare(
+                    b.nome
+                )
+        );
+
+    }else if(
+        ordemAtual ===
+        "reversa"
+    ){
+
+        lista.sort(
+            (a,b) =>
+                b.nome.localeCompare(
+                    a.nome
+                )
+        );
+
+    }else{
+
+        lista.sort(
+            (a,b) =>
+                a.indiceOriginal -
+                b.indiceOriginal
+        );
     }
 
     return lista;
 }
 
-function renderizarJogos() {
-    fileListContainer.innerHTML = '';
-    const listaOrdenada = obterListaOrdenada();
 
-    listaOrdenada.forEach(jogo => {
-        const div = document.createElement('div');
-        div.className = 'file';
-        div.dataset.id = jogo.id;
-        div.dataset.categoria = jogo.categoria;
-        div.dataset.name = `${jogo.nome} ${jogo.desc}`.toLowerCase();
+function jogoPertenceAPasta(
+    gameId
+){
 
-        div.innerHTML = `
-            <div class="icon">${jogo.icone}</div>
-            <div class="game-content">
-                <div class="filename-container">
-                    <span class="filename">${jogo.nome}</span>
-                    <span class="fav-star">★</span>
-                </div>
-                <div class="description">${jogo.desc}</div>
-                <div class="tags-container">
-                    <span class="tag-badge tag-category">${jogo.categoria.toUpperCase()}</span>
-                    ${jogo.apenasPC 
-                        ? `<span class="tag-badge tag-pc">💻 PC ONLY</span>` 
-                        : `<span class="tag-badge tag-all">📱 ALL DEVICES</span>`
+    if(
+        pastaFavoritosAtual ===
+        null
+    )
+        return true;
+
+    return favoritosConta.some(
+        favorito =>
+            favorito.game_id ===
+            gameId &&
+            favorito.folder_id ===
+            pastaFavoritosAtual
+    );
+}
+
+
+function renderizarJogos(){
+
+    fileListContainer.innerHTML =
+        "";
+
+    obterListaOrdenada()
+        .forEach(
+            jogo => {
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+                div.className =
+                    "file";
+
+                div.dataset.id =
+                    jogo.id;
+
+                div.dataset.categoria =
+                    jogo.categoria;
+
+                div.dataset.name =
+                    (
+                        jogo.nome +
+                        " " +
+                        jogo.desc
+                    ).toLowerCase();
+
+                div.innerHTML = `
+
+                    <div class="icon">
+                        ${jogo.icone}
+                    </div>
+
+                    <div class="game-content">
+
+                        <div class="filename-container">
+
+                            <span class="filename">
+                                ${jogo.nome}
+                            </span>
+
+                            <span class="fav-star">
+                                ★
+                            </span>
+
+                        </div>
+
+                        <div class="description">
+                            ${jogo.desc}
+                        </div>
+
+                        <div class="tags-container">
+
+                            <span class="tag-badge tag-category">
+                                ${jogo.categoria.toUpperCase()}
+                            </span>
+
+                            ${
+                                jogo.apenasPC
+                                ? `
+                                    <span class="tag-badge tag-pc">
+                                        💻 PC
+                                    </span>
+                                `
+                                : `
+                                    <span class="tag-badge tag-all">
+                                        📱 TODOS
+                                    </span>
+                                `
+                            }
+
+                            ${
+                                jogo.externo
+                                ? `
+                                    <span class="external-tag">
+                                        ↗ EXTERNO
+                                    </span>
+                                `
+                                : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                    <div class="arrow">
+                        ›
+                    </div>
+                `;
+
+                div.addEventListener(
+                    "mouseenter",
+                    () =>
+                        playSound(
+                            "hover"
+                        )
+                );
+
+                div.addEventListener(
+                    "click",
+                    () =>
+                        abrirJogo(jogo)
+                );
+
+                div.addEventListener(
+                    "contextmenu",
+                    event => {
+
+                        event.preventDefault();
+
+                        /*
+                            Se estiver na aba de favoritos
+                            e o jogo já estiver favoritado,
+                            o clique direito continua removendo.
+                        */
+
+                        alternarFavorito(
+                            jogo.id
+                        );
                     }
-                    ${jogo.externo ? `<span class="external-tag">↗ EXTERNAL LINK</span>` : ''}
-                </div>
-            </div>
-            <div class="arrow">›</div>
-        `;
+                );
 
-        div.addEventListener('mouseenter', () => playSound('hover'));
-        div.addEventListener('click', () => abrirJogo(jogo));
-        div.addEventListener('contextmenu', event => {
-            event.preventDefault();
-            alternarFavorito(jogo.id);
-        });
+                /*
+                    Duplo clique com botão esquerdo:
+                    abre o organizador de pasta.
+                */
 
-        fileListContainer.appendChild(div);
-    });
+                div.addEventListener(
+                    "dblclick",
+                    event => {
 
-    files = document.querySelectorAll('.file');
+                        event.preventDefault();
+
+                        if(
+                            jogoEstaFavoritado(
+                                jogo.id
+                            )
+                        )
+                            abrirMoverFavorito(
+                                jogo.id
+                            );
+                    }
+                );
+
+                fileListContainer.appendChild(
+                    div
+                );
+            }
+        );
+
+    files =
+        document.querySelectorAll(
+            ".file"
+        );
+
     carregarFavoritos();
     filtrarJogos();
 }
 
+
+function abrirJogo(jogo){
+
+    playSound("click");
+
+    setTimeout(
+        () => {
+
+            if(jogo.externo){
+
+                window.open(
+                    jogo.url,
+                    "_blank"
+                );
+
+            }else{
+
+                window.location.href =
+                    jogo.url;
+            }
+
+        },
+        80
+    );
+}
+
+
 /* =========================================================
-   ABAS E NAVEGAÇÃO
+   ABAS
 ========================================================= */
 
-function mudarAba(aba) {
-    playSound('click');
-    abaAtual = aba;
-    document.getElementById('tabTodos').classList.toggle('active', aba === 'todos');
-    document.getElementById('tabGemini').classList.toggle('active', aba === 'gemini');
-    document.getElementById('tabPorts').classList.toggle('active', aba === 'ports');
-    document.getElementById('tabFavoritos').classList.toggle('active', aba === 'favoritos');
-    selectedIndex = 0;
+function mudarAba(aba){
+
+    playSound("click");
+
+    abaAtual =
+        aba;
+
+    selectedIndex =
+        0;
+
+    document
+        .getElementById(
+            "tabTodos"
+        )
+        .classList.toggle(
+            "active",
+            aba === "todos"
+        );
+
+    document
+        .getElementById(
+            "tabGemini"
+        )
+        .classList.toggle(
+            "active",
+            aba === "gemini"
+        );
+
+    document
+        .getElementById(
+            "tabPorts"
+        )
+        .classList.toggle(
+            "active",
+            aba === "ports"
+        );
+
+    document
+        .getElementById(
+            "tabFavoritos"
+        )
+        .classList.toggle(
+            "active",
+            aba === "favoritos"
+        );
+
+    atualizarPainelFavoritos();
+
     filtrarJogos();
 }
 
-function mudarOrdenacao() {
-    playSound('click');
-    ordemAtual = sortSelect.value;
-    selectedIndex = 0;
+
+function mudarOrdenacao(){
+
+    ordemAtual =
+        sortSelect.value;
+
+    selectedIndex =
+        0;
+
     renderizarJogos();
 }
 
-function filtrarJogos() {
-    const texto = search.value.toLowerCase().trim();
-    let encontrados = [];
 
-    files.forEach(file => {
-        const nome = file.dataset.name;
-        const categoria = file.dataset.categoria;
-        const favorito = file.classList.contains('favorite');
+/* =========================================================
+   FILTRO
+========================================================= */
 
-        let passaAba = false;
-        if (abaAtual === 'todos') passaAba = true;
-        else if (abaAtual === 'gemini' && categoria === 'gemini') passaAba = true;
-        else if (abaAtual === 'ports' && categoria === 'ports') passaAba = true;
-        else if (abaAtual === 'favoritos' && favorito) passaAba = true;
+function filtrarJogos(){
 
-        const passaBusca = nome.includes(texto);
-        const mostrar = passaAba && passaBusca;
-        
-        file.style.display = mostrar ? 'flex' : 'none';
-        if (mostrar) encontrados.push(file);
-    });
+    const texto =
+        search.value
+            .toLowerCase()
+            .trim();
 
-    gameCount.textContent = `${encontrados.length} ${encontrados.length === 1 ? 'GAME' : 'GAMES'}`;
-    empty.style.display = encontrados.length === 0 ? 'block' : 'none';
-    searchClear.style.display = texto.length > 0 ? 'block' : 'none';
+    const encontrados = [];
 
-    atualizarSelecao(encontrados);
+    files.forEach(
+        file => {
+
+            const passaBusca =
+                file.dataset.name
+                    .includes(texto);
+
+            const categoria =
+                file.dataset.categoria;
+
+            const favorito =
+                file.classList.contains(
+                    "favorite"
+                );
+
+            let passaAba =
+                false;
+
+            if(
+                abaAtual === "todos"
+            )
+                passaAba = true;
+
+            else if(
+                abaAtual === "gemini" &&
+                categoria === "gemini"
+            )
+                passaAba = true;
+
+            else if(
+                abaAtual === "ports" &&
+                categoria === "ports"
+            )
+                passaAba = true;
+
+            else if(
+                abaAtual === "favoritos" &&
+                favorito &&
+                jogoPertenceAPasta(
+                    file.dataset.id
+                )
+            )
+                passaAba = true;
+
+            const mostrar =
+                passaAba &&
+                passaBusca;
+
+            file.style.display =
+                mostrar
+                    ? "flex"
+                    : "none";
+
+            if(mostrar)
+                encontrados.push(
+                    file
+                );
+        }
+    );
+
+    gameCount.textContent =
+        encontrados.length +
+        (
+            encontrados.length === 1
+                ? " JOGO"
+                : " JOGOS"
+        );
+
+    empty.style.display =
+        encontrados.length
+            ? "none"
+            : "block";
+
+    searchClear.style.display =
+        texto
+            ? "block"
+            : "none";
+
+    atualizarSelecao(
+        encontrados
+    );
 }
 
-function atualizarSelecao(lista) {
-    files.forEach(file => file.classList.remove('selected'));
-    if (!lista.length) return;
 
-    if (selectedIndex >= lista.length) selectedIndex = lista.length - 1;
-    lista[selectedIndex].classList.add('selected');
+function atualizarSelecao(lista){
+
+    files.forEach(
+        file =>
+            file.classList.remove(
+                "selected"
+            )
+    );
+
+    if(!lista.length)
+        return;
+
+    if(
+        selectedIndex >=
+        lista.length
+    )
+        selectedIndex =
+            lista.length - 1;
+
+    lista[
+        selectedIndex
+    ].classList.add(
+        "selected"
+    );
 }
 
-function obterVisiveis() {
-    return Array.from(files).filter(file => file.style.display !== 'none');
+
+function obterVisiveis(){
+
+    return Array.from(
+        files
+    ).filter(
+        file =>
+            file.style.display !==
+            "none"
+    );
 }
 
-/* TECLADO */
-document.addEventListener('keydown', event => {
-    const visiveis = obterVisiveis();
-    if (!visiveis.length) return;
 
-    if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        selectedIndex = Math.min(selectedIndex + 1, visiveis.length - 1);
-        playSound('hover');
-        atualizarSelecao(visiveis);
-        visiveis[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
+function limparBusca(){
 
-    if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        selectedIndex = Math.max(selectedIndex - 1, 0);
-        playSound('hover');
-        atualizarSelecao(visiveis);
-        visiveis[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
+    search.value =
+        "";
 
-    if (event.key === 'Enter' && document.activeElement !== search) {
-        const file = visiveis[selectedIndex];
-        const jogo = listaDeJogosOriginal.find(j => j.id === file.dataset.id);
-        if (jogo) abrirJogo(jogo);
-    }
+    selectedIndex =
+        0;
 
-    if (event.key === 'Escape') {
-        limparBusca();
-        search.blur();
-    }
-});
-
-search.addEventListener('input', () => {
-    selectedIndex = 0;
     filtrarJogos();
-});
-
-function limparBusca() {
-    search.value = '';
-    selectedIndex = 0;
-    filtrarJogos();
 }
 
-/* Inicializar */
-renderizarJogos();
+
+search.addEventListener(
+    "input",
+    () => {
+
+        selectedIndex =
+            0;
+
+        filtrarJogos();
+    }
+);
+
+
+/* =========================================================
+   SESSÃO
+========================================================= */
+
+function mostrarSite(){
+
+    authScreen.style.display =
+        "none";
+
+    siteContent.style.display =
+        "block";
+
+    atualizarInterfacePerfil();
+
+    renderizarJogos();
+
+    atualizarPainelFavoritos();
+}
+
+
+function mostrarLogin(){
+
+    fecharPerfil();
+
+    fecharModalPasta();
+
+    fecharMoverFavorito();
+
+    authScreen.style.display =
+        "flex";
+
+    siteContent.style.display =
+        "none";
+
+    usuarioAtual =
+        null;
+
+    favoritosConta =
+        [];
+
+    pastasFavoritos =
+        [];
+
+    pastaFavoritosAtual =
+        null;
+
+    accountDisplayName.textContent =
+        "PLAYER";
+
+    headerAvatar.textContent =
+        "😀";
+
+    authEmail.focus();
+}
+
+
+async function verificarSessao(){
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
+
+        if(error)
+            throw error;
+
+        if(
+            data.session &&
+            data.session.user
+        ){
+
+            usuarioAtual =
+                data.session.user;
+
+            await inicializarPerfil(
+                usuarioAtual
+            );
+
+            if(
+                usuarioAtual.is_anonymous
+            )
+                carregarDadosFavoritosLocais();
+            else
+                await carregarDadosFavoritos();
+
+            mostrarSite();
+
+        }else{
+
+            mostrarLogin();
+        }
+
+    }catch(error){
+
+        console.error(
+            "SESSION ERROR:",
+            error
+        );
+
+        mostrarMensagemAuth(
+            "NÃO FOI POSSÍVEL CARREGAR A SESSÃO.",
+            "error"
+        );
+
+        mostrarLogin();
+    }
+}
+
+
+async function fazerLogout(){
+
+    try{
+
+        await supabaseClient.auth.signOut();
+
+    }catch(error){
+
+        console.error(
+            "LOGOUT ERROR:",
+            error
+        );
+    }
+
+    mostrarLogin();
+
+    authEmail.value =
+        "";
+
+    authPassword.value =
+        "";
+
+    mostrarMensagemAuth("");
+
+    modoCadastro =
+        false;
+
+    authSubmit.textContent =
+        "ENTRAR";
+
+    authSwitchText.textContent =
+        "NÃO TEM UMA CONTA?";
+
+    authSwitchButton.textContent =
+        "CRIAR CONTA";
+
+    authTerminalText.textContent =
+        "AUTENTICAÇÃO NECESSÁRIA...";
+}
+
+
+supabaseClient.auth.onAuthStateChange(
+    async (event,session) => {
+
+        if(
+            session &&
+            session.user &&
+            event !== "INITIAL_SESSION"
+        ){
+
+            usuarioAtual =
+                session.user;
+
+            try{
+
+                await inicializarPerfil(
+                    usuarioAtual
+                );
+
+                if(
+                    usuarioAtual.is_anonymous
+                )
+                    carregarDadosFavoritosLocais();
+                else
+                    await carregarDadosFavoritos();
+
+                mostrarSite();
+
+            }catch(error){
+
+                console.error(
+                    "AUTH STATE ERROR:",
+                    error
+                );
+            }
+
+        }else if(
+            event === "SIGNED_OUT"
+        ){
+
+            mostrarLogin();
+        }
+    }
+);
+
+
+/* =========================================================
+   TECLADO
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            profileModal.classList.contains(
+                "open"
+            )
+        ){
+
+            if(
+                event.key ===
+                "Escape"
+            ){
+
+                fecharPerfil();
+
+                event.preventDefault();
+            }
+
+            return;
+        }
+
+        if(
+            folderModal.classList.contains(
+                "open"
+            )
+        ){
+
+            if(
+                event.key ===
+                "Escape"
+            ){
+
+                fecharModalPasta();
+
+                event.preventDefault();
+            }
+
+            return;
+        }
+
+        if(
+            moveModal.classList.contains(
+                "open"
+            )
+        ){
+
+            if(
+                event.key ===
+                "Escape"
+            ){
+
+                fecharMoverFavorito();
+
+                event.preventDefault();
+            }
+
+            return;
+        }
+
+        const visiveis =
+            obterVisiveis();
+
+        if(!visiveis.length)
+            return;
+
+        if(
+            event.key ===
+            "ArrowDown"
+        ){
+
+            event.preventDefault();
+
+            selectedIndex =
+                Math.min(
+                    selectedIndex + 1,
+                    visiveis.length - 1
+                );
+
+            atualizarSelecao(
+                visiveis
+            );
+
+            visiveis[
+                selectedIndex
+            ].scrollIntoView({
+                block:"nearest",
+                behavior:"smooth"
+            });
+        }
+
+        if(
+            event.key ===
+            "ArrowUp"
+        ){
+
+            event.preventDefault();
+
+            selectedIndex =
+                Math.max(
+                    selectedIndex - 1,
+                    0
+                );
+
+            atualizarSelecao(
+                visiveis
+            );
+
+            visiveis[
+                selectedIndex
+            ].scrollIntoView({
+                block:"nearest",
+                behavior:"smooth"
+            });
+        }
+
+        if(
+            event.key === "Enter" &&
+            document.activeElement !==
+            search
+        ){
+
+            const file =
+                visiveis[
+                    selectedIndex
+                ];
+
+            const jogo =
+                listaDeJogosOriginal.find(
+                    item =>
+                        item.id ===
+                        file.dataset.id
+                );
+
+            if(jogo)
+                abrirJogo(jogo);
+        }
+
+        if(
+            event.key === "Escape"
+        ){
+
+            limparBusca();
+
+            search.blur();
+        }
+    }
+);
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+verificarSessao();
 
 </script>
+
 </body>
 </html>
