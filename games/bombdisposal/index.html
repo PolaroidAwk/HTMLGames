@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOMB DISPOSAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050608;
+            --case-bg: #11141d;
+            --panel-bg: #1a1e29;
+            --border-color: #2a3042;
+            --accent-red: #ff3838;
+            --accent-green: #2ed573;
+            --accent-blue: #00d2d3;
+            --accent-yellow: #ff9f43;
+            --text-main: #f1f2f6;
+            --text-muted: #808e9b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 15px;
+            background-image: 
+                radial-gradient(circle at 50% 20%, #161c2e 0%, #050608 100%),
+                linear-gradient(rgba(0,0,0,0.3) 50%, rgba(5,6,8,0.7) 50%);
+            background-size: 100% 100%, 100% 4px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--case-bg);
+            border: 2px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .header-titles h1 {
+            font-size: 1.6rem;
+            color: var(--accent-red);
+            letter-spacing: 2px;
+            font-family: 'Share Tech Mono', monospace;
+            text-shadow: 0 0 10px rgba(255, 56, 56, 0.4);
+            text-align: left;
+        }
+
+        .header-titles p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-align: left;
+        }
+
+        .hub-exit-btn {
+            background: #2f3640;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .hub-exit-btn:hover {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+            box-shadow: 0 0 10px rgba(255,56,56,0.4);
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            background: var(--case-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Menu Screen & Role Choice */
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 520px;
+            margin: 15px auto;
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            background: var(--bg-deep);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            color: var(--accent-yellow);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.4rem;
+            text-align: center;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(0, 210, 211, 0.3);
+        }
+
+        .role-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .role-card {
+            background: var(--bg-deep);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .role-card.selected {
+            border-color: var(--accent-yellow);
+            background: rgba(255, 159, 67, 0.1);
+            box-shadow: 0 0 15px rgba(255, 159, 67, 0.2);
+        }
+
+        .role-card h3 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            letter-spacing: 1px;
+        }
+
+        .role-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .btn {
+            background: var(--accent-blue);
+            color: #050608;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+        }
+
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+
+        .btn-green { background: var(--accent-green); }
+        .btn-yellow { background: var(--accent-yellow); }
+        .btn-blue { background: var(--accent-blue); }
+
+        .rules-box {
+            background: rgba(0,0,0,0.4);
+            border-left: 4px solid var(--accent-yellow);
+            padding: 15px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .rules-box strong { color: var(--text-main); }
+
+        /* Game Screen Header (Bomb Case) */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+        }
+
+        .timer-display {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+            background: #050608;
+            padding: 4px 18px;
+            border-radius: 6px;
+            border: 2px inset var(--border-color);
+            text-shadow: 0 0 8px rgba(255, 159, 67, 0.4);
+        }
+
+        .timer-display.danger {
+            color: var(--accent-red);
+            animation: pulseTimer 0.8s infinite alternate;
+        }
+
+        @keyframes pulseTimer {
+            from { text-shadow: 0 0 5px rgba(255,56,56,0.4); }
+            to { text-shadow: 0 0 15px rgba(255,56,56,0.9); }
+        }
+
+        .strikes-display {
+            font-size: 1.6rem;
+            letter-spacing: 6px;
+            background: #050608;
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 2px inset var(--border-color);
+        }
+
+        /* Bomb Modules Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .module {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px;
+            position: relative;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .module-status-led {
+            width: 12px;
+            height: 12px;
+            background-color: #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+            transition: all 0.3s;
+        }
+
+        .module.solved .module-status-led {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green), inset 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .module-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        /* Module 1: Wires */
+        .wires-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: auto 0;
+        }
+
+        .wire {
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.2);
+            transition: filter 0.15s, transform 0.1s;
+        }
+
+        .wire:hover { filter: brightness(1.2); transform: scale(1.01); }
+        .wire.red { background: linear-gradient(to bottom, #ff4d4d, #cc0000); border-bottom: 2px solid #800000; }
+        .wire.blue { background: linear-gradient(to bottom, #4da6ff, #0066cc); border-bottom: 2px solid #003366; }
+        .wire.yellow { background: linear-gradient(to bottom, #ffcc00, #cc9900); color: #050608; text-shadow: none; border-bottom: 2px solid #806600; }
+        .wire.white { background: linear-gradient(to bottom, #ffffff, #cccccc); color: #050608; text-shadow: none; border-bottom: 2px solid #808080; }
+        .wire.black { background: linear-gradient(to bottom, #4d4d4d, #1a1a1a); border-bottom: 2px solid #000000; }
+
+        /* Module 2: Big Button */
+        .big-button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 12px;
+        }
+
+        .bomb-btn {
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            border: 4px solid #111;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 0 #111, 0 12px 20px rgba(0,0,0,0.6);
+            transition: all 0.08s ease;
+        }
+
+        .bomb-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #111, 0 5px 10px rgba(0,0,0,0.6);
+        }
+
+        .strip-indicator {
+            width: 80%;
+            height: 14px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        /* Module 3: Symbols */
+        .symbols-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: auto 0;
+        }
+
+        .symbol-key {
+            background: #0f121a;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            height: 52px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .symbol-key:hover {
+            background: #252b3b;
+            border-color: var(--accent-blue);
+        }
+
+        .symbol-key.selected {
+            border-color: var(--accent-yellow);
+            background: rgba(255, 159, 67, 0.15);
+            box-shadow: 0 0 10px rgba(255, 159, 67, 0.3);
+        }
+
+        /* Module 4: Password */
+        .pass-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: auto 0;
+        }
+
+        .pass-wheels {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pass-wheel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #050608;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+        }
+
+        .pass-wheel button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px 12px;
+            transition: color 0.2s;
+        }
+
+        .pass-wheel button:hover { color: var(--text-main); }
+
+        .pass-wheel span {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 4px 0;
+            color: var(--accent-yellow);
+        }
+
+        /* End Screens */
+        .end-screen {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .end-title {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .win-title { color: var(--accent-green); text-shadow: 0 0 15px rgba(46,213,115,0.4); }
+        .lose-title { color: var(--accent-red); text-shadow: 0 0 15px rgba(255,56,56,0.4); }
+
+        /* MANUAL DO ESPECIALISTA SUPER ESTILIZADO (Estilo Caderno/Dossiê Secreto) */
+        .manual-container {
+            background: #fdfbf7;
+            color: #2f3542;
+            border-radius: 12px;
+            border: 3px solid #dcdde1;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            position: relative;
+            background-image: linear-gradient(#f1f2f6 1px, transparent 1px);
+            background-size: 100% 28px;
+        }
+
+        .manual-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px double #2f3542;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .manual-header h2 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.8rem;
+            color: #c0392b;
+            letter-spacing: 1px;
+        }
+
+        .manual-body {
+            max-height: 65vh;
+            overflow-y: auto;
+            padding-right: 15px;
+            font-size: 1.05rem;
+            line-height: 28px;
+        }
+
+        .manual-body h3 {
+            color: #2980b9;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 4px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .manual-body p, .manual-body li {
+            color: #2f3542;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .manual-body ul {
+            padding-left: 25px;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            border: 4px dashed #c0392b;
+            color: #c0392b;
+            font-family: 'Share Tech Mono', monospace;
+            padding: 8px 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transform: rotate(12deg);
+            opacity: 0.8;
+            pointer-events: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .modules-grid { grid-template-columns: 1fr; }
+            .role-selection { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-titles">
+            <h1>BOMB DISPOSAL</h1>
+            <p class="subtitle">SE COMUNIQUE COM SEU ALIADO PARA DESARMAR A BOMBA CORRETAMENTE</p>
+        </div>
+        <a href="https://polaroidawk.github.io/HTMLGames/" class="hub-exit-btn">
+            🚪 Sair para o Hub
+        </a>
+    </header>
+
+    <!-- TELA 1: MENU PRINCIPAL & ESCOLHA DE PAPEL -->
+    <div id="menu-screen" class="screen active">
+        <div class="menu-container">
+            <div class="input-group">
+                <label for="seed-input">CÓDIGO DA SEED DA PARTIDA</label>
+                <input type="text" id="seed-input" placeholder="EX: BOMB77" maxlength="12">
+            </div>
+            
+            <div class="input-group">
+                <label>ESCOLHA SUA FUNÇÃO NESTA SESSÃO</label>
+                <div class="role-selection">
+                    <div id="role-technician" class="role-card selected" onclick="selectRole('technician')">
+                        <h3>💣 TÉCNICO</h3>
+                        <p>Encarregado de manipular a carcaça da bomba.</p>
+                    </div>
+                    <div id="role-expert" class="role-card" onclick="selectRole('expert')">
+                        <h3>📖 ESPECIALISTA</h3>
+                        <p>Encarregado de ler e decodificar o manual.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-green" onclick="enterGameMode()">INICIAR MISSÃO</button>
+            <button class="btn btn-yellow" onclick="generateRandomSeed()">GERAR SEED ALEATÓRIA</button>
+            
+            <div class="rules-box">
+                <strong>Regras de Cooperação:</strong><br>
+                • O <strong>Técnico</strong> vê a bomba, mas não sabe as regras de desarme.<br>
+                • O <strong>Especialista</strong> lê o dossiê secreto, mas não vê a bomba.<br>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 2: O JOGO / BOMBA (Para o Técnico) -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; letter-spacing: 1px;">TEMPO RESTANTE</span>
+                <div id="timer" class="timer-display">05:00</div>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; letter-spacing: 1px;">ERROS (STRIKES)</span>
+                <div id="strikes" class="strikes-display">❌❌❌</div>
+            </div>
+        </div>
+
+        <div class="modules-grid">
+            <!-- Módulo 1: Fios -->
+            <div id="module-wires" class="module">
+                <div class="module-status-led"></div>
+                <div class="module-title">Módulo: Fios Complexos</div>
+                <div id="wires-content" class="wires-container"></div>
+            </div>
+
+            <!-- Módulo 2: O Botão -->
+            <div id="module-button" class="module">
+                <div class="module-status-led"></div>
+                <div class="module-title">Módulo: O Botão</div>
+                <div class="big-button-container">
+                    <button id="bomb-action-btn" class="bomb-btn">PRESSIONAR</button>
+                    <div id="button-strip" class="strip-indicator" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- Módulo 3: Símbolos -->
+            <div id="module-symbols" class="module">
+                <div class="module-status-led"></div>
+                <div class="module-title">Módulo: Símbolos Místicos</div>
+                <div id="symbols-container" class="symbols-grid"></div>
+            </div>
+
+            <!-- Módulo 4: Senha -->
+            <div id="module-password" class="module">
+                <div class="module-status-led"></div>
+                <div class="module-title">Módulo: Senha Numérica</div>
+                <div class="pass-container">
+                    <div class="pass-wheels" id="pass-wheels-container"></div>
+                    <button class="btn btn-blue" style="padding: 8px 18px; font-size: 0.95rem; width: 100%;" onclick="submitPassword()">ENVIAR SENHA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 3: MANUAL DO ESPECIALISTA (Design Dossiê Estilizado) -->
+    <div id="manual-screen" class="screen">
+        <div class="manual-container">
+            <div class="stamp">CONFIDENCIAL / Nível 4</div>
+            <div class="manual-header">
+                <h2>MANUAL DO ESPECIALISTA DE DESARME</h2>
+                <button class="hub-exit-btn" onclick="switchScreen('menu-screen')" style="background:#c0392b; color:white;">⬅ Voltar ao Menu</button>
+            </div>
+            <div class="manual-body">
+                <p>Instruções confidenciais de desarme baseadas na Seed gerada pelo operador. Oriente o técnico apenas com base nos parâmetros lidos abaixo.</p>
+                
+                <h3>1. Seção de Fios Complexos</h3>
+                <p>A bomba possui de 3 a 5 fios coloridos. Siga estritamente as regras abaixo baseadas na quantidade e composição:</p>
+                <ul>
+                    <li><strong>Se houver 3 fios:</strong> Se não houver fios vermelhos, corte o 2º fio. Caso contrário, se o último fio for branco, corte o último fio. Se houver mais de um fio azul, corte o último fio azul. Caso contrário, corte o último fio.</li>
+                    <li><strong>Se houver 4 fios:</strong> Se houver mais de um fio vermelho e o cronômetro estiver em segundos ímpares, corte o último fio vermelho. Se o último fio for amarelo e não houver vermelhos, corte o 1º fio. Se houver exatamente um fio azul, corte o 1º fio. Se houver mais de um fio amarelo, corte o último fio. Caso contrário, corte o 2º fio.</li>
+                    <li><strong>Se houver 5 fios:</strong> Se o último fio for preto e os segundos forem ímpares, corte o 4º fio. Se houver exatamente um fio vermelho e mais de um amarelo, corte o 1º fio. Se não houver fios pretos, corte o 2º fio. Caso contrário, corte o 1º fio.</li>
+                </ul>
+
+                <h3>2. Seção do Botão</h3>
+                <p>O botão possui uma cor e um texto específico impresso nele:</p>
+                <ul>
+                    <li>Se o botão for <strong>Vermelho</strong> e o texto for "ABORTAR", mantenha pressionado e solte quando o dígito dos segundos for <strong>4</strong>.</li>
+                    <li>Se o botão for <strong>Azul</strong> e o texto for "SEGURAR", mantenha pressionado e solte quando o dígito dos segundos for <strong>5</strong>.</li>
+                    <li>Se o botão for <strong>Amarelo</strong>, mantenha pressionado e solte quando o dígito dos segundos for <strong>1</strong>.</li>
+                    <li>Para qualquer outra combinação, <strong>pressione e solte imediatamente</strong>. Se mantiver pressionado em caso de clique simples, causará um erro.</li>
+                </ul>
+
+                <h3>3. Seção de Símbolos Místicos</h3>
+                <p>O módulo apresenta 4 símbolos alienígenas aleatórios dentre um pool fixo gerado pela seed.</p>
+                <ul>
+                    <li><strong>Regra de Resolução:</strong> O Especialista deve ordenar os 4 símbolos que aparecem na bomba em ordem alfabética/crescente de seus caracteres gráficos internos e orientar o Técnico a clicá-los nessa sequência exata da esquerda para a direita.</li>
+                </ul>
+
+                <h3>4. Seção de Senha Numérica</h3>
+                <p>A senha numérica possui 4 dígitos que podem ser alterados pelas setas (▲/▼) nas roletas.</p>
+                <ul>
+                    <li>As combinações corretas são travadas deterministicamente pela seed da partida. O Especialista deve deduzir ou calcular os dígitos com base nas pistas geradas pela seed e informar a sequência correta ao Técnico.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 4: VITÓRIA -->
+    <div id="win-screen" class="screen">
+        <div class="end-screen">
+            <div class="end-title win-title">BOMBA DESARMADA!</div>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Trabalho em equipe impecável. A explosão foi evitada com sucesso.</p>
+            <button class="btn btn-green" style="max-width: 250px;" onclick="switchScreen('menu-screen')">VOLTAR AO MENU</button>
+        </div>
+    </div>
+
+    <!-- TELA 5: DERROTA -->
+    <div id="lose-screen" class="screen">
+        <div class="end-screen">
+            <div class="end-title lose-title">BOOM! EXPLODIU!</div>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Vocês acumularam erros demais ou o tempo esgotou.</p>
+            <button class="btn btn-red" style="max-width: 250px;" onclick="switchScreen('menu-screen')">TENTAR NOVAMENTE</button>
+        </div>
+    </div>
+
+    <!-- Motor de Áudio Web Audio API (Efeitos Sonoros Sintetizados sem dependências externas) -->
+    <script>
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+            playClick() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+            playSuccess() {
+                this.init();
+                const now = this.ctx.currentTime;
+                [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.1, now + idx * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.08 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.15);
+                });
+            }
+            playStrike() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+            playExplosion() {
+                this.init();
+                const bufferSize = this.ctx.sampleRate * 1.5;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                const whiteNoise = this.ctx.createBufferSource();
+                whiteNoise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                filter.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 1.5);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 1.5);
+                whiteNoise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                whiteNoise.start();
+            }
+        }
+
+        const soundFX = new SoundFX();
+
+        // Lógica de Estado e Jogo
+        class SeededRandom {
+            constructor(seedStr) {
+                let hash = 0;
+                for (let i = 0; i < seedStr.length; i++) {
+                    hash = (hash * 31 + seedStr.charCodeAt(i)) % 1000000007;
+                }
+                this.seed = Math.abs(hash) || 12345;
+            }
+            next() {
+                this.seed = (this.seed * 1664525 + 1013904223) % 4294967296;
+                return this.seed / 4294967296;
+            }
+            range(min, max) {
+                return Math.floor(this.next() * (max - min + 1)) + min;
+            }
+            choice(arr) {
+                return arr[this.range(0, arr.length - 1)];
+            }
+        }
+
+        let gameState = {
+            seed: '',
+            rng: null,
+            role: 'technician',
+            timeRemaining: 300,
+            strikes: 3,
+            timerInterval: null,
+            modulesSolved: { wires: false, button: false, symbols: false, password: false },
+            wireData: [],
+            buttonData: {},
+            symbolData: [],
+            passwordData: []
+        };
+
+        const SYMBOL_POOL = ['★', 'Ψ', 'Ω', '§', 'Ϡ', '‡', '¢', '£', '¶', 'θ', 'λ', 'μ', 'φ', '⍜', '⍟'];
+
+        function selectRole(role) {
+            gameState.role = role;
+            soundFX.playClick();
+            document.getElementById('role-technician').classList.remove('selected');
+            document.getElementById('role-expert').classList.remove('selected');
+            document.getElementById(`role-${role}`).classList.add('selected');
+        }
+
+        function generateRandomSeed() {
+            soundFX.playClick();
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('seed-input').value = result;
+        }
+
+        function switchScreen(screenId) {
+            if (gameState.timerInterval && screenId !== 'game-screen') {
+                clearInterval(gameState.timerInterval);
+            }
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function enterGameMode() {
+            soundFX.playClick();
+            const seedVal = document.getElementById('seed-input').value.trim().toUpperCase();
+            if (!seedVal) {
+                alert('Por favor, insira ou gere uma seed válida!');
+                return;
+            }
+
+            gameState.seed = seedVal;
+            gameState.rng = new SeededRandom(seedVal);
+            gameState.timeRemaining = 300;
+            gameState.strikes = 3;
+            gameState.modulesSolved = { wires: false, button: false, symbols: false, password: false };
+
+            buildBomb();
+
+            if (gameState.role === 'technician') {
+                switchScreen('game-screen');
+                startTimer();
+            } else {
+                switchScreen('manual-screen');
+            }
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            updateStrikesDisplay();
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateTimerDisplay();
+
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    soundFX.playExplosion();
+                    triggerGameOver(false);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            if (gameState.timeRemaining <= 60) {
+                timerEl.classList.add('danger');
+            } else {
+                timerEl.classList.remove('danger');
+            }
+        }
+
+        function updateStrikesDisplay() {
+            let strikesStr = '';
+            for (let i = 0; i < 3; i++) {
+                strikesStr += i < gameState.strikes ? '❌' : '⭕';
+            }
+            document.getElementById('strikes').innerText = strikesStr;
+        }
+
+        function triggerStrike() {
+            gameState.strikes--;
+            updateStrikesDisplay();
+            soundFX.playStrike();
+            
+            document.body.style.backgroundColor = '#3d0a0a';
+            setTimeout(() => { document.body.style.backgroundColor = 'var(--bg-deep)'; }, 200);
+
+            if (gameState.strikes <= 0) {
+                clearInterval(gameState.timerInterval);
+                soundFX.playExplosion();
+                triggerGameOver(false);
+            }
+        }
+
+        function checkWinCondition() {
+            if (gameState.modulesSolved.wires && 
+                gameState.modulesSolved.button && 
+                gameState.modulesSolved.symbols && 
+                gameState.modulesSolved.password) {
+                clearInterval(gameState.timerInterval);
+                soundFX.playSuccess();
+                setTimeout(() => switchScreen('win-screen'), 400);
+            }
+        }
+
+        function triggerGameOver(isWin) {
+            if (isWin) {
+                switchScreen('win-screen');
+            } else {
+                switchScreen('lose-screen');
+            }
+        }
+
+        // ================= CONSTRUÇÃO DOS MÓDULOS =================
+
+        function buildBomb() {
+            buildWiresModule();
+            buildButtonModule();
+            buildSymbolsModule();
+            buildPasswordModule();
+        }
+
+        function buildWiresModule() {
+            const container = document.getElementById('wires-content');
+            container.innerHTML = '';
+            const wireColors = ['red', 'blue', 'yellow', 'white', 'black'];
+            const numWires = gameState.rng.range(3, 5);
+            
+            gameState.wireData = [];
+            for (let i = 0; i < numWires; i++) {
+                gameState.wireData.push(gameState.rng.choice(wireColors));
+            }
+
+            let redCount = gameState.wireData.filter(c => c === 'red').length;
+            let blueCount = gameState.wireData.filter(c => c === 'blue').length;
+            let yellowCount = gameState.wireData.filter(c => c === 'yellow').length;
+            let correctIndex = 0;
+            const lastColor = gameState.wireData[gameState.wireData.length - 1];
+
+            if (numWires === 3) {
+                if (redCount === 0) correctIndex = 1;
+                else if (lastColor === 'white') correctIndex = gameState.wireData.length - 1;
+                else if (blueCount > 1) correctIndex = gameState.wireData.lastIndexOf('blue');
+                else correctIndex = gameState.wireData.length - 1;
+            } else if (numWires === 4) {
+                if (redCount > 1 && gameState.timeRemaining % 2 !== 0) correctIndex = gameState.wireData.lastIndexOf('red');
+                else if (lastColor === 'yellow' && redCount === 0) correctIndex = 0;
+                else if (blueCount === 1) correctIndex = 0;
+                else if (yellowCount > 1) correctIndex = gameState.wireData.length - 1;
+                else correctIndex = 1;
+            } else {
+                if (lastColor === 'black' && gameState.timeRemaining % 2 !== 0) correctIndex = 3;
+                else if (redCount === 1 && yellowCount > 1) correctIndex = 0;
+                else if (!gameState.wireData.includes('black')) correctIndex = 1;
+                else correctIndex = 0;
+            }
+            gameState.wireData.correctIndex = correctIndex;
+
+            gameState.wireData.forEach((color, idx) => {
+                const wireDiv = document.createElement('div');
+                wireDiv.className = `wire ${color}`;
+                wireDiv.innerText = `Fio ${idx + 1} [${color.toUpperCase()}]`;
+                wireDiv.onclick = () => {
+                    if (gameState.modulesSolved.wires) return;
+                    soundFX.playClick();
+                    if (idx === gameState.wireData.correctIndex) {
+                        wireDiv.style.opacity = '0.3';
+                        wireDiv.style.pointerEvents = 'none';
+                        document.getElementById('module-wires').classList.add('solved');
+                        gameState.modulesSolved.wires = true;
+                        checkWinCondition();
+                    } else {
+                        triggerStrike();
+                    }
+                };
+                container.appendChild(wireDiv);
+            });
+        }
+
+        function buildButtonModule() {
+            const btn = document.getElementById('bomb-action-btn');
+            const colors = ['red', 'blue', 'yellow', 'white'];
+            const texts = ['ABORTAR', 'DETONAR', 'SEGURAR', 'APERTE'];
+            
+            const btnColor = gameState.rng.choice(colors);
+            const btnText = gameState.rng.choice(texts);
+
+            btn.style.backgroundColor = btnColor === 'yellow' ? '#ffcc00' : (btnColor === 'red' ? '#ff4d4d' : (btnColor === 'blue' ? '#4da6ff' : '#ffffff'));
+            btn.style.color = btnColor === 'yellow' || btnColor === 'white' ? '#050608' : '#ffffff';
+            btn.innerText = btnText;
+
+            let holdRequired = false;
+            let targetDigit = '4';
+
+            if (btnColor === 'red' && btnText === 'ABORTAR') {
+                holdRequired = true; targetDigit = '4';
+            } else if (btnColor === 'blue' && btnText === 'SEGURAR') {
+                holdRequired = true; targetDigit = '5';
+            } else if (btnColor === 'yellow') {
+                holdRequired = true; targetDigit = '1';
+            }
+
+            let isHolding = false;
+            let pressTimer = null;
+
+            const startAction = (e) => {
+                e.preventDefault();
+                if (gameState.modulesSolved.button) return;
+                soundFX.playClick();
+                
+                if (holdRequired) {
+                    pressTimer = setTimeout(() => {
+                        isHolding = true;
+                        const strip = document.getElementById('button-strip');
+                        strip.style.display = 'block';
+                        strip.style.backgroundColor = ['#ff4d4d', '#4da6ff', '#2ed573', '#ffcc00'][gameState.rng.range(0, 3)];
+                    }, 250);
+                }
+            };
+
+            const endAction = (e) => {
+                e.preventDefault();
+                if (gameState.modulesSolved.button) return;
+
+                if (pressTimer) clearTimeout(pressTimer);
+                
+                const strip = document.getElementById('button-strip');
+                strip.style.display = 'none';
+
+                if (holdRequired && isHolding) {
+                    isHolding = false;
+                    const currentSecsString = String(gameState.timeRemaining % 60);
+                    const lastDigit = currentSecsString.slice(-1);
+
+                    if (lastDigit === targetDigit) {
+                        btn.style.pointerEvents = 'none';
+                        document.getElementById('module-button').classList.add('solved');
+                        gameState.modulesSolved.button = true;
+                        checkWinCondition();
+                    } else {
+                        triggerStrike();
+                    }
+                } else if (!holdRequired && !isHolding) {
+                    btn.style.pointerEvents = 'none';
+                    document.getElementById('module-button').classList.add('solved');
+                    gameState.modulesSolved.button = true;
+                    checkWinCondition();
+                } else if (holdRequired && !isHolding) {
+                    triggerStrike();
+                }
+                isHolding = false;
+            };
+
+            btn.onmousedown = startAction;
+            btn.onmouseup = endAction;
+            btn.onttouchstart = startAction;
+            btn.ontouchend = endAction;
+        }
+
+        function buildSymbolsModule() {
+            const container = document.getElementById('symbols-container');
+            container.innerHTML = '';
+
+            let symbolsPoolCopy = [...SYMBOL_POOL];
+            let selectedSymbols = [];
+            for (let i = 0; i < 4; i++) {
+                let idx = gameState.rng.range(0, symbolsPoolCopy.length - 1);
+                selectedSymbols.push(symbolsPoolCopy.splice(idx, 1)[0]);
+            }
+
+            let displaySymbols = [...selectedSymbols];
+            displaySymbols.sort(() => gameState.rng.next() - 0.5);
+
+            let correctOrder = [...selectedSymbols].sort();
+            let clickedSequence = [];
+
+            displaySymbols.forEach(sym => {
+                const key = document.createElement('div');
+                key.className = 'symbol-key';
+                key.innerText = sym;
+                key.onclick = () => {
+                    if (gameState.modulesSolved.symbols || key.classList.contains('selected')) return;
+                    soundFX.playClick();
+                    
+                    key.classList.add('selected');
+                    clickedSequence.push(sym);
+
+                    if (clickedSequence.length === 4) {
+                        let correct = true;
+                        for (let i = 0; i < 4; i++) {
+                            if (clickedSequence[i] !== correctOrder[i]) correct = false;
+                        }
+
+                        if (correct) {
+                            document.getElementById('module-symbols').classList.add('solved');
+                            gameState.modulesSolved.symbols = true;
+                            checkWinCondition();
+                        } else {
+                            triggerStrike();
+                            clickedSequence = [];
+                            document.querySelectorAll('#symbols-container .symbol-key').forEach(k => k.classList.remove('selected'));
+                        }
+                    }
+                };
+                container.appendChild(key);
+            });
+        }
+
+        let currentPasswordGuess = [0, 0, 0, 0];
+        let targetPasswordArr = [];
+
+        function buildPasswordModule() {
+            const container = document.getElementById('pass-wheels-container');
+            container.innerHTML = '';
+            
+            targetPasswordArr = [];
+            for (let i = 0; i < 4; i++) {
+                targetPasswordArr.push(gameState.rng.range(0, 9));
+            }
+            currentPasswordGuess = [0, 0, 0, 0];
+
+            for (let i = 0; i < 4; i++) {
+                const wheel = document.createElement('div');
+                wheel.className = 'pass-wheel';
+
+                const btnUp = document.createElement('button');
+                btnUp.innerHTML = '▲';
+                const spanVal = document.createElement('span');
+                spanVal.innerText = '0';
+                const btnDown = document.createElement('button');
+                btnDown.innerHTML = '▼';
+
+                const index = i;
+                btnUp.onclick = () => {
+                    if (gameState.modulesSolved.password) return;
+                    soundFX.playClick();
+                    currentPasswordGuess[index] = (currentPasswordGuess[index] + 1) % 10;
+                    spanVal.innerText = currentPasswordGuess[index];
+                };
+
+                btnDown.onclick = () => {
+                    if (gameState.modulesSolved.password) return;
+                    soundFX.playClick();
+                    currentPasswordGuess[index] = (currentPasswordGuess[index] - 1 + 10) % 10;
+                    spanVal.innerText = currentPasswordGuess[index];
+                };
+
+                wheel.appendChild(btnUp);
+                wheel.appendChild(spanVal);
+                wheel.appendChild(btnDown);
+                container.appendChild(wheel);
+            }
+        }
+
+        function submitPassword() {
+            if (gameState.modulesSolved.password) return;
+            soundFX.playClick();
+
+            let match = true;
+            for (let i = 0; i < 4; i++) {
+                if (currentPasswordGuess[i] !== targetPasswordArr[i]) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                document.getElementById('module-password').classList.add('solved');
+                gameState.modulesSolved.password = true;
+                checkWinCondition();
+            } else {
+                triggerStrike();
+            }
+        }
+    </script>
+</body>
+</html>
