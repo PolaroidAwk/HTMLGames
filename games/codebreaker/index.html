@@ -6,15 +6,16 @@
     <title>CODE BREAKER - Terminal OS v4.0</title>
     <style>
         :root {
-            --crt-bg: #050b05;
-            --crt-panel: #0a140a;
+            --crt-bg: #030703;
+            --crt-panel: #071007;
             --green: #00ff66;
             --green-dim: #008833;
             --green-glow: rgba(0, 255, 102, 0.4);
-            --red: #ff3333;
-            --red-glow: rgba(255, 51, 51, 0.4);
+            --red: #ff3344;
+            --red-dim: #881122;
+            --red-glow: rgba(255, 51, 68, 0.5);
             --yellow: #ffcc00;
-            --border-color: #004411;
+            --border-color: #003311;
             --font-mono: 'Courier New', Courier, monospace;
         }
 
@@ -26,7 +27,6 @@
             -webkit-user-select: none;
         }
 
-        /* PERMITIR SELEÇÃO E NAVEGAÇÃO APENAS NO INPUT */
         input.code-input {
             user-select: text !important;
             -webkit-user-select: text !important;
@@ -47,24 +47,24 @@
 
         .crt-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 920px;
             height: 100vh;
-            max-height: 700px;
+            max-height: 720px;
             background-color: var(--crt-bg);
             border: 2px solid var(--green-dim);
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.15), inset 0 0 15px rgba(0, 0, 0, 0.8);
+            border-radius: 14px;
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2), inset 0 0 25px rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            padding: 12px;
+            padding: 16px;
         }
 
         .crt-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
             background-size: 100% 3px, 6px 100%;
             pointer-events: none;
             z-index: 100;
@@ -73,7 +73,7 @@
         .scanline {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 51%);
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.35) 51%);
             background-size: 100% 4px;
             pointer-events: none;
             z-index: 101;
@@ -83,7 +83,7 @@
             animation: flicker 0.15s infinite;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 255, 102, 0.015);
+            background: rgba(0, 255, 102, 0.012);
             pointer-events: none;
             z-index: 102;
         }
@@ -113,17 +113,17 @@
         }
 
         .text-glow {
-            text-shadow: 0 0 6px var(--green-glow);
+            text-shadow: 0 0 8px var(--green-glow);
         }
 
         .text-red {
             color: var(--red);
-            text-shadow: 0 0 6px var(--red-glow);
+            text-shadow: 0 0 8px var(--red-glow);
         }
 
         .text-yellow {
             color: var(--yellow);
-            text-shadow: 0 0 6px rgba(255, 204, 0, 0.4);
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
         }
 
         .text-dim {
@@ -136,10 +136,15 @@
             height: 100%;
             width: 100%;
             z-index: 10;
+            opacity: 0;
+            transform: scale(0.99);
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
         .screen.active {
             display: flex;
+            opacity: 1;
+            transform: scale(1);
         }
 
         .header-bar {
@@ -147,9 +152,9 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid var(--green-dim);
-            padding-bottom: 6px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
             font-weight: bold;
         }
 
@@ -157,62 +162,79 @@
             justify-content: space-between;
             align-items: center;
             text-align: center;
-            padding: 20px 10px;
+            padding: 15px 10px;
         }
 
         .terminal-logo {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             white-space: pre;
             line-height: 1.2;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .menu-options {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             width: 100%;
-            max-width: 340px;
+            max-width: 360px;
         }
 
         .btn {
             background: var(--crt-panel);
             border: 1px solid var(--green);
             color: var(--green);
-            padding: 10px 15px;
+            padding: 12px 18px;
             font-family: var(--font-mono);
             font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
-            text-shadow: 0 0 4px var(--green-glow);
-            box-shadow: inset 0 0 5px rgba(0, 255, 102, 0.1);
-            transition: all 0.1s;
+            text-shadow: 0 0 5px var(--green-glow);
+            box-shadow: inset 0 0 8px rgba(0, 255, 102, 0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 4px;
         }
 
         .btn:hover, .btn:focus {
             background: var(--green);
             color: #000;
-            box-shadow: 0 0 10px var(--green);
+            box-shadow: 0 0 15px var(--green);
             outline: none;
+            transform: translateY(-2px);
         }
 
         .btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97) translateY(0);
+        }
+
+        .btn-danger-exit {
+            background: rgba(255, 51, 68, 0.1);
+            border: 1px solid var(--red);
+            color: var(--red);
+            text-shadow: 0 0 6px var(--red-glow);
+            box-shadow: inset 0 0 8px rgba(255, 51, 68, 0.15);
+        }
+
+        .btn-danger-exit:hover, .btn-danger-exit:focus {
+            background: var(--red);
+            color: #fff;
+            box-shadow: 0 0 18px var(--red);
+            transform: translateY(-2px);
         }
 
         .btn-small {
-            padding: 4px 8px;
-            font-size: 0.75rem;
+            padding: 6px 12px;
+            font-size: 0.8rem;
         }
 
         .game-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: auto 1fr auto;
-            gap: 10px;
+            gap: 12px;
             flex-grow: 1;
             overflow: hidden;
         }
@@ -228,50 +250,52 @@
         .panel {
             background: var(--crt-panel);
             border: 1px solid var(--border-color);
-            padding: 8px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             position: relative;
+            border-radius: 4px;
         }
 
         .panel-title {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: var(--green-dim);
             border-bottom: 1px dashed var(--border-color);
-            margin-bottom: 6px;
-            padding-bottom: 2px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
             text-transform: uppercase;
         }
 
         .code-display {
-            font-size: 1.8rem;
-            letter-spacing: 6px;
+            font-size: 1.9rem;
+            letter-spacing: 8px;
             text-align: center;
-            padding: 10px 0;
+            padding: 12px 0;
             background: #000;
             border: 1px solid var(--green-dim);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
         }
 
         .hints-list {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             overflow-y: auto;
-            max-height: 140px;
+            max-height: 150px;
         }
 
         .hint-item {
-            padding: 2px 0;
+            padding: 3px 0;
             border-bottom: 1px rgba(0, 255, 102, 0.1) solid;
         }
 
         .history-list {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             overflow-y: auto;
             flex-grow: 1;
         }
@@ -280,25 +304,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 255, 102, 0.03);
-            padding: 4px 6px;
-            border-left: 2px solid var(--green-dim);
+            background: rgba(0, 255, 102, 0.04);
+            padding: 6px 8px;
+            border-left: 3px solid var(--green-dim);
+            border-radius: 2px;
         }
 
         .input-panel {
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .input-line {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             background: #000;
             border: 1px solid var(--green);
-            padding: 6px 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
         }
 
         .prompt-symbol {
@@ -316,8 +342,8 @@
             border: none;
             color: var(--green);
             font-family: var(--font-mono);
-            font-size: 1.2rem;
-            letter-spacing: 4px;
+            font-size: 1.3rem;
+            letter-spacing: 6px;
             width: 100%;
             outline: none;
             text-transform: uppercase;
@@ -327,7 +353,7 @@
         .virtual-keyboard {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            gap: 3px;
+            gap: 4px;
             margin-top: 4px;
         }
 
@@ -336,10 +362,16 @@
             border: 1px solid var(--green-dim);
             color: var(--green);
             font-family: var(--font-mono);
-            font-size: 0.85rem;
-            padding: 6px 0;
+            font-size: 0.9rem;
+            padding: 8px 0;
             text-align: center;
             cursor: pointer;
+            transition: background 0.1s, color 0.1s;
+            border-radius: 2px;
+        }
+
+        .vk-btn:hover {
+            border-color: var(--green);
         }
 
         .vk-btn:active {
@@ -348,51 +380,56 @@
         }
 
         .terminal-log {
-            height: 60px;
+            height: 65px;
             background: #000;
             border: 1px solid var(--border-color);
-            padding: 4px 8px;
-            font-size: 0.7rem;
+            padding: 6px 10px;
+            font-size: 0.75rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            margin-top: 6px;
+            margin-top: 8px;
+            border-radius: 4px;
         }
 
         .modal {
             display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 11, 5, 0.95);
+            background: rgba(3, 7, 3, 0.96);
             z-index: 50;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
         .modal.active {
             display: flex;
+            opacity: 1;
         }
 
         .modal-box {
             border: 2px solid var(--green);
             background: var(--crt-bg);
-            padding: 20px;
+            padding: 24px;
             width: 100%;
-            max-width: 450px;
-            box-shadow: 0 0 15px var(--green-glow);
+            max-width: 480px;
+            box-shadow: 0 0 25px var(--green-glow);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
+            border-radius: 8px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: 0.8rem;
+            gap: 10px;
+            font-size: 0.85rem;
             margin: 10px 0;
         }
 
@@ -400,14 +437,14 @@
             display: flex;
             justify-content: space-between;
             border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 2px;
+            padding-bottom: 4px;
         }
 
         .action-bar {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             justify-content: flex-end;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .audio-toggle {
@@ -427,17 +464,17 @@
     <div id="menu-screen" class="screen active">
         <div class="header-bar text-glow">
             <span>TERMINAL OS v4.0</span>
-            <span id="audio-status" class="audio-toggle">[SOM: DESL]</span>
+            <span id="audio-status" class="audio-toggle">[SOM: LIG]</span>
         </div>
 
         <div class="terminal-logo text-glow">
-  ___ ___  ___  ___   ___ ___ ___   _  _____ ___ 
- / __/ _ \|   \/ __| | _ )_  / __| / \|_   _| _ \
+ ___ ___  ___  ___   ___ ___ ___   _  _____ ___ 
+/ __/ _ \|   \/ __| | _ )_  / __| / \|_   _| _ \
 | (_| (_) | |) \__ \ | _ \/ /| _| / _ \ | | |   /
  \___\___/|___/|___/ |___/___|___/_/ \_\|_| |_|_\
         </div>
 
-        <div style="font-size: 0.85rem;" class="text-glow">
+        <div style="font-size: 0.9rem;" class="text-glow">
             > INICIALIZAÇÃO DO SISTEMA CONCLUÍDA.<br>
             > PROTOCOLO DE SEGURANÇA: <span class="text-yellow">ATIVO</span><br>
             > CRIPTOGRAFIA: <span class="text-red">██████████</span>
@@ -447,9 +484,10 @@
             <button class="btn" onclick="openModeSelect()">[ INICIAR INVASÃO ] <span>></span></button>
             <button class="btn" onclick="openScreen('stats-screen')">[ BANCO DE DADOS ] <span>></span></button>
             <button class="btn" onclick="openScreen('instructions-screen')">[ MANUAL DO USUÁRIO ] <span>></span></button>
+            <button class="btn btn-danger-exit" onclick="window.location.href='https://polaroidawk.github.io/HTMLGames/'">[ SAIR PARA O INICIO ] <span>X</span></button>
         </div>
 
-        <div style="font-size: 0.75rem;" class="text-dim">
+        <div style="font-size: 0.8rem;" class="text-dim">
             MAIOR NÍVEL: <span id="menu-best-level" class="text-glow">1</span> | RECORDE PONTOS: <span id="menu-best-score" class="text-glow">0</span>
         </div>
     </div>
@@ -476,7 +514,7 @@
             <span>MANUAL DE OPERAÇÕES</span>
             <button class="btn btn-small" onclick="openScreen('menu-screen')">VOLTAR</button>
         </div>
-        <div style="font-size: 0.8rem; line-height: 1.4; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 5px;">
+        <div style="font-size: 0.85rem; line-height: 1.5; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 5px;">
             <p>> <strong class="text-glow">OBJETIVO:</strong> Decodificar a senha secreta do sistema antes que o tempo ou as tentativas acabem.</p>
             <p>> <strong class="text-glow">AVALIAÇÃO DAS TENTATIVAS:</strong></p>
             <p>🟩 = Caractere correto na posição correta.</p>
@@ -510,11 +548,11 @@
         </div>
 
         <div class="game-grid">
-            <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div class="panel">
                     <div class="panel-title">CÓDIGO PROTEGIDO</div>
                     <div class="code-display text-glow" id="target-code-masked">[ ? ? ? ? ]</div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
                         <span>TENTATIVAS: <span id="attempts-left" class="text-yellow">08/08</span></span>
                         <span>COMBO: <span id="streak-counter" class="text-glow">0</span></span>
                     </div>
@@ -559,15 +597,15 @@
                 <span id="modal-title" class="text-glow">ACESSO CONCEDIDO</span>
             </div>
             <div style="text-align: center; margin: 10px 0;">
-                <div id="modal-status-text" class="text-glow" style="font-size: 1.2rem;">DECODIFICAÇÃO BEM-SUCEDIDA</div>
-                <div style="margin-top: 8px; font-size: 0.85rem;">CÓDIGO SECRETO ERA: <strong id="modal-secret-code" class="text-yellow">----</strong></div>
+                <div id="modal-status-text" class="text-glow" style="font-size: 1.3rem;">DECODIFICAÇÃO BEM-SUCEDIDA</div>
+                <div style="margin-top: 8px; font-size: 0.9rem;">CÓDIGO SECRETO ERA: <strong id="modal-secret-code" class="text-yellow">----</strong></div>
             </div>
             <div class="stats-grid">
                 <div class="stats-item"><span>PONTOS BASE:</span><span id="modal-base-score">0</span></div>
                 <div class="stats-item"><span>BÔNUS TEMPO:</span><span id="modal-time-bonus">0</span></div>
                 <div class="stats-item"><span>BÔNUS TENTATIVAS:</span><span id="modal-attempt-bonus">0</span></div>
                 <div class="stats-item"><span>PENALIDADE DICAS:</span><span id="modal-hint-penalty">0</span></div>
-                <div class="stats-item" style="grid-column: 1/-1; border-top: 1px solid var(--green); padding-top: 4px;">
+                <div class="stats-item" style="grid-column: 1/-1; border-top: 1px solid var(--green); padding-top: 6px;">
                     <strong>PONTUAÇÃO TOTAL:</strong><strong id="modal-total-score" class="text-glow">0</strong>
                 </div>
             </div>
@@ -582,12 +620,15 @@
 <script>
 const AudioSys = {
     ctx: null,
-    enabled: false,
+    enabled: true, // Já começa ligado por padrão para imersão imediata
 
     init() {
         if (!this.ctx) {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
         }
     },
 
@@ -595,17 +636,19 @@ const AudioSys = {
         this.enabled = !this.enabled;
         if (this.enabled) this.init();
         document.getElementById('audio-status').innerText = `[SOM: ${this.enabled ? 'LIG' : 'DESL'}]`;
-        if (this.enabled) this.beep(800, 'sine', 0.05);
+        if (this.enabled) this.beep(880, 'sine', 0.08);
     },
 
-    beep(freq = 440, type = 'sine', duration = 0.05) {
-        if (!this.enabled || !this.ctx) return;
+    beep(freq = 440, type = 'sine', duration = 0.05, vol = 0.05) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
         try {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = type;
             osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
@@ -614,19 +657,31 @@ const AudioSys = {
         } catch (e) {}
     },
 
-    playKey() { this.beep(1200, 'square', 0.02); },
-    playSuccess() { 
-        this.beep(523.25, 'triangle', 0.1); 
-        setTimeout(() => this.beep(659.25, 'triangle', 0.1), 100);
-        setTimeout(() => this.beep(783.99, 'triangle', 0.2), 200);
+    playKey() { 
+        // Som realista de tecla de terminal mecânico
+        this.beep(1400 + Math.random() * 200, 'square', 0.025, 0.03); 
     },
+    
+    playSuccess() { 
+        // Acorde triplo de vitória (Arpejo)
+        this.beep(523.25, 'triangle', 0.12, 0.08); 
+        setTimeout(() => this.beep(659.25, 'triangle', 0.12, 0.08), 110);
+        setTimeout(() => this.beep(783.99, 'triangle', 0.25, 0.1), 220);
+    },
+
     playError() {
-        this.beep(150, 'sawtooth', 0.15);
-        setTimeout(() => this.beep(100, 'sawtooth', 0.2), 100);
+        // Alerta de erro imersivo (Grave e cibernético)
+        this.beep(140, 'sawtooth', 0.18, 0.1);
+        setTimeout(() => this.beep(95, 'sawtooth', 0.22, 0.12), 90);
     }
 };
 
 document.getElementById('audio-status').addEventListener('click', () => AudioSys.toggle());
+
+// Ativar áudio no primeiro toque/clique global do usuário no documento
+document.addEventListener('click', () => {
+    AudioSys.init();
+}, { once: true });
 
 const CONFIG = {
     CHAR_SETS: {
@@ -945,218 +1000,217 @@ function setupVirtualKeyboard() {
     container.appendChild(del);
 }
 
-/* EVENTOS DE TECLADO FÍSICO E REFOCO */
-const inputElement = document.getElementById('guess-input');
-
-inputElement.addEventListener('input', (e) => {
-    e.target.value = e.target.value.toUpperCase();
-    AudioSys.playKey();
-});
-
-inputElement.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        submitGuess();
-    }
-});
-
-// Mantém o foco no campo de texto ao clicar na tela do jogo
-document.getElementById('game-screen').addEventListener('click', (e) => {
-    if (!e.target.closest('button') && !e.target.classList.contains('vk-btn')) {
-        focusInput();
-    }
-});
-
 function submitGuess() {
     if (gameState.isGameOver) return;
-
     const input = document.getElementById('guess-input');
-    const guess = input.value.toUpperCase();
+    const guess = input.value.toUpperCase().trim();
 
     if (guess.length !== gameState.codeLength) {
         logTerminal(`ERRO: O CÓDIGO DEVE TER ${gameState.codeLength} CARACTERES.`);
-        triggerGlitch(true);
         AudioSys.playError();
-        focusInput();
+        triggerGlitch(true);
         return;
     }
 
+    AudioSys.playKey();
     gameState.attemptsUsed++;
-    stats.attempts++;
-
-    let secretArr = gameState.secretCode.split('');
-    let guessArr = guess.split('');
-    let result = new Array(gameState.codeLength).fill('⬛');
-    
-    let secretFlags = new Array(gameState.codeLength).fill(false);
-    let guessFlags = new Array(gameState.codeLength).fill(false);
-
-    for (let i = 0; i < gameState.codeLength; i++) {
-        if (guessArr[i] === secretArr[i]) {
-            result[i] = '🟩';
-            secretFlags[i] = true;
-            guessFlags[i] = true;
-        }
-    }
-
-    for (let i = 0; i < gameState.codeLength; i++) {
-        if (!guessFlags[i]) {
-            for (let j = 0; j < gameState.codeLength; j++) {
-                if (!secretFlags[j] && guessArr[i] === secretArr[j]) {
-                    result[i] = '🟨';
-                    secretFlags[j] = true;
-                    break;
-                }
-            }
-        }
-    }
-
-    gameState.history.unshift({ guess, result: result.join(' ') });
-    renderHistory();
-
-    document.getElementById('attempts-left').innerText = `${gameState.maxAttempts - gameState.attemptsUsed}/${gameState.maxAttempts}`;
     input.value = '';
     focusInput();
 
+    let resultEval = evaluateGuess(guess, gameState.secretCode);
+    gameState.history.push({ guess, result: resultEval });
+
+    document.getElementById('attempts-left').innerText = `${gameState.maxAttempts - gameState.attemptsUsed}/${gameState.maxAttempts}`;
+
+    renderHistory();
+
     if (guess === gameState.secretCode) {
-        endGame(true);
+        endGame(true, "ACESSO CONCEDIDO");
     } else if (gameState.attemptsUsed >= gameState.maxAttempts) {
-        endGame(false, "TENTATIVAS ESGOTADAS");
+        endGame(false, "SISTEMA BLOQUEADO");
     } else {
-        AudioSys.playKey();
-        logTerminal(`TENTATIVA: ${guess} | RESULTADO: ${result.join('')}`);
-        if (gameState.maxAttempts - gameState.attemptsUsed === 1) {
-            logTerminal(`ALERTA: ÚLTIMA TENTATIVA RESTANTE!`);
-            triggerGlitch(true);
+        AudioSys.playError();
+        triggerGlitch(true);
+        logTerminal(`TENTATIVA INCORRETA: ${guess}`);
+    }
+}
+
+function evaluateGuess(guess, secret) {
+    let result = Array(secret.length).fill('⬛');
+    let secretArr = secret.split('');
+    let guessArr = guess.split('');
+
+    for (let i = 0; i < secret.length; i++) {
+        if (guessArr[i] === secretArr[i]) {
+            result[i] = '🟩';
+            secretArr[i] = null;
+            guessArr[i] = null;
         }
     }
+
+    for (let i = 0; i < secret.length; i++) {
+        if (guessArr[i] !== null) {
+            let idx = secretArr.indexOf(guessArr[i]);
+            if (idx !== -1) {
+                result[i] = '🟨';
+                secretArr[idx] = null;
+            }
+        }
+    }
+    return result;
 }
 
 function buyExtraHint() {
     if (gameState.isGameOver) return;
-    if (gameState.score < 100 && gameState.mode !== 'TIME_ATTACK') {
-        logTerminal("PONTUAÇÃO INSUFICIENTE PARA DICA EXTRA.");
+    if (gameState.score < 100) {
+        logTerminal("PONTOS INSUFICIENTES PARA COMPRAR DICA.");
         AudioSys.playError();
         return;
     }
-
+    gameState.score -= 100;
     gameState.hintsBought++;
-    const hint = generateDynamicExtraHint(gameState.secretCode);
-    gameState.hints.push(hint);
+    document.getElementById('game-score-display').innerText = String(gameState.score).padStart(5, '0');
+
+    let newHint = generateDynamicExtraHint(gameState.secretCode);
+    gameState.hints.push(newHint);
     renderHints();
-    logTerminal("DICA DE SEGURANÇA OBTIDA.");
     AudioSys.playKey();
-    focusInput();
+    logTerminal("NOVA DICA ADQUIRIDA (-100 PTS)");
 }
 
 function renderHints() {
     const container = document.getElementById('hints-container');
-    container.innerHTML = gameState.hints.map(h => `<div class="hint-item">${h}</div>`).join('');
+    container.innerHTML = '';
+    gameState.hints.forEach(h => {
+        const div = document.createElement('div');
+        div.className = 'hint-item';
+        div.innerText = h;
+        container.appendChild(div);
+    });
 }
 
 function renderHistory() {
     const container = document.getElementById('history-container');
-    container.innerHTML = gameState.history.map((h, i) => `
-        <div class="history-row">
-            <span>#${String(gameState.history.length - i).padStart(2, '0')} [${h.guess}]</span>
-            <span>${h.result}</span>
-        </div>
-    `).join('');
+    container.innerHTML = '';
+    gameState.history.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'history-row';
+        
+        const textSpan = document.createElement('span');
+        textSpan.innerText = `#${idx+1} [ ${item.guess} ]`;
+        
+        const resSpan = document.createElement('span');
+        resSpan.innerText = item.result.join(' ');
+        
+        row.appendChild(textSpan);
+        row.appendChild(resSpan);
+        container.appendChild(row);
+    });
+    container.scrollTop = container.scrollHeight;
 }
 
-function calculateScore() {
-    let base = gameState.level * 1000;
-    let timeBonus = Math.max(0, Math.floor(300 - gameState.elapsedTime * 5));
-    let attemptBonus = (gameState.maxAttempts - gameState.attemptsUsed + 1) * 150;
-    let hintPenalty = gameState.hintsBought * 100;
-
-    let total = Math.max(50, base + timeBonus + attemptBonus - hintPenalty);
-    return { base, timeBonus, attemptBonus, hintPenalty, total };
-}
-
-function endGame(won, reason = "") {
-    stopTimer();
+function endGame(success, statusText) {
     gameState.isGameOver = true;
+    stopTimer();
 
     const modal = document.getElementById('end-modal');
     const title = document.getElementById('modal-title');
-    const statusText = document.getElementById('modal-status-text');
+    const status = document.getElementById('modal-status-text');
+    const secretCodeEl = document.getElementById('modal-secret-code');
     const primaryBtn = document.getElementById('modal-primary-btn');
 
-    document.getElementById('modal-secret-code').innerText = gameState.secretCode;
+    secretCodeEl.innerText = gameState.secretCode;
 
-    if (won) {
+    let baseScore = 0;
+    let timeBonus = 0;
+    let attemptBonus = 0;
+    let hintPenalty = gameState.hintsBought * 100;
+
+    if (success) {
         AudioSys.playSuccess();
         triggerGlitch(false);
         title.innerText = "ACESSO CONCEDIDO";
         title.className = "text-glow";
-        statusText.innerText = "DECODIFICAÇÃO BEM-SUCEDIDA";
+        status.innerText = statusText;
+        status.className = "text-glow";
+
+        baseScore = gameState.codeLength * 250;
+        if (gameState.mode !== 'TIME_ATTACK') {
+            timeBonus = Math.max(0, Math.floor((30 - gameState.elapsedTime) * 10));
+        }
+        attemptBonus = (gameState.maxAttempts - gameState.attemptsUsed) * 50;
         
+        let totalRoundScore = Math.max(50, baseScore + timeBonus + attemptBonus - hintPenalty);
+        gameState.score += totalRoundScore;
         gameState.streak++;
+
         stats.solved++;
-        
-        let scoreBreakdown = calculateScore();
-        gameState.score += scoreBreakdown.total;
-
-        document.getElementById('modal-base-score').innerText = `+${scoreBreakdown.base}`;
-        document.getElementById('modal-time-bonus').innerText = `+${scoreBreakdown.timeBonus}`;
-        document.getElementById('modal-attempt-bonus').innerText = `+${scoreBreakdown.attemptBonus}`;
-        document.getElementById('modal-hint-penalty').innerText = `-${scoreBreakdown.hintPenalty}`;
-        document.getElementById('modal-total-score').innerText = scoreBreakdown.total;
-
+        stats.attempts += gameState.attemptsUsed;
+        stats.totalTime += gameState.elapsedTime;
         if (gameState.score > stats.bestScore) stats.bestScore = gameState.score;
         if (gameState.elapsedTime < stats.bestTime) stats.bestTime = gameState.elapsedTime;
         if (gameState.level > stats.highestLevel) stats.highestLevel = gameState.level;
+        if (gameState.streak > stats.streak) stats.streak = gameState.streak;
+        saveStats();
 
         primaryBtn.innerText = "PRÓXIMO NÍVEL";
-        primaryBtn.onclick = () => {
-            modal.classList.remove('active');
-            gameState.level++;
-            startLevel();
-        };
+        primaryBtn.style.display = "inline-block";
     } else {
         AudioSys.playError();
         triggerGlitch(true);
-        title.innerText = "ACESSO NEGADO";
+        title.innerText = "FALHA NA SEGURANÇA";
         title.className = "text-red";
-        statusText.innerText = reason || "BLOQUEIO DO SISTEMA";
-        
-        gameState.streak = 0;
+        status.innerText = statusText;
+        status.className = "text-red";
 
-        document.getElementById('modal-base-score').innerText = `0`;
-        document.getElementById('modal-time-bonus').innerText = `0`;
-        document.getElementById('modal-attempt-bonus').innerText = `0`;
-        document.getElementById('modal-hint-penalty').innerText = `0`;
-        document.getElementById('modal-total-score').innerText = `0`;
+        gameState.streak = 0;
+        saveStats();
 
         primaryBtn.innerText = "TENTAR NOVAMENTE";
-        primaryBtn.onclick = () => {
-            modal.classList.remove('active');
-            startLevel();
-        };
     }
 
-    stats.totalTime += gameState.elapsedTime;
-    saveStats();
+    document.getElementById('modal-base-score').innerText = baseScore;
+    document.getElementById('modal-time-bonus').innerText = timeBonus;
+    document.getElementById('modal-attempt-bonus').innerText = attemptBonus;
+    document.getElementById('modal-hint-penalty').innerText = `-${hintPenalty}`;
+    document.getElementById('modal-total-score').innerText = gameState.score;
+
     modal.classList.add('active');
+}
+
+function handleModalNext() {
+    document.getElementById('end-modal').classList.remove('active');
+    if (gameState.isGameOver && document.getElementById('modal-title').innerText === "ACESSO CONCEDIDO") {
+        gameState.level++;
+        startLevel();
+    } else {
+        startLevel();
+    }
 }
 
 function renderStatsScreen() {
     const container = document.getElementById('stats-container');
-    let avgTime = stats.solved > 0 ? (stats.totalTime / stats.solved).toFixed(1) + 's' : 'N/A';
-    let bTime = stats.bestTime !== Infinity ? stats.bestTime.toFixed(1) + 's' : 'N/A';
-
+    let avgTime = stats.solved > 0 ? (stats.totalTime / stats.solved).toFixed(1) : 0;
+    
     container.innerHTML = `
-        <div class="stats-item"><span>CÓDIGOS RESOLVIDOS:</span><span class="text-glow">${stats.solved}</span></div>
-        <div class="stats-item"><span>TOTAL TENTATIVAS:</span><span class="text-glow">${stats.attempts}</span></div>
+        <div class="stats-item"><span>CÓDIGOS QUEBRADOS:</span><span class="text-glow">${stats.solved}</span></div>
         <div class="stats-item"><span>MAIOR NÍVEL:</span><span class="text-glow">${stats.highestLevel}</span></div>
         <div class="stats-item"><span>RECORDE PONTOS:</span><span class="text-glow">${stats.bestScore}</span></div>
-        <div class="stats-item"><span>MELHOR TEMPO:</span><span class="text-glow">${bTime}</span></div>
-        <div class="stats-item"><span>TEMPO MÉDIO:</span><span class="text-glow">${avgTime}</span></div>
+        <div class="stats-item"><span>MELHOR COMBO:</span><span class="text-glow">${stats.streak}</span></div>
+        <div class="stats-item"><span>TENTATIVAS TOTAIS:</span><span>${stats.attempts}</span></div>
+        <div class="stats-item"><span>TEMPO MÉDIO:</span><span>${avgTime}s</span></div>
     `;
 }
 
-loadStats();
+document.getElementById('guess-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        submitGuess();
+    }
+});
+
+window.onload = () => {
+    loadStats();
+};
 </script>
 </body>
 </html>
