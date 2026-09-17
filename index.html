@@ -222,11 +222,13 @@ body::after {
     gap: 10px;
     align-items: center;
     margin-bottom: 18px;
+    flex-wrap: wrap;
 }
 
 .tabs {
     display: flex;
     gap: 7px;
+    flex-wrap: wrap;
 }
 
 .tab {
@@ -258,12 +260,39 @@ body::after {
 }
 
 /* =========================================================
+   SELECT ORDENAÇÃO
+========================================================= */
+
+.sort-select {
+    border: 1px solid var(--green-dark);
+    background: rgba(0,20,10,.55);
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 20px;
+    padding: 8px 12px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.sort-select:hover, .sort-select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 10px rgba(57,255,136,.15);
+}
+
+.sort-select option {
+    background: #020a05;
+    color: var(--green);
+}
+
+/* =========================================================
    SEARCH
 ========================================================= */
 
 .search-area {
     position: relative;
     flex: 1;
+    min-width: 200px;
 }
 
 .search-icon {
@@ -340,7 +369,7 @@ body::after {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    max-height: 485px;
+    max-height: 440px;
     overflow-y: auto;
     padding-right: 5px;
 }
@@ -494,6 +523,7 @@ body::after {
     gap: 8px;
     margin-top: 4px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .tag-badge {
@@ -515,6 +545,12 @@ body::after {
     border: 1px solid var(--green-dark);
     color: #237f49;
     background: rgba(0, 20, 10, 0.4);
+}
+
+.tag-category {
+    border: 1px solid var(--green);
+    color: var(--green);
+    background: rgba(57,255,136,0.1);
 }
 
 .external-tag {
@@ -652,9 +688,18 @@ body::after {
 <div class="toolbar">
     <div class="tabs">
         <button class="tab active" onclick="mudarAba('todos')" id="tabTodos">ALL</button>
+        <button class="tab" onclick="mudarAba('gemini')" id="tabGemini">GEMINI</button>
+        <button class="tab" onclick="mudarAba('ports')" id="tabPorts">PORTS</button>
         <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos">★ FAVORITES</button>
         <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">+ SUGGEST</a>
     </div>
+
+    <!-- SELETOR DE ORDENAÇÃO -->
+    <select id="sortSelect" class="sort-select" onchange="mudarOrdenacao()">
+        <option value="padrao">ORDEM: PADRÃO</option>
+        <option value="alfabetica">ORDEM: A-Z</option>
+        <option value="reversa">ORDEM: Z-A</option>
+    </select>
 
     <div class="search-area">
         <span class="search-icon">&gt;_</span>
@@ -691,31 +736,33 @@ body::after {
 
 /* =========================================================
    ⚙️ CONFIGURAÇÃO DOS JOGOS E DESCRIÇÕES
+   Formato: [Descrição, Emoji, URL, ApenasPC, Externo, Categoria ('gemini' ou 'ports')]
 ========================================================= */
 
 const CONFIG_JOGOS = {
-    "FNAF GEMINI":        ["Monitore as câmeras, gerencie a energia e sobrevivam à noite.", "🐻", "games/fnaf/index.html", false, false],
-    "MINESWEEPER":        ["Desarme o campo usando lógica pura sem explodir nenhuma mina.", "💣", "games/campo-minado/index.html", false, false],
-    "SNAKE":              ["Cresça comendo maçãs e desvie das próprias curvas nesta versão moderna.", "🐍", "games/snake/index.html", false, false],
-    "TIGRINHO":           ["Simulador de caça-níqueis retrô. Teste a sua sorte na roleta do tigre.", "🎰", "games/tigre/index.html", false, false],
-    "COUNT-CHAOS":        ["Conte até 10 sem errar enquanto o jogo muda os botões de lugar.", "🔢", "games/countchaos/index.html", false, false],
-    "NOVA-TERMINAL":      ["Opere no mercado de ações de alto risco através de uma interface terminal.", "📈", "games/novaterminal/index.html", false, false],
-    "THE-PASSWORD":       ["Crie uma senha perfeita que atenda a dezenas de regras absurdas simultaneamente.", "🔑", "games/password/index.html", false, false],
-    "SYMBOL MEMORY":      ["Treine sua mente memorizando sequências de símbolos em ritmo acelerado.", "🧠", "games/symbol/index.html", false, false],
-    "COLOR MATCH":        ["Misture, combine e encontre os tons exatos contra o relógio.", "🎨", "games/colormatch/index.html", false, false],
-    "CODE BREAKER":       ["Use raciocínio lógico para hackear e quebrar o código de segurança secreto.", "👨🏻‍💻", "games/codebreaker/index.html", false, false],
-    "MINI MARKET":        ["Atenda clientes, gerencie seu estoque e expanda seu império de mercado.", "🛒", "games/minimart/index.html", false, false],
-    "DÚVIDO":             ["Jogo tenso de tempo e intuição: pare o cronômetro no limite sem ultrapassar.", "⏱️", "games/duvido/index.html", false, false],
-    "BOMB DISPOSAL":        ["Se comunique com seu alidado para desarmar uma bomba.", "🧨", "games/bombdisposal/index.html", false, false],
-    "THE BINDING OF ISAAC":   ["Roguelike de ação: explore calabouços aleatórios, derrote monstros e colete itens.", "😭", "https://patlamontagne.github.io/the-binding-of-isaac-js/", true, true],
-    "BALATRO":   ["Roguelike de construção de baralho no qual você deve jogar mãos de pôquer e ganhar fichas para derrotar os *blinds* inimigos.", "🃏", "balatro.html", false, false],
-    "FNAF 1":             ["A pizzaria clássica. Sobreviva até as 6h economizando energia das portas.", "🐻", "https://irv77.github.io/hd_fnaf/1/", true, true],
-    "FNAF 2":             ["Sem portas e com novos animatrônicos. Use a máscara de Freddy para sobreviver.", "🐻", "https://irv77.github.io/hd_fnaf/2/", true, true],
-    "FNAF 3":             ["30 anos depois: gerencie os sistemas de áudio e ventilação contra o Springtrap.", "🐰", "https://irv77.github.io/hd_fnaf/3/", true, true],
-    "FNAF 4":             ["O pesadelo em casa. Escute atentamente a respiração nas portas para sobreviver.", "👹", "https://irv77.github.io/hd_fnaf/4/", true, true],
-    "CELESTE CLASSIC":    ["Desafio de plataforma 2D extrema: escala com pulos e impulsos de alta precisão.", "🍓", "https://verdini.github.io/celeste-classic-web/", true, true],
-    "ULTRAKILL":          ["FPS acelerado e ultra-violento estilo retrô em busca do sangue no inferno.", "🔫", "https://chickenstrips05.github.io/Ultrakill-web/", true, true],
-    "BALDI’S BASICS":     ["Colete os cadernos e fuja da escola enquanto resolve problemas de matemática.", "📏", "https://michaelsoft1853.github.io/baldi-s-basics-webgl/", true, true]
+    "FNAF GEMINI":         ["Monitore as câmeras, gerencie a energia e sobrevivam à noite.", "🐻", "games/fnaf/index.html", false, false, "gemini"],
+    "MINESWEEPER":         ["Desarme o campo usando lógica pura sem explodir nenhuma mina.", "💣", "games/campo-minado/index.html", false, false, "gemini"],
+    "SNAKE":               ["Cresça comendo maçãs e desvie das próprias curvas nesta versão moderna.", "🐍", "games/snake/index.html", false, false, "gemini"],
+    "TIGRINHO":            ["Simulador de caça-níqueis retrô. Teste a sua sorte na roleta do tigre.", "🎰", "games/tigre/index.html", false, false, "gemini"],
+    "COUNT-CHAOS":         ["Conte até 10 sem errar enquanto o jogo muda os botões de lugar.", "🔢", "games/countchaos/index.html", false, false, "gemini"],
+    "NOVA-TERMINAL":       ["Opere no mercado de ações de alto risco através de uma interface terminal.", "📈", "games/novaterminal/index.html", false, false, "gemini"],
+    "THE-PASSWORD":        ["Crie uma senha perfeita que atenda a dezenas de regras absurdas simultaneamente.", "🔑", "games/password/index.html", false, false, "gemini"],
+    "SYMBOL MEMORY":       ["Treine sua mente memorizando sequências de símbolos em ritmo acelerado.", "🧠", "games/symbol/index.html", false, false, "gemini"],
+    "COLOR MATCH":         ["Misture, combine e encontre os tons exatos contra o relógio.", "🎨", "games/colormatch/index.html", false, false, "gemini"],
+    "CODE BREAKER":        ["Use raciocínio lógico para hackear e quebrar o código de segurança secreto.", "👨🏻‍💻", "games/codebreaker/index.html", false, false, "gemini"],
+    "MINI MARKET":         ["Atenda clientes, gerencie seu estoque e expanda seu império de mercado.", "🛒", "games/minimart/index.html", false, false, "gemini"],
+    "DÚVIDO":              ["Jogo tenso de tempo e intuição: pare o cronômetro no limite sem ultrapassar.", "⏱️", "games/duvido/index.html", false, false, "gemini"],
+    "BOMB DISPOSAL":        ["Se comunique com seu alidado para desarmar uma bomba.", "🧨", "games/bombdisposal/index.html", false, false, "gemini"],
+    "THE BINDING OF ISAAC":    ["Roguelike de ação: explore calabouços aleatórios, derrote monstros e colete itens.", "😭", "https://patlamontagne.github.io/the-binding-of-isaac-js/", true, true, "ports"],
+    "BALATRO":   ["Roguelike de construção de baralho no qual você deve jogar mãos de pôquer e ganhar fichas para derrotar os *blinds* inimigos.", "🃏", "balatro.html", false, false, "ports"],
+    "HOLLOW KNIGHT":   ["Desça no mundo de Hollow Knight! O premiado jogo de ação e aventura de insetos e heróis.", "💀", "Hollow Knight.html", false, true, "ports"],
+    "FNAF 1":              ["A pizzaria clássica. Sobreviva até as 6h economizando energia das portas.", "🐻", "https://irv77.github.io/hd_fnaf/1/", true, true, "ports"],
+    "FNAF 2":              ["Sem portas e com novos animatrônicos. Use a máscara de Freddy para sobreviver.", "🐻", "https://irv77.github.io/hd_fnaf/2/", true, true, "ports"],
+    "FNAF 3":              ["30 anos depois: gerencie os sistemas de áudio e ventilação contra o Springtrap.", "🐰", "https://irv77.github.io/hd_fnaf/3/", true, true, "ports"],
+    "FNAF 4":              ["O pesadelo em casa. Escute atentamente a respiração nas portas para sobreviver.", "👹", "https://irv77.github.io/hd_fnaf/4/", true, true, "ports"],
+    "CELESTE CLASSIC":     ["Desafio de plataforma 2D extrema: escala com pulos e impulsos de alta precisão.", "🍓", "https://verdini.github.io/celeste-classic-web/", true, true, "ports"],
+    "ULTRAKILL":           ["FPS acelerado e ultra-violento estilo retrô em busca do sangue no inferno.", "🔫", "https://chickenstrips05.github.io/Ultrakill-web/", true, true, "ports"],
+    "BALDI’S BASICS":      ["Colete os cadernos e fuja da escola enquanto resolve problemas de matemática.", "📏", "https://michaelsoft1853.github.io/baldi-s-basics-webgl/", true, true, "ports"]
 };
 
 /* =========================================================
@@ -737,7 +784,6 @@ function getAudioContext() {
     return audioCtx;
 }
 
-// Desbloqueia o som no primeiro clique ou tecla pressionada pelo usuário
 function unlockAudio() {
     getAudioContext();
     window.removeEventListener('pointerdown', unlockAudio);
@@ -784,27 +830,28 @@ function playSound(type) {
             osc.start(now);
             osc.stop(now + 0.18);
         }
-    } catch(e) {
-        // Ignora silenciosamente qualquer restrição de áudio do navegador
-    }
+    } catch(e) {}
 }
 
 /* =========================================================
    PROCESSAMENTO DA CONFIGURAÇÃO
 ========================================================= */
 
-const listaDeJogos = Object.entries(CONFIG_JOGOS).map(([nome, dados], index) => ({
+const listaDeJogosOriginal = Object.entries(CONFIG_JOGOS).map(([nome, dados], index) => ({
     id: `game-${index}`,
     nome: nome,
     desc: dados[0],
     icone: dados[1],
     url: dados[2],
     apenasPC: dados[3],
-    externo: dados[4]
+    externo: dados[4],
+    categoria: dados[5] || 'gemini',
+    indiceOriginal: index
 }));
 
 let files = [];
 let abaAtual = 'todos';
+let ordemAtual = 'padrao';
 let selectedIndex = 0;
 
 const fileListContainer = document.getElementById('fileList');
@@ -812,6 +859,7 @@ const search = document.getElementById('search');
 const empty = document.getElementById('empty');
 const gameCount = document.getElementById('gameCount');
 const searchClear = document.getElementById('searchClear');
+const sortSelect = document.getElementById('sortSelect');
 
 /* =========================================================
    FAVORITOS
@@ -866,17 +914,33 @@ function abrirJogo(jogo) {
 }
 
 /* =========================================================
-   RENDERIZAÇÃO
+   RENDERIZAÇÃO E ORDENAÇÃO
 ========================================================= */
+
+function obterListaOrdenada() {
+    let lista = [...listaDeJogosOriginal];
+
+    if (ordemAtual === 'alfabetica') {
+        lista.sort((a, b) => a.nome.localeCompare(b.nome));
+    } else if (ordemAtual === 'reversa') {
+        lista.sort((a, b) => b.nome.localeCompare(a.nome));
+    } else {
+        // Ordem padrão baseada no índice original
+        lista.sort((a, b) => a.indiceOriginal - b.indiceOriginal);
+    }
+
+    return lista;
+}
 
 function renderizarJogos() {
     fileListContainer.innerHTML = '';
+    const listaOrdenada = obterListaOrdenada();
 
-    listaDeJogos.forEach((jogo, index) => {
+    listaOrdenada.forEach(jogo => {
         const div = document.createElement('div');
         div.className = 'file';
         div.dataset.id = jogo.id;
-        div.dataset.index = index;
+        div.dataset.categoria = jogo.categoria;
         div.dataset.name = `${jogo.nome} ${jogo.desc}`.toLowerCase();
 
         div.innerHTML = `
@@ -888,6 +952,7 @@ function renderizarJogos() {
                 </div>
                 <div class="description">${jogo.desc}</div>
                 <div class="tags-container">
+                    <span class="tag-badge tag-category">${jogo.categoria.toUpperCase()}</span>
                     ${jogo.apenasPC 
                         ? `<span class="tag-badge tag-pc">💻 PC ONLY</span>` 
                         : `<span class="tag-badge tag-all">📱 ALL DEVICES</span>`
@@ -921,9 +986,18 @@ function mudarAba(aba) {
     playSound('click');
     abaAtual = aba;
     document.getElementById('tabTodos').classList.toggle('active', aba === 'todos');
+    document.getElementById('tabGemini').classList.toggle('active', aba === 'gemini');
+    document.getElementById('tabPorts').classList.toggle('active', aba === 'ports');
     document.getElementById('tabFavoritos').classList.toggle('active', aba === 'favoritos');
     selectedIndex = 0;
     filtrarJogos();
+}
+
+function mudarOrdenacao() {
+    playSound('click');
+    ordemAtual = sortSelect.value;
+    selectedIndex = 0;
+    renderizarJogos();
 }
 
 function filtrarJogos() {
@@ -932,13 +1006,19 @@ function filtrarJogos() {
 
     files.forEach(file => {
         const nome = file.dataset.name;
+        const categoria = file.dataset.categoria;
         const favorito = file.classList.contains('favorite');
-        const passaAba = abaAtual === 'todos' || favorito;
+
+        let passaAba = false;
+        if (abaAtual === 'todos') passaAba = true;
+        else if (abaAtual === 'gemini' && categoria === 'gemini') passaAba = true;
+        else if (abaAtual === 'ports' && categoria === 'ports') passaAba = true;
+        else if (abaAtual === 'favoritos' && favorito) passaAba = true;
+
         const passaBusca = nome.includes(texto);
-
         const mostrar = passaAba && passaBusca;
+        
         file.style.display = mostrar ? 'flex' : 'none';
-
         if (mostrar) encontrados.push(file);
     });
 
@@ -984,7 +1064,7 @@ document.addEventListener('keydown', event => {
 
     if (event.key === 'Enter' && document.activeElement !== search) {
         const file = visiveis[selectedIndex];
-        const jogo = listaDeJogos.find(j => j.id === file.dataset.id);
+        const jogo = listaDeJogosOriginal.find(j => j.id === file.dataset.id);
         if (jogo) abrirJogo(jogo);
     }
 
