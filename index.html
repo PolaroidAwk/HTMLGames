@@ -690,88 +690,101 @@ body::after {
 <script>
 
 /* =========================================================
-   ⚙️ CONFIGURAÇÃO ULTRA-FÁCIL DOS JOGOS
-   
-   Para adicionar um jogo novo, copie e cole este bloco abaixo:
-   
-   "NOME DO JOGO": ["DESCRIÇÃO CURTA", "🎮", "LINK/CAMINHO", modoPC, modoExterno],
-
-   onde:
-   - modoPC: true (Apenas PC) ou false (Todos os aparelhos)
-   - modoExterno: true (Link Externo) ou false (Link Local)
+   ⚙️ CONFIGURAÇÃO DOS JOGOS E DESCRIÇÕES
 ========================================================= */
 
 const CONFIG_JOGOS = {
-    "FNAF GEMINI":       ["Sobreviva vigiando as câmeras.", "🐻", "games/fnaf/index.html", false, false],
-    "MINESWEEPER":        ["O clássico jogo de campo minado.", "💣", "games/campo-minado/index.html", false, false],
-    "SNAKE":              ["Jogo da cobrinha aprimorado.", "🐍", "games/snake/index.html", false, false],
-    "TIGRINHO":           ["Fortune Tiger.", "🎰", "games/tigre/index.html", false, false],
-    "COUNT-CHAOS":        ["Conte de 1 a 10 sem errar.", "🔢", "games/countchaos/index.html", false, false],
-    "NOVA-TERMINAL":      ["Simulador do mercado financeiro.", "📈", "games/novaterminal/index.html", false, false],
-    "THE-PASSWORD":       ["Crie senhas com regras malucas.", "🔑", "games/password/index.html", false, false],
-    "SYMBOL MEMORY":      ["Memorize sequências de símbolos.", "🧠", "games/symbol/index.html", false, false],
-    "COLOR MATCH":        ["Misture e replique cores rapidamente.", "🎨", "games/colormatch/index.html", false, false],
-    "CODE BREAKER":       ["Desvende os códigos criptografados.", "👨🏻‍💻", "games/codebreaker/index.html", false, false],
-    "MINI MARKET":        ["Gerencie seu supermercado.", "🛒", "games/minimart/index.html", false, false],
-    "DÚVIDO":             ["Jogo de blefe e precisão.", "⏱️", "games/duvido/index.html", false, false],
-    "BINDING OF ISAAC":   ["Roguelike de ação top-down com salas aleatórias, inimigos, itens, builds e chefes.", "😭", "https://patlamontagne.github.io/the-binding-of-isaac-js/", true, true],
-    "FNAF 1":             ["Sobreviva 5 noites na pizzaria.", "🐻", "https://irv77.github.io/hd_fnaf/1/", true, true],
-    "FNAF 2":             ["Sobreviva 5 noites com Freddy e sua turminha.", "🐻", "https://irv77.github.io/hd_fnaf/2/", true, true],
-    "FNAF 3":             ["Sobreviva 5 noites na atração de terror.", "🐰", "https://irv77.github.io/hd_fnaf/3/", true, true],
-    "FNAF 4":             ["Sobreviva 5 noites contra a galerinha do barulho.", "👹", "https://irv77.github.io/hd_fnaf/4/", true, true],
-    "CELESTE CLASSIC":    ["Plataforma 2D focado em precisão, pulos, dash e desafios difíceis, com fases feitas à mão e morte rápida.", "🍓", "https://verdini.github.io/celeste-classic-web/", true, true],
-    "ULTRAKILL":      ["MANKIND IS DEAD. BLOOD IS FUEL. HELL IS FULL.", "🔫", "https://chickenstrips05.github.io/Ultrakill-web/", true, true],
-    "BALDI’S BASICS":     ["Fuja da escola do Baldi.", "📏", "https://michaelsoft1853.github.io/baldi-s-basics-webgl/", true, true]
+    "FNAF GEMINI":        ["Monitore as câmeras, gerencie a energia e sobrevivam à noite.", "🐻", "games/fnaf/index.html", false, false],
+    "MINESWEEPER":        ["Desarme o campo usando lógica pura sem explodir nenhuma mina.", "💣", "games/campo-minado/index.html", false, false],
+    "SNAKE":              ["Cresça comendo maçãs e desvie das próprias curvas nesta versão moderna.", "🐍", "games/snake/index.html", false, false],
+    "TIGRINHO":           ["Simulador de caça-níqueis retrô. Teste a sua sorte na roleta do tigre.", "🎰", "games/tigre/index.html", false, false],
+    "COUNT-CHAOS":        ["Conte até 10 sem errar enquanto o jogo muda os botões de lugar.", "🔢", "games/countchaos/index.html", false, false],
+    "NOVA-TERMINAL":      ["Opere no mercado de ações de alto risco através de uma interface terminal.", "📈", "games/novaterminal/index.html", false, false],
+    "THE-PASSWORD":       ["Crie uma senha perfeita que atenda a dezenas de regras absurdas simultaneamente.", "🔑", "games/password/index.html", false, false],
+    "SYMBOL MEMORY":      ["Treine sua mente memorizando sequências de símbolos em ritmo acelerado.", "🧠", "games/symbol/index.html", false, false],
+    "COLOR MATCH":        ["Misture, combine e encontre os tons exatos contra o relógio.", "🎨", "games/colormatch/index.html", false, false],
+    "CODE BREAKER":       ["Use raciocínio lógico para hackear e quebrar o código de segurança secreto.", "👨🏻‍💻", "games/codebreaker/index.html", false, false],
+    "MINI MARKET":        ["Atenda clientes, gerencie seu estoque e expanda seu império de mercado.", "🛒", "games/minimart/index.html", false, false],
+    "DÚVIDO":             ["Jogo tenso de tempo e intuição: pare o cronômetro no limite sem ultrapassar.", "⏱️", "games/duvido/index.html", false, false],
+    "BINDING OF ISAAC":   ["Roguelike de ação: explore calabouços aleatórios, derrote monstros e colete itens.", "😭", "https://patlamontagne.github.io/the-binding-of-isaac-js/", true, true],
+    "FNAF 1":             ["A pizzaria clássica. Sobreviva até as 6h economizando energia das portas.", "🐻", "https://irv77.github.io/hd_fnaf/1/", true, true],
+    "FNAF 2":             ["Sem portas e com novos animatrônicos. Use a máscara de Freddy para sobreviver.", "🐻", "https://irv77.github.io/hd_fnaf/2/", true, true],
+    "FNAF 3":             ["30 anos depois: gerencie os sistemas de áudio e ventilação contra o Springtrap.", "🐰", "https://irv77.github.io/hd_fnaf/3/", true, true],
+    "FNAF 4":             ["O pesadelo em casa. Escute atentamente a respiração nas portas para sobreviver.", "👹", "https://irv77.github.io/hd_fnaf/4/", true, true],
+    "CELESTE CLASSIC":    ["Desafio de plataforma 2D extrema: escala com pulos e impulsos de alta precisão.", "🍓", "https://verdini.github.io/celeste-classic-web/", true, true],
+    "ULTRAKILL":          ["FPS acelerado e ultra-violento estilo retrô em busca do sangue no inferno.", "🔫", "https://chickenstrips05.github.io/Ultrakill-web/", true, true],
+    "BALDI’S BASICS":     ["Colete os cadernos e fuja da escola enquanto resolve problemas de matemática.", "📏", "https://michaelsoft1853.github.io/baldi-s-basics-webgl/", true, true]
 };
 
 /* =========================================================
-   SISTEMA DE ÁUDIO RETRO (Web Audio API)
+   🔊 SISTEMA DE ÁUDIO RETRO ROBUSTO (Web Audio API)
 ========================================================= */
 
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
-function initAudio() {
-    if (!audioCtx) audioCtx = new AudioCtx();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+function getAudioContext() {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+        }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
 }
+
+// Desbloqueia o som no primeiro clique ou tecla pressionada pelo usuário
+function unlockAudio() {
+    getAudioContext();
+    window.removeEventListener('pointerdown', unlockAudio);
+    window.removeEventListener('keydown', unlockAudio);
+}
+window.addEventListener('pointerdown', unlockAudio);
+window.addEventListener('keydown', unlockAudio);
 
 function playSound(type) {
     try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        const ctx = getAudioContext();
+        if (!ctx || ctx.state !== 'running') return;
 
-        const now = audioCtx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
 
         if (type === 'hover') {
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(440, now);
-            gain.gain.setValueAtTime(0.03, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.frequency.setValueAtTime(320, now);
+            gain.gain.setValueAtTime(0.015, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
             osc.start(now);
-            osc.stop(now + 0.05);
+            osc.stop(now + 0.04);
         } else if (type === 'click') {
             osc.type = 'square';
-            osc.frequency.setValueAtTime(587.33, now);
-            osc.frequency.setValueAtTime(880, now + 0.04);
-            gain.gain.setValueAtTime(0.06, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.setValueAtTime(800, now + 0.03);
+            gain.gain.setValueAtTime(0.04, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
             osc.start(now);
-            osc.stop(now + 0.12);
+            osc.stop(now + 0.1);
         } else if (type === 'fav') {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(523.25, now);
             osc.frequency.setValueAtTime(659.25, now + 0.05);
             osc.frequency.setValueAtTime(783.99, now + 0.10);
-            gain.gain.setValueAtTime(0.05, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            gain.gain.setValueAtTime(0.04, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
             osc.start(now);
-            osc.stop(now + 0.2);
+            osc.stop(now + 0.18);
         }
-    } catch(e) {}
+    } catch(e) {
+        // Ignora silenciosamente qualquer restrição de áudio do navegador
+    }
 }
 
 /* =========================================================
@@ -842,8 +855,12 @@ function alternarFavorito(id) {
 function abrirJogo(jogo) {
     playSound('click');
     setTimeout(() => {
-        window.location.href = jogo.url;
-    }, 80);
+        if (jogo.externo) {
+            window.open(jogo.url, '_blank');
+        } else {
+            window.location.href = jogo.url;
+        }
+    }, 90);
 }
 
 /* =========================================================
