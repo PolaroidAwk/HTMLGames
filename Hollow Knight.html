@@ -8,8 +8,10 @@
     <title>Unity WebGL Player | Hollow Knight</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    <!-- Importação do Supabase -->
+    
+    <!-- SUPABASE SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         html,
         body {
@@ -44,80 +46,62 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO SUPABASE ---
-        const SUPABASE_URL = "https://xsbbgoohvlgpprhqevyo.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
-        const GAME_ID = "hollow_knight";
-        const DB_NAME = "/idbfs"; // Padrão do Unity WebGL
-        const STORE_NAME = "files"; 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        /* =========================================================
+           SISTEMA DE SAVE EM NUVEM (SUPABASE)
+           ========================================================= */
+        (function() {
+            const SUPABASE_URL = "https://xsbbgoohvlgpprhqevyo.supabase.co";
+            const SUPABASE_KEY = "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
+            const GAME_ID = "hollow_knight_web";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function getLoggedUser() {
-            const { data: { session } } = await supabase.auth.getSession();
-            return session?.user || null;
-        }
-
-        async function readUnityDisk() {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(DB_NAME);
-                request.onsuccess = (event) => {
-                    const db = event.target.result;
-                    try {
-                        const transaction = db.transaction([STORE_NAME], "readonly");
-                        const store = transaction.objectStore(STORE_NAME);
-                        const getAllRequest = store.getAll();
-                        getAllRequest.onsuccess = () => resolve(JSON.stringify(getAllRequest.result));
-                    } catch (e) { resolve(null); }
-                };
-                request.onerror = () => resolve(null);
-            });
-        }
-
-        async function writeUnityDisk(dataJson) {
-            return new Promise((resolve) => {
+            async function saveToCloud(data) {
                 try {
-                    const data = JSON.parse(dataJson);
-                    const request = indexedDB.open(DB_NAME);
-                    request.onsuccess = (event) => {
-                        const db = event.target.result;
-                        const transaction = db.transaction([STORE_NAME], "readwrite");
-                        const store = transaction.objectStore(STORE_NAME);
-                        data.forEach(item => { store.put(item.value, item.key); });
-                        transaction.oncomplete = () => resolve();
-                    };
-                } catch (e) { resolve(); }
-            });
-        }
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) return;
+                    await supabase.from('game_saves').upsert({ 
+                        user_id: session.user.id, 
+                        game_id: GAME_ID, 
+                        save_data: typeof data === 'object' ? JSON.stringify(data) : data, 
+                        updated_at: new Date() 
+                    }, { onConflict: 'user_id,game_id' });
+                    console.log("☁️ Save sincronizado!");
+                } catch (e) { console.error("Erro nuvem:", e); }
+            }
 
-        async function uploadSave() {
-            const user = await getLoggedUser();
-            if (!user) return;
-            try {
-                const saveContent = await readUnityDisk();
-                if (!saveContent) return;
-                await supabase.from('game_saves').upsert({
-                    user_id: user.id,
-                    game_id: GAME_ID,
-                    save_data: saveContent,
-                    updated_at: new Date()
-                });
-                console.log("☁️ Hollow Knight: Save na nuvem!");
-            } catch (e) { console.error("Erro upload:", e); }
-        }
+            async function loadFromCloud() {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) return null;
+                    const { data } = await supabase.from('game_saves').select('save_data').eq('user_id', session.user.id).eq('game_id', GAME_ID).single();
+                    return data ? data.save_data : null;
+                } catch (e) { return null; }
+            }
 
-        async function downloadSave() {
-            const user = await getLoggedUser();
-            if (!user) return;
-            try {
-                const { data } = await supabase.from('game_saves').select('save_data').eq('user_id', user.id).eq('game_id', GAME_ID).single();
-                if (data && data.save_data) {
-                    await writeUnityDisk(data.save_data);
-                    console.log("☁️ Hollow Knight: Save restaurado!");
+            // Interceptação do LocalStorage (Alguns ports de Unity usam isso como ponte)
+            const originalSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+                originalSetItem.apply(this, arguments);
+                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow')) {
+                    saveToCloud(value);
                 }
-            } catch (e) { console.error("Erro download:", e); }
-        }
+            };
 
-        // --- LÓGICA ORIGINAL DO JOGO ---
+            // Tenta restaurar o save da nuvem ao iniciar
+            window.addEventListener('load', async () => {
+                const cloudData = await loadFromCloud();
+                if (cloudData) {
+                    console.log("☁️ Restaurando save da nuvem...");
+                    // Tenta aplicar o save nas chaves mais comuns de Unity WebGL
+                    localStorage.setItem('hollow_knight_save', cloudData);
+                    localStorage.setItem('save_data', cloudData);
+                }
+            });
+        })();
+
+        /* =========================================================
+           LÓGICA ORIGINAL DO JOGO
+           ========================================================= */
         var loadingText = document.querySelector("#loading-text");
         let totalBytes = 0;
         let loadedBytes = 0;
@@ -166,9 +150,6 @@
         }
 
         (async () => {
-            // Inicia a restauração do save enquanto baixa os arquivos do jogo
-            downloadSave();
-
             const allParts = [...getParts("Build/hk.data", 1, 42), ...getParts("Build/hk.wasm", 1, 2), ];
             const sizes = await Promise.all(allParts.map(getSize));
             totalBytes = sizes.reduce((a, b) => a + b, 0);
@@ -228,10 +209,6 @@
             };
             document.body.appendChild(script);
         })();
-
-        // Sincronização periódica e ao fechar
-        setInterval(uploadSave, 5 * 60 * 1000);
-        window.addEventListener('beforeunload', uploadSave);
     </script>
 </body>
 </html>
