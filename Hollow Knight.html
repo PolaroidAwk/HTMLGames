@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     
-    <!-- Importação do Supabase via URL Absoluta -->
+    <!-- Importação do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -33,16 +33,12 @@
 </head>
 
 <body>
-    <!-- 
-        SISTEMA DE SAVE EM NUVEM - COLOCADO NO TOPO PARA GARANTIR EXECUÇÃO 
-    -->
     <script>
         (function() {
-            console.log("🚀 [SISTEMA] Iniciando tentativa de carga do Save-V2...");
+            console.log("🚀 [SISTEMA] Iniciando Save-V2...");
 
-            // 1. Verificação de segurança do SDK
             if (typeof window.supabase === 'undefined') {
-                console.error("❌ [SISTEMA] SDK do Supabase não foi carregado. Verifique a conexão!");
+                console.error("❌ [SISTEMA] SDK do Supabase não carregou!");
                 return;
             }
 
@@ -55,19 +51,10 @@
             const errStyle = "color: #ff4a4a; font-weight: bold; font-size: 14px; background: #000;";
             const infoStyle = "color: #ffd84a; font-weight: bold; font-size: 14px; background: #000;";
 
-            console.log("%c☁️ [SAVE-V2] SCRIPT CARREGADO COM SUCESSO!", logStyle);
-            
-            // ALERTA DE TESTE: Se isso aparecer, o sistema está funfando.
-            // Remova a linha abaixo depois que confirmar que funciona.
-            alert("✅ Sistema de Save Cloud Carregado!");
-
             async function saveToCloud(data) {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                        console.log("%c☁️ [SAVE-V2] Usuário deslogado. Salvando localmente.", infoStyle);
-                        return;
-                    }
+                    if (!session) return;
 
                     const { error } = await supabase.from('game_saves').upsert({ 
                         user_id: session.user.id, 
@@ -77,7 +64,7 @@
                     }, { onConflict: 'user_id,game_id' });
 
                     if (error) throw error;
-                    console.log("%c✅ [SAVE-V2] Progresso enviado para a nuvem!", logStyle);
+                    console.log("%c✅ [SAVE-V2] Progresso salvo na nuvem!", logStyle);
                 } catch (e) { 
                     console.error("%c❌ [SAVE-V2] Erro ao salvar:", errStyle, e.message); 
                 }
@@ -88,19 +75,27 @@
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) return null;
 
+                    // CORREÇÃO AQUI: .maybeSingle() evita o erro 406 quando o save está vazio
                     const { data, error } = await supabase.from('game_saves')
                         .select('save_data')
                         .eq('user_id', session.user.id)
                         .eq('game_id', GAME_ID)
-                        .single();
+                        .maybeSingle(); 
 
-                    if (error || !data) return null;
+                    if (error) throw error;
+                    if (!data) {
+                        console.log("%c☁️ [SAVE-V2] Nenhum save encontrado na nuvem (Primeira vez jogando).", infoStyle);
+                        return null;
+                    }
+                    
                     console.log("%c✅ [SAVE-V2] Save de nuvem recuperado!", logStyle);
                     return data.save_data;
-                } catch (e) { return null; }
+                } catch (e) { 
+                    console.error("%c❌ [SAVE-V2] Erro ao carregar:", errStyle, e.message); 
+                    return null; 
+                }
             }
 
-            // Interceptação do LocalStorage
             const originalSetItem = localStorage.setItem;
             localStorage.setItem = function(key, value) {
                 originalSetItem.apply(this, arguments);
@@ -114,7 +109,7 @@
                 if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
                     const cloudData = await loadFromCloud();
                     if (cloudData) {
-                        console.log(`%c☁️ [SAVE-V2] Injetando cloud save na chave: ${key}`, logStyle);
+                        console.log(`%c☁️ [SAVE-V2] Restaurando nuvem para: ${key}`, logStyle);
                         originalSetItem(key, cloudData);
                         return cloudData;
                     }
@@ -123,12 +118,11 @@
             };
 
             window.addEventListener('load', async () => {
-                console.log("%c☁️ [SAVE-V2] Verificando sincronização inicial...", infoStyle);
+                console.log("%c☁️ [SAVE-V2] Verificando sincronização...", infoStyle);
                 const cloudData = await loadFromCloud();
                 if (cloudData) {
                     localStorage.setItem('hollow_knight_save', cloudData);
                     localStorage.setItem('save_data', cloudData);
-                    console.log("%c✅ [SAVE-V2] Sincronização inicial feita!", logStyle);
                 }
             });
         })();
