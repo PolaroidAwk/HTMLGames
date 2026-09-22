@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     
-    <!-- Importação do Supabase -->
+    <!-- Importação do Supabase via URL Absoluta -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -33,44 +33,39 @@
 </head>
 
 <body>
-    <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;"> LOADING... </div>
-    <div hidden id="unity-container" class="unity-desktop">
-        <canvas id="unity-canvas"></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
-        </div>
-        <div id="unity-mobile-warning"> WebGL builds are not supported on mobile devices. </div>
-    </div>
-
+    <!-- 
+        SISTEMA DE SAVE EM NUVEM - COLOCADO NO TOPO PARA GARANTIR EXECUÇÃO 
+    -->
     <script>
-        /* =========================================================
-           SISTEMA DE SAVE EM NUVEM - VERSÃO V2 (LOGS ATIVADOS)
-           ========================================================= */
         (function() {
-            // CONFIGURAÇÕES
+            console.log("🚀 [SISTEMA] Iniciando tentativa de carga do Save-V2...");
+
+            // 1. Verificação de segurança do SDK
+            if (typeof window.supabase === 'undefined') {
+                console.error("❌ [SISTEMA] SDK do Supabase não foi carregado. Verifique a conexão!");
+                return;
+            }
+
             const SUPABASE_URL = "https://xsbbgoohvlgpprhqevyo.supabase.co";
             const SUPABASE_KEY = "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
-            
-            // ID ÚNICO PARA ESTE JOGO (Sempre use sys_v2_ para evitar conflitos)
             const GAME_ID = "sys_v2_hollow_knight"; 
-            
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Cores para o Console
-            const logStyle = "color: #39ff88; font-weight: bold; font-size: 12px;";
-            const errStyle = "color: #ff4a4a; font-weight: bold; font-size: 12px;";
-            const infoStyle = "color: #ffd84a; font-weight: bold; font-size: 12px;";
+            const logStyle = "color: #39ff88; font-weight: bold; font-size: 14px; background: #000;";
+            const errStyle = "color: #ff4a4a; font-weight: bold; font-size: 14px; background: #000;";
+            const infoStyle = "color: #ffd84a; font-weight: bold; font-size: 14px; background: #000;";
 
-            console.log("%c☁️ [SAVE-V2] Sistema de Nuvem Iniciado...", logStyle);
+            console.log("%c☁️ [SAVE-V2] SCRIPT CARREGADO COM SUCESSO!", logStyle);
+            
+            // ALERTA DE TESTE: Se isso aparecer, o sistema está funfando.
+            // Remova a linha abaixo depois que confirmar que funciona.
+            alert("✅ Sistema de Save Cloud Carregado!");
 
             async function saveToCloud(data) {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) {
-                        console.log("%c☁️ [SAVE-V2] Usuário não logado. Salvando apenas local.", infoStyle);
+                        console.log("%c☁️ [SAVE-V2] Usuário deslogado. Salvando localmente.", infoStyle);
                         return;
                     }
 
@@ -82,19 +77,16 @@
                     }, { onConflict: 'user_id,game_id' });
 
                     if (error) throw error;
-                    console.log("%c✅ [SAVE-V2] Progresso sincronizado com a nuvem!", logStyle);
+                    console.log("%c✅ [SAVE-V2] Progresso enviado para a nuvem!", logStyle);
                 } catch (e) { 
-                    console.error("%c❌ [SAVE-V2] Erro ao salvar na nuvem:", errStyle, e.message); 
+                    console.error("%c❌ [SAVE-V2] Erro ao salvar:", errStyle, e.message); 
                 }
             }
 
             async function loadFromCloud() {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                        console.log("%c☁️ [SAVE-V2] Nenhuma sessão ativa. Usando local.", infoStyle);
-                        return null;
-                    }
+                    if (!session) return null;
 
                     const { data, error } = await supabase.from('game_saves')
                         .select('save_data')
@@ -102,20 +94,13 @@
                         .eq('game_id', GAME_ID)
                         .single();
 
-                    if (error || !data) {
-                        console.log("%c☁️ [SAVE-V2] Nenhum save na nuvem para este jogo.", infoStyle);
-                        return null;
-                    }
-
-                    console.log("%c✅ [SAVE-V2] Save de nuvem recuperado com sucesso!", logStyle);
+                    if (error || !data) return null;
+                    console.log("%c✅ [SAVE-V2] Save de nuvem recuperado!", logStyle);
                     return data.save_data;
-                } catch (e) { 
-                    console.error("%c❌ [SAVE-V2] Erro ao carregar nuvem:", errStyle, e); 
-                    return null; 
-                }
+                } catch (e) { return null; }
             }
 
-            // Interceptação do LocalStorage para capturar saves do Unity
+            // Interceptação do LocalStorage
             const originalSetItem = localStorage.setItem;
             localStorage.setItem = function(key, value) {
                 originalSetItem.apply(this, arguments);
@@ -129,7 +114,7 @@
                 if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
                     const cloudData = await loadFromCloud();
                     if (cloudData) {
-                        console.log(`%c☁️ [SAVE-V2] Injetando save da nuvem na chave: ${key}`, logStyle);
+                        console.log(`%c☁️ [SAVE-V2] Injetando cloud save na chave: ${key}`, logStyle);
                         originalSetItem(key, cloudData);
                         return cloudData;
                     }
@@ -143,14 +128,26 @@
                 if (cloudData) {
                     localStorage.setItem('hollow_knight_save', cloudData);
                     localStorage.setItem('save_data', cloudData);
-                    console.log("%c✅ [SAVE-V2] Sincronização inicial concluída.", logStyle);
+                    console.log("%c✅ [SAVE-V2] Sincronização inicial feita!", logStyle);
                 }
             });
         })();
+    </script>
 
-        /* =========================================================
-           LÓGICA ORIGINAL DO JOGO (NÃO ALTERADA)
-           ========================================================= */
+    <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;"> LOADING... </div>
+    <div hidden id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+        </div>
+        <div id="unity-mobile-warning"> WebGL builds are not supported on mobile devices. </div>
+    </div>
+
+    <script>
+        /* LÓGICA ORIGINAL DO JOGO */
         var loadingText = document.querySelector("#loading-text");
         let totalBytes = 0;
         let loadedBytes = 0;
@@ -242,4 +239,27 @@
                     canvas.height = window.innerHeight;
                     canvas.style.width = window.innerWidth + "px";
                     canvas.style.height = window.innerHeight + "px";
-                }*_
+                }
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+            }
+            }
+            loadingBar.style.display = "block";
+            var script = document.createElement("script");
+            script.src = loaderUrl;
+            script.onload = () => {
+                createUnityInstance(canvas, config, (progress) => {
+                    progressBarFull.style.width = 100 * progress + "%";
+                }).then((unityInstance) => {
+                    loadingText.remove();
+                    loadingBar.style.display = "none";
+                    canvas.style.display = "block";
+                }).catch((message) => {
+                    alert(message);
+                });
+            };
+            document.body.appendChild(script);
+        })();
+    </script>
+</body>
+</html>
