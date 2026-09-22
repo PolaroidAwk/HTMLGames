@@ -9,39 +9,41 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     
-    <!-- Importação do Supabase -->
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background: #231F20;
-        }
+        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #231F20; }
+        #unity-container { width: 100%; height: 100%; position: fixed; top: 0; left: 0; }
 
-        #unity-container {
-            width: 100%;
-            height: 100%;
+        /* Botão de Save Manual */
+        #cloud-save-btn {
             position: fixed;
-            top: 0;
-            left: 0;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 10px 20px;
+            background: #39ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-family: sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: 0.3s;
         }
+        #cloud-save-btn:hover { background: #fff; transform: scale(1.05); }
+        #cloud-save-btn:disabled { background: #666; cursor: not-allowed; }
     </style>
 </head>
 
 <body>
+    <!-- Botão para forçar o salvamento na nuvem -->
+    <button id="cloud-save-btn" onclick="forceCloudSave()">☁️ SALVAR NA NUVEM</button>
+
     <script>
         (function() {
-            console.log("🚀 [SISTEMA] Iniciando Save-V2...");
-
-            if (typeof window.supabase === 'undefined') {
-                console.error("❌ [SISTEMA] SDK do Supabase não carregou!");
-                return;
-            }
-
             const SUPABASE_URL = "https://xsbbgoohvlgpprhqevyo.supabase.co";
             const SUPABASE_KEY = "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
             const GAME_ID = "sys_v2_hollow_knight"; 
@@ -51,10 +53,15 @@
             const errStyle = "color: #ff4a4a; font-weight: bold; font-size: 14px; background: #000;";
             const infoStyle = "color: #ffd84a; font-weight: bold; font-size: 14px; background: #000;";
 
+            console.log("%c☁️ [SAVE-V2] Sistema de Monitoramento Iniciado...", logStyle);
+
             async function saveToCloud(data) {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) return;
+                    if (!session) {
+                        console.log("%c☁️ [SAVE-V2] Erro: Você precisa estar logado no Hub para salvar na nuvem.", errStyle);
+                        return false;
+                    }
 
                     const { error } = await supabase.from('game_saves').upsert({ 
                         user_id: session.user.id, 
@@ -64,9 +71,11 @@
                     }, { onConflict: 'user_id,game_id' });
 
                     if (error) throw error;
-                    console.log("%c✅ [SAVE-V2] Progresso salvo na nuvem!", logStyle);
+                    console.log("%c✅ [SAVE-V2] Sincronização com Supabase concluída!", logStyle);
+                    return true;
                 } catch (e) { 
-                    console.error("%c❌ [SAVE-V2] Erro ao salvar:", errStyle, e.message); 
+                    console.error("%c❌ [SAVE-V2] Erro ao enviar:", errStyle, e.message); 
+                    return false;
                 }
             }
 
@@ -75,54 +84,71 @@
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) return null;
 
-                    // CORREÇÃO AQUI: .maybeSingle() evita o erro 406 quando o save está vazio
                     const { data, error } = await supabase.from('game_saves')
                         .select('save_data')
                         .eq('user_id', session.user.id)
                         .eq('game_id', GAME_ID)
                         .maybeSingle(); 
 
-                    if (error) throw error;
-                    if (!data) {
-                        console.log("%c☁️ [SAVE-V2] Nenhum save encontrado na nuvem (Primeira vez jogando).", infoStyle);
-                        return null;
-                    }
-                    
-                    console.log("%c✅ [SAVE-V2] Save de nuvem recuperado!", logStyle);
+                    if (error || !data) return null;
                     return data.save_data;
-                } catch (e) { 
-                    console.error("%c❌ [SAVE-V2] Erro ao carregar:", errStyle, e.message); 
-                    return null; 
-                }
+                } catch (e) { return null; }
             }
 
+            // Função exposta globalmente para o botão
+            window.forceCloudSave = async function() {
+                const btn = document.getElementById('cloud-save-btn');
+                btn.disabled = true;
+                btn.textContent = "SALVANDO...";
+
+                console.log("%c☁️ [SAVE-V2] Tentando coletar todos os saves disponíveis...", infoStyle);
+                
+                // Tenta coletar tudo do localStorage que pareça ser do jogo
+                let collectedData = {};
+                let foundAnything = false;
+
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
+                        collectedData[key] = localStorage.getItem(key);
+                        foundAnything = true;
+                    }
+                }
+
+                if (foundAnything) {
+                    const success = await saveToCloud(collectedData);
+                    if (success) alert("✅ Save enviado para a nuvem!");
+                    else alert("❌ Erro ao enviar. Veja o console (F12).");
+                } else {
+                    console.log("%c⚠️ [SAVE-V2] Nada encontrado no LocalStorage. O jogo pode estar usando IndexedDB puro.", infoStyle);
+                    alert("⚠️ Nenhum save detectado no LocalStorage. O Unity pode estar usando IndexedDB (está fora do alcance do JS).");
+                }
+
+                btn.disabled = false;
+                btn.textContent = "☁️ SALVAR NA NUVEM";
+            };
+
+            // Mantemos a interceptação por precaução
             const originalSetItem = localStorage.setItem;
             localStorage.setItem = function(key, value) {
                 originalSetItem.apply(this, arguments);
-                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
+                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow')) {
                     saveToCloud(value);
                 }
             };
 
-            const originalGetItem = localStorage.getItem;
-            localStorage.getItem = async function(key) {
-                if (key.toLowerCase().includes('save') || key.toLowerCase().includes('hollow') || key.toLowerCase().includes('data')) {
-                    const cloudData = await loadFromCloud();
-                    if (cloudData) {
-                        console.log(`%c☁️ [SAVE-V2] Restaurando nuvem para: ${key}`, logStyle);
-                        originalSetItem(key, cloudData);
-                        return cloudData;
-                    }
-                }
-                return originalGetItem.apply(this, arguments);
-            };
-
             window.addEventListener('load', async () => {
-                console.log("%c☁️ [SAVE-V2] Verificando sincronização...", infoStyle);
                 const cloudData = await loadFromCloud();
                 if (cloudData) {
-                    localStorage.setItem('hollow_knight_save', cloudData);
-                    localStorage.setItem('save_data', cloudData);
+                    console.log("%c✅ [SAVE-V2] Restaurando save da nuvem...", logStyle);
+                    try {
+                        const parsed = JSON.parse(cloudData);
+                        for (const [key, value] of Object.entries(parsed)) {
+                            localStorage.setItem(key, value);
+                        }
+                    } catch(e) {
+                        localStorage.setItem('hollow_knight_save', cloudData);
+                    }
                 }
             });
         })();
