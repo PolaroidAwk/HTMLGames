@@ -1501,6 +1501,46 @@ body::after{
     font-size:16px;
 }
 
+/* PORTS: biblioteca de capsules verticais, com painel de detalhes lateral. */
+.ports-browser{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) 290px;
+    gap:18px;
+    align-items:stretch;
+}
+.ports-browser:not(.active){display:block;}
+.ports-browser:not(.active) .port-details{display:none;}
+.ports-browser .file-list{min-width:0;}
+.ports-browser.active .file-list{
+    grid-template-columns:repeat(auto-fill,minmax(112px,1fr));
+    gap:13px; max-height:560px; padding:4px 7px 8px 2px; align-content:start;
+}
+.file.port-card{
+    min-width:0; min-height:0; aspect-ratio:2 / 3; padding:0; display:block; overflow:hidden;
+    border:1px solid #174b30; background:#050b08; box-shadow:0 5px 18px rgba(0,0,0,.25);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.file.port-card:hover,.file.port-card.selected{transform:translateY(-3px);border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,136,.18),0 8px 22px rgba(0,0,0,.4);}
+.file.port-card .port-capsule{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;border:0;background:linear-gradient(145deg,#10271a,#030604);font-size:34px;}
+.port-capsule img{object-fit:cover;}
+.port-capsule .capsule-fallback{font-size:36px;}
+.file.port-card .game-content,.file.port-card .arrow,.file.port-card .icon{display:none;}
+.port-details{min-width:0;min-height:300px;max-height:560px;overflow-y:auto;position:relative;border:1px solid #174b30;background:linear-gradient(155deg,rgba(8,28,17,.97),rgba(2,8,4,.98));box-shadow:inset 0 0 35px rgba(57,255,136,.035);}
+.port-details-empty{min-height:300px;height:100%;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#398d59;}
+.port-details-mark{font-size:54px;line-height:1;margin-bottom:18px;color:#1e8a4a;}
+.port-details-title{font-size:17px;letter-spacing:2px;color:var(--green);}
+.port-details-empty p{font-size:13px;line-height:1.6;}
+.port-detail-art{width:100%;aspect-ratio:2 / 3;max-height:245px;object-fit:cover;display:block;background:#030704;border-bottom:1px solid #174b30;}
+.port-detail-art-fallback{aspect-ratio:2 / 3;max-height:245px;display:flex;align-items:center;justify-content:center;font-size:68px;background:radial-gradient(circle,rgba(57,255,136,.1),#030704 70%);border-bottom:1px solid #174b30;}
+.port-detail-body{padding:17px;}
+.port-detail-kicker{font-size:10px;letter-spacing:2px;color:#3a8d59;margin-bottom:7px;}
+.port-detail-name{font-size:21px;line-height:1.2;color:var(--green);overflow-wrap:anywhere;}
+.port-detail-description{font-size:13px;line-height:1.65;color:#80c998;margin:12px 0 15px;}
+.port-detail-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:17px;}
+.port-detail-play{width:100%;padding:12px 14px;border:1px solid var(--green);background:linear-gradient(135deg,#168344,#075127);color:#f0fff5;font-family:var(--font);font-size:15px;font-weight:bold;letter-spacing:1px;cursor:pointer;transition:.18s;}
+.port-detail-play:hover{filter:brightness(1.2);box-shadow:0 0 18px rgba(57,255,136,.2);}
+.port-detail-fav{width:100%;margin-top:8px;padding:9px;border:1px solid #245d39;background:#06150b;color:#75c990;font-family:var(--font);cursor:pointer;}
+
 /* =========================================================
    RESPONSIVO
 ========================================================= */
@@ -1514,6 +1554,10 @@ body::after{
     .file-list{
         grid-template-columns:1fr;
     }
+
+    .ports-browser.active{grid-template-columns:minmax(0,1fr);}
+    .ports-browser.active .file-list{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
+    .port-details{max-height:none;}
 
     .toolbar{
         flex-direction:column;
@@ -1569,6 +1613,16 @@ body::after{
         min-height:85px;
         padding:10px;
     }
+
+    .ports-browser.active{grid-template-columns:minmax(0,1fr);}
+    .ports-browser.active .file-list{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));max-height:360px;}
+    .port-details{max-height:none;min-height:0;}
+    .port-details-empty{min-height:150px;}
+    .port-detail-layout{display:grid;grid-template-columns:100px minmax(0,1fr);}
+    .port-detail-art,.port-detail-art-fallback{aspect-ratio:2 / 3;max-height:150px;}
+    .port-detail-body{padding:12px;}
+    .port-detail-name{font-size:18px;}
+    .port-detail-description{font-size:12px;margin:8px 0 10px;}
 
     .icon{
         width:48px;
@@ -2036,24 +2090,24 @@ body::after{
 
             </div>
 
-            <div
-                class="file-list"
-                id="fileList"
-            >
-
+            <div class="ports-browser" id="portsBrowser">
                 <div
-                    class="empty"
-                    id="empty"
+                    class="file-list"
+                    id="fileList"
                 >
-
-                    <div class="empty-big">
-                        [ 404 ]
+                    <div class="empty" id="empty">
+                        <div class="empty-big">[ 404 ]</div>
+                        NENHUM JOGO ENCONTRADO.
                     </div>
-
-                    NENHUM JOGO ENCONTRADO.
-
                 </div>
 
+                <aside class="port-details" id="portDetails" aria-live="polite">
+                    <div class="port-details-empty">
+                        <div class="port-details-mark">▧</div>
+                        <div class="port-details-title">SELECIONE UM JOGO</div>
+                        <p>Escolha uma capsule para ver os detalhes.</p>
+                    </div>
+                </aside>
             </div>
 
             <footer class="footer">
@@ -5200,7 +5254,8 @@ const CONFIG_JOGOS = {
         "https://patlamontagne.github.io/the-binding-of-isaac-js/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "the-binding-of-isaac"
     ],
 
     "UNDERTALE [SANS]":[
@@ -5209,7 +5264,8 @@ const CONFIG_JOGOS = {
         "https://jcw87.github.io/c2-sans-fight/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "undertale-sans"
     ],
 
     "BALATRO":[
@@ -5218,7 +5274,8 @@ const CONFIG_JOGOS = {
         "balatro.html",
         [],
         false,
-        "ports"
+        "ports",
+        "balatro"
     ],
 
     "BUCKSHOT ROULETTE":[
@@ -5227,7 +5284,8 @@ const CONFIG_JOGOS = {
         "buckshot.html",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         false,
-        "ports"
+        "ports",
+        "buckshot-roulette"
     ],
 
     "HOLLOW KNIGHT":[
@@ -5236,7 +5294,8 @@ const CONFIG_JOGOS = {
         "Hollow Knight.html",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" }, { text: "🪪 CONTAS", color: "#fcba03" } ],
         false,
-        "ports"
+        "ports",
+        "hollow-knight"
     ],
 
     "FNAF 1":[
@@ -5245,7 +5304,8 @@ const CONFIG_JOGOS = {
         "https://irv77.github.io/hd_fnaf/1/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "fnaf-1"
     ],
 
     "FNAF 2":[
@@ -5254,7 +5314,8 @@ const CONFIG_JOGOS = {
         "https://irv77.github.io/hd_fnaf/2/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "fnaf-2"
     ],
 
     "FNAF 3":[
@@ -5263,7 +5324,8 @@ const CONFIG_JOGOS = {
         "https://irv77.github.io/hd_fnaf/3/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "fnaf-3"
     ],
 
     "FNAF 4":[
@@ -5272,7 +5334,8 @@ const CONFIG_JOGOS = {
         "https://irv77.github.io/hd_fnaf/4/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "fnaf-4"
     ],
 
     "CELESTE CLASSIC":[
@@ -5281,7 +5344,8 @@ const CONFIG_JOGOS = {
         "https://verdini.github.io/celeste-classic-web/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "celeste-classic"
     ],
 
     "ULTRAKILL":[
@@ -5290,7 +5354,8 @@ const CONFIG_JOGOS = {
         "https://chickenstrips05.github.io/Ultrakill-web/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "ultrakill"
     ],
 
     "BALDI'S BASICS":[
@@ -5299,7 +5364,8 @@ const CONFIG_JOGOS = {
         "https://michaelsoft1853.github.io/baldi-s-basics-webgl/",
         [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
         true,
-        "ports"
+        "ports",
+        "baldis-basics"
     ]
 };
 
@@ -5332,6 +5398,10 @@ const listaDeJogosOriginal =
 
             categoria:
                 dados[5],
+
+            // Nome-base do arquivo em arts/capsules/. Pode ser diferente do nome do jogo.
+            capsula:
+                dados[6] || nome.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
 
             indiceOriginal:
                 index
@@ -5500,7 +5570,7 @@ function playSound(tipo){
 let files = [];
 
 let abaAtual =
-    "todos";
+    "ports";
 
 let ordemAtual =
     "padrao";
@@ -5607,6 +5677,19 @@ function renderizarJogos(){
     fileListContainer.innerHTML =
         "";
 
+    const portsBrowser = document.getElementById("portsBrowser");
+    if(portsBrowser) portsBrowser.classList.toggle("active", abaAtual === "ports");
+
+    [
+        ["tabTodos", "todos"],
+        ["tabGemini", "gemini"],
+        ["tabPorts", "ports"],
+        ["tabFavoritos", "favoritos"]
+    ].forEach(([id, aba]) => {
+        const tab = document.getElementById(id);
+        if(tab) tab.classList.toggle("active", abaAtual === aba);
+    });
+
     obterListaOrdenada()
         .forEach(
             jogo => {
@@ -5617,7 +5700,7 @@ function renderizarJogos(){
                     );
 
                 div.className =
-                    "file";
+                    "file" + (jogo.categoria === "ports" ? " port-card" : "");
 
                 div.dataset.id =
                     jogo.id;
@@ -5656,11 +5739,19 @@ function renderizarJogos(){
                     `;
                 }
 
-                div.innerHTML = `
-
+                const capsuleHtml = jogo.categoria === "ports" ? `
+                    <div class="port-capsule">
+                        <img alt="" loading="lazy" data-capsule="${jogo.capsula}" hidden>
+                        <span class="capsule-fallback">${jogo.icone}</span>
+                    </div>
+                ` : `
                     <div class="icon">
                         ${jogo.icone}
                     </div>
+                `;
+
+                div.innerHTML = `
+                    ${capsuleHtml}
 
                     <div class="game-content">
 
@@ -5691,6 +5782,24 @@ function renderizarJogos(){
                     </div>
                 `;
 
+                const capsuleImage = div.querySelector("img[data-capsule]");
+                if(capsuleImage){
+                    const extensions = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+                    const baseUrl = "https://raw.githubusercontent.com/PolaroidAwk/HTMLGames/main/arts/capsules/";
+                    let extensionIndex = 0;
+                    const tryNextCapsule = () => {
+                        if(extensionIndex >= extensions.length){
+                            capsuleImage.hidden = true;
+                            return;
+                        }
+                        capsuleImage.hidden = false;
+                        capsuleImage.src = baseUrl + encodeURIComponent(capsuleImage.dataset.capsule) + extensions[extensionIndex++];
+                    };
+                    capsuleImage.addEventListener("error", tryNextCapsule);
+                    capsuleImage.addEventListener("load", () => { capsuleImage.hidden = false; });
+                    tryNextCapsule();
+                }
+
                 div.addEventListener(
                     "mouseenter",
                     () =>
@@ -5701,8 +5810,14 @@ function renderizarJogos(){
 
                 div.addEventListener(
                     "click",
-                    () =>
-                        abrirJogo(jogo)
+                    () => {
+                        if(jogo.categoria === "ports" && abaAtual === "ports"){
+                            selecionarPort(jogo);
+                            files.forEach(card => card.classList.toggle("selected", card.dataset.id === jogo.id));
+                        }else{
+                            abrirJogo(jogo);
+                        }
+                    }
                 );
 
                 div.addEventListener(
@@ -5747,6 +5862,52 @@ function renderizarJogos(){
 
     carregarFavoritos();
     filtrarJogos();
+}
+
+
+function selecionarPort(jogo){
+    const panel = document.getElementById("portDetails");
+    if(!panel || !jogo) return;
+
+    const tags = (jogo.tagsCustomizadas || []).map(tag =>
+        `<span class="tag-custom" style="border:1px solid ${tag.color};color:${tag.color};background:${tag.color}15;">${tag.text}</span>`
+    ).join("");
+
+    panel.innerHTML = `
+        <div class="port-detail-layout">
+            <div class="port-detail-art-fallback">${jogo.icone}</div>
+            <div class="port-detail-body">
+                <div class="port-detail-kicker">HTMLGAMES / PORTS</div>
+                <div class="port-detail-name">${jogo.nome}</div>
+                <div class="port-detail-description">${jogo.desc}</div>
+                <div class="port-detail-tags">${tags}${jogo.externo ? '<span class="external-tag">↗ EXTERNO</span>' : ''}</div>
+                <button class="port-detail-play" type="button">▶ JOGAR AGORA</button>
+                <button class="port-detail-fav" type="button">★ ADICIONAR / REMOVER FAVORITO</button>
+            </div>
+        </div>
+    `;
+
+    const detailImg = new Image();
+    detailImg.className = "port-detail-art";
+    detailImg.alt = "";
+    const extensions = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+    const baseUrl = "https://raw.githubusercontent.com/PolaroidAwk/HTMLGames/main/arts/capsules/";
+    let extensionIndex = 0;
+    detailImg.onerror = () => {
+        if(extensionIndex < extensions.length){
+            detailImg.src = baseUrl + encodeURIComponent(jogo.capsula) + extensions[extensionIndex++];
+        }else{
+            detailImg.remove();
+        }
+    };
+    detailImg.onload = () => {
+        const fallback = panel.querySelector(".port-detail-art-fallback");
+        if(fallback) fallback.replaceWith(detailImg);
+    };
+    detailImg.src = baseUrl + encodeURIComponent(jogo.capsula) + extensions[extensionIndex++];
+
+    panel.querySelector(".port-detail-play").addEventListener("click", () => abrirJogo(jogo));
+    panel.querySelector(".port-detail-fav").addEventListener("click", () => alternarFavorito(jogo.id));
 }
 
 
@@ -5992,7 +6153,7 @@ function filtrarJogos(){
 
             file.style.display =
                 exibir
-                    ? "flex"
+                    ? (abaAtual === "ports" && categoria === "ports" ? "block" : "flex")
                     : "none";
 
             if(exibir)
@@ -6050,6 +6211,11 @@ function atualizarSelecaoTeclado(){
         selecionado.classList.add(
             "selected"
         );
+
+        if(abaAtual === "ports"){
+            const jogoSelecionado = listaDeJogosOriginal.find(jogo => jogo.id === selecionado.dataset.id);
+            if(jogoSelecionado) selecionarPort(jogoSelecionado);
+        }
 
         selecionado.scrollIntoView({
             block:"nearest",
@@ -6176,6 +6342,7 @@ function mostrarSite(){
         "block";
 
     atualizarInterfacePerfil();
+    abaAtual = "ports";
     renderizarJogos();
 }
 
