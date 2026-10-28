@@ -1754,6 +1754,30 @@ body::after{
     .ports-browser.active .port-detail-description{font-size:12px;}
 }
 
+
+.version-indicator{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:7px;
+    padding:3px 8px;
+    border:1px solid rgba(57,255,136,.35);
+    background:rgba(57,255,136,.06);
+    color:#62b982;
+    font-family:var(--font);
+    font-size:15px;
+    letter-spacing:1px;
+    line-height:1.1;
+}
+.version-indicator::before{
+    content:"●";
+    color:var(--green);
+    font-size:9px;
+}
+#versionHash{color:var(--green-bright);}
+@media(max-width:600px){
+    .version-indicator{font-size:13px;margin-top:5px;}
+}
 </style>
 </head>
 
@@ -1888,6 +1912,10 @@ body::after{
 
                         <div class="subtitle">
                             POLAROIDO // DIGITAL GAME ARCHIVE
+                        </div>
+
+                        <div class="version-indicator" title="Identificador automático do último commit da versão publicada">
+                            BUILD <span id="versionHash">CARREGANDO...</span>
                         </div>
 
                     </div>
@@ -6366,6 +6394,38 @@ document.addEventListener(
     }
 );
 
+
+/* =========================================================
+   VERSÃO DO SITE
+   Usa o SHA curto do último commit da branch main.
+   Qualquer commit novo altera automaticamente este indicador.
+========================================================= */
+
+async function atualizarIndicadorVersao(){
+    const elemento = document.getElementById("versionHash");
+    if(!elemento) return;
+
+    try{
+        const resposta = await fetch(
+            "https://api.github.com/repos/PolaroidAwk/HTMLGames/commits/main",
+            {cache:"no-store", headers:{"Accept":"application/vnd.github+json"}}
+        );
+        if(!resposta.ok) throw new Error("GitHub API indisponível");
+
+        const commit = await resposta.json();
+        if(commit && commit.sha){
+            elemento.textContent = commit.sha.slice(0,7).toUpperCase();
+            elemento.title = "Commit completo: " + commit.sha;
+        }else{
+            throw new Error("SHA não encontrado");
+        }
+    }catch(error){
+        elemento.textContent = "OFFLINE";
+        elemento.title = "Não foi possível consultar o commit mais recente.";
+    }
+}
+
+atualizarIndicadorVersao();
 
 /* =========================================================
    MOSTRAR SITE
