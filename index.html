@@ -6187,9 +6187,11 @@ function filtrarJogos(){
             const exibir =
                 passaAba && passaBusca;
 
+            const portsBrowser = document.getElementById("portsBrowser");
+            const modoCapsules = portsBrowser && portsBrowser.classList.contains("active");
             file.style.display =
                 exibir
-                    ? "flex"
+                    ? (modoCapsules && file.classList.contains("port-card") ? "block" : "flex")
                     : "none";
 
             if(exibir)
