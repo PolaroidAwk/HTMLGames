@@ -1783,6 +1783,394 @@ body::after{
 @media(max-width:600px){
     .version-indicator{font-size:13px;margin-top:5px;}
 }
+
+/* =========================================================
+   VIEWPORT FIXO E LAYOUT RESPONSIVO
+   A página fica fixa; somente a lista de jogos rola.
+========================================================= */
+html,
+body{
+    width:100%;
+    min-height:100%;
+}
+
+body:has(#siteContent[style*="display: block"]){
+    height:100%;
+    overflow:hidden;
+    overscroll-behavior:none;
+}
+
+#siteContent[style*="display: block"]{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    height:100dvh;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .monitor{
+    width:100%;
+    height:100%;
+    min-height:0;
+    padding:clamp(8px,2vw,24px);
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .screen{
+    width:100%;
+    height:100%;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    padding:clamp(12px,2vw,26px);
+    border-radius:clamp(10px,1.5vw,22px);
+}
+
+#siteContent[style*="display: block"] .header,
+#siteContent[style*="display: block"] .terminal,
+#siteContent[style*="display: block"] .toolbar,
+#siteContent[style*="display: block"] .favorites-panel,
+#siteContent[style*="display: block"] .game-info,
+#siteContent[style*="display: block"] .footer{
+    flex-shrink:0;
+}
+
+#siteContent[style*="display: block"] .ports-browser{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .ports-browser:not(.active){
+    display:flex;
+    flex-direction:column;
+}
+
+#siteContent[style*="display: block"] .ports-browser:not(.active) .file-list{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active{
+    grid-template-rows:minmax(0,1fr);
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .file-list{
+    height:100%;
+    min-height:0;
+    max-height:none;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+    -webkit-overflow-scrolling:touch;
+}
+
+#siteContent[style*="display: block"] .port-details{
+    min-height:0;
+}
+
+#siteContent[style*="display: block"] .footer{
+    margin-top:12px;
+    padding-top:10px;
+}
+
+@media(max-width:1000px){
+    #siteContent[style*="display: block"] .monitor{
+        padding:8px;
+    }
+
+    #siteContent[style*="display: block"] .screen{
+        padding:16px;
+    }
+
+    #siteContent[style*="display: block"] .header{
+        gap:14px;
+    }
+
+    #siteContent[style*="display: block"] .system-name{
+        font-size:clamp(28px,4.5vw,42px);
+    }
+
+    #siteContent[style*="display: block"] .subtitle{
+        font-size:clamp(12px,1.7vw,17px);
+        line-height:1.2;
+    }
+
+    #siteContent[style*="display: block"] .status{
+        font-size:16px;
+    }
+
+    #siteContent[style*="display: block"] .status-detail,
+    #siteContent[style*="display: block"] .account-box{
+        font-size:13px;
+    }
+
+    #siteContent[style*="display: block"] .toolbar{
+        gap:8px;
+        margin-bottom:10px;
+    }
+
+    #siteContent[style*="display: block"] .tab{
+        font-size:clamp(13px,1.8vw,17px);
+        padding:8px 10px;
+    }
+
+    #siteContent[style*="display: block"] .sort-select,
+    #siteContent[style*="display: block"] .search{
+        font-size:16px;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        padding:10px 12px;
+        margin-bottom:12px;
+        font-size:15px;
+    }
+
+    #siteContent[style*="display: block"] .game-info{
+        font-size:14px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active{
+        grid-template-columns:minmax(0,1fr) minmax(220px,30%);
+        gap:12px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:12px;
+        padding:6px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        padding:10px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        font-size:18px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        font-size:13px;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        font-size:12px;
+    }
+}
+
+@media(max-width:700px){
+    #siteContent[style*="display: block"] .screen{
+        padding:12px;
+        border-radius:10px;
+    }
+
+    #siteContent[style*="display: block"] .header{
+        align-items:flex-start;
+        padding-bottom:10px;
+        margin-bottom:10px;
+    }
+
+    #siteContent[style*="display: block"] .logo-area{
+        gap:9px;
+        min-width:0;
+    }
+
+    #siteContent[style*="display: block"] .logo-symbol{
+        width:34px;
+        height:34px;
+        font-size:20px;
+        flex-shrink:0;
+    }
+
+    #siteContent[style*="display: block"] .system-name{
+        font-size:clamp(22px,5vw,32px);
+        letter-spacing:1px;
+        line-height:1;
+    }
+
+    #siteContent[style*="display: block"] .subtitle{
+        margin-top:4px;
+        font-size:10px;
+        letter-spacing:0;
+    }
+
+    #siteContent[style*="display: block"] .version-indicator{
+        font-size:10px;
+        padding:3px 5px;
+        margin-top:4px;
+    }
+
+    #siteContent[style*="display: block"] .status-box{
+        display:none;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        padding:8px;
+        margin-bottom:9px;
+        font-size:12px;
+        line-height:1.25;
+    }
+
+    #siteContent[style*="display: block"] .toolbar{
+        align-items:stretch;
+        gap:8px;
+        margin-bottom:8px;
+    }
+
+    #siteContent[style*="display: block"] .tabs{
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:5px;
+    }
+
+    #siteContent[style*="display: block"] .tab{
+        text-align:center;
+        font-size:12px;
+        padding:9px 4px;
+        min-width:0;
+    }
+
+    #siteContent[style*="display: block"] .sort-select{
+        width:100%;
+        padding:8px;
+        font-size:13px;
+    }
+
+    #siteContent[style*="display: block"] .search-area{
+        min-width:0;
+        width:100%;
+        flex:auto;
+    }
+
+    #siteContent[style*="display: block"] .search{
+        box-sizing:border-box;
+        padding:9px 36px;
+        font-size:14px;
+    }
+
+    #siteContent[style*="display: block"] .search-icon{
+        left:10px;
+        font-size:16px;
+    }
+
+    #siteContent[style*="display: block"] .game-info{
+        gap:8px;
+        font-size:10px;
+        margin-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .game-info > div:last-child{
+        text-align:right;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        flex:1 1 0;
+        width:100%;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:9px;
+        padding:5px 4px 10px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file.port-card{
+        min-height:0;
+        padding:5px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-capsule{
+        aspect-ratio:3 / 4;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        flex:0 0 auto;
+        width:100%;
+        max-height:clamp(110px,22dvh,175px);
+        overflow:auto;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        display:grid;
+        grid-template-columns:78px minmax(0,1fr);
+        min-height:0;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art-fallback{
+        min-height:0;
+        height:100%;
+        max-height:150px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        font-size:15px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        font-size:11px;
+        line-height:1.25;
+        margin:4px 0;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-tags{
+        margin-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-play,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+        padding:6px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        margin-top:7px;
+        padding-top:7px;
+        gap:3px;
+        font-size:9px;
+        line-height:1.15;
+    }
+
+    #siteContent[style*="display: block"] .footer > div{
+        max-width:100%;
+    }
+}
+
+@media(max-width:380px){
+    #siteContent[style*="display: block"] .subtitle{
+        max-width:185px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        max-height:110px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:64px minmax(0,1fr);
+    }
+}
+
+@media(hover:none){
+    #siteContent[style*="display: block"] .file:hover{
+        transform:none;
+    }
+
+    #siteContent[style*="display: block"] .tab,
+    #siteContent[style*="display: block"] .folder-button,
+    #siteContent[style*="display: block"] .folder-action,
+    #siteContent[style*="display: block"] .logout-button{
+        min-height:36px;
+    }
+}
+
 </style>
 </head>
 
