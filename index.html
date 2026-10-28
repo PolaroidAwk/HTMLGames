@@ -1708,6 +1708,8 @@ body::after{
             </strong>
         </div>
 
+        <div id="serviceStatus" role="status" aria-live="polite"></div>
+
         <form class="auth-form" id="authForm">
 
             <label class="auth-label">
@@ -1855,6 +1857,8 @@ body::after{
                 </div>
 
             </header>
+
+            <div id="siteServiceStatus" style="display:none;margin-bottom:16px;padding:10px 12px;border:1px solid #8a6320;background:rgba(255,190,40,.07);color:#ffd84a;font-size:18px;line-height:1.2"></div>
 
             <div class="terminal">
 
@@ -2515,6 +2519,8 @@ const supabaseClient =
 ========================================================= */
 
 let usuarioAtual = null;
+let modoConvidadoLocal = false;
+let supabaseDisponivel = true;
 
 let avatarDraft = {
     type:"emoji",
@@ -2781,8 +2787,8 @@ function traduzirErro(error){
     if(msg.includes("rate limit"))
         return "MUITAS TENTATIVAS. AGUARDE UM POUCO.";
 
-    if(msg.includes("failed to fetch"))
-        return "NÃO FOI POSSÍVEL CONECTAR AO SUPABASE.";
+    if(msg.includes("failed to fetch") || msg.includes("timeout") || msg.includes("network"))
+        return "SUPABASE INDISPONÍVEL OU DESATIVADO. USE O MODO CONVIDADO LOCAL.";
 
     if(msg.includes("row-level security"))
         return "O SUPABASE BLOQUEOU ESTA OPERAÇÃO.";
@@ -2994,56 +3000,75 @@ guestButton.addEventListener(
 );
 
 
-async function entrarComoConvidado(){
-
-    guestButton.disabled = true;
-
-    guestButton.textContent =
-        "ENTRANDO...";
-
-    try{
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.signInAnonymously();
-
-        if(error)
-            throw error;
-
-        usuarioAtual =
-            data.user;
-
-        await inicializarPerfil(
-            usuarioAtual
-        );
-
-        carregarDadosFavoritosLocais();
-
-        mostrarSite();
-
-    }catch(error){
-
-        console.error(
-            "GUEST ERROR:",
-            error
-        );
-
-        mostrarMensagemAuth(
-            traduzirErro(error),
-            "error"
-        );
-
-    }finally{
-
-        guestButton.disabled = false;
-
-        guestButton.textContent =
-            "CONTINUAR SEM PERFIL";
-    }
+function atualizarStatusSupabase(disponivel, detalhe=""){
+    supabaseDisponivel = disponivel;
+    const authStatus = document.getElementById("serviceStatus");
+    const siteStatus = document.getElementById("siteServiceStatus");
+    const texto = disponivel
+        ? "SUPABASE ONLINE. CONTAS E SINCRONIZAÇÃO DISPONÍVEIS."
+        : "⚠ SUPABASE INDISPONÍVEL/DESATIVADO. O MODO CONVIDADO LOCAL FUNCIONA, MAS CONTAS E DADOS NA NUVEM NÃO ESTÃO DISPONÍVEIS." +
+          (detalhe ? " " + detalhe : "");
+    authStatus.textContent = texto;
+    authStatus.classList.toggle("visible", !disponivel);
+    siteStatus.textContent = texto;
+    siteStatus.style.display = disponivel ? "none" : "block";
 }
 
+function obterPerfilConvidadoLocal(){
+    try { return JSON.parse(localStorage.getItem("htmlgames_guest_profile") || "{}"); }
+    catch(error) { return {}; }
+}
+
+function entrarConvidadoLocal(){
+    modoConvidadoLocal = true;
+    const salvo = obterPerfilConvidadoLocal();
+    usuarioAtual = {
+        id:"local-guest", is_anonymous:true, email:null,
+        user_metadata:{
+            display_name:salvo.display_name || "GUEST",
+            avatar_type:salvo.avatar_type || "emoji",
+            avatar_face:salvo.avatar_face || "😀",
+            avatar_accessory:salvo.avatar_accessory || "",
+            avatar_extra:salvo.avatar_extra || "",
+            avatar_url:salvo.avatar_url || null
+        }
+    };
+    carregarDadosFavoritosLocais();
+    mostrarSite();
+}
+
+async function entrarComoConvidado(){
+    guestButton.disabled = true;
+    guestButton.textContent = "VERIFICANDO SERVIÇO...";
+    try {
+        const {data,error} = await Promise.race([
+            supabaseClient.auth.signInAnonymously(),
+            new Promise((_,reject)=>setTimeout(()=>reject(new Error("SUPABASE_TIMEOUT")),7000))
+        ]);
+        if(error) throw error;
+        modoConvidadoLocal = false;
+        usuarioAtual = data.user;
+        try { await inicializarPerfil(usuarioAtual); }
+        catch(profileError) {
+            console.warn("Falha ao inicializar perfil remoto:",profileError);
+            entrarConvidadoLocal();
+            atualizarStatusSupabase(false,"O serviço respondeu, mas não permitiu inicializar o perfil.");
+            mostrarMensagemAuth("SUPABASE COM PROBLEMAS. ENTRANDO EM MODO CONVIDADO LOCAL.","success");
+            return;
+        }
+        carregarDadosFavoritosLocais();
+        atualizarStatusSupabase(true);
+        mostrarSite();
+    } catch(error) {
+        console.warn("SUPABASE indisponível; usando convidado local:",error);
+        atualizarStatusSupabase(false,error.message==="SUPABASE_TIMEOUT"?"TEMPO DE RESPOSTA ESGOTADO.":"");
+        entrarConvidadoLocal();
+        mostrarMensagemAuth("SUPABASE INDISPONÍVEL. VOCÊ ENTROU EM MODO LOCAL; PERFIL E FAVORITOS FICAM SALVOS NESTE NAVEGADOR.","success");
+    } finally {
+        guestButton.disabled = false;
+        guestButton.textContent = "CONTINUAR SEM PERFIL";
+    }
+}
 
 /* =========================================================
    PERFIL
@@ -3051,7 +3076,7 @@ async function entrarComoConvidado(){
 
 async function inicializarPerfil(user){
 
-    if(!user)
+    if(!user || modoConvidadoLocal)
         return;
 
     const metadata =
@@ -3717,6 +3742,15 @@ async function enviarFotoAvatar(file){
 }
 
 
+function arquivoParaDataURL(arquivo){
+    return new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(reader.result);
+        reader.onerror=()=>reject(new Error("NÃO FOI POSSÍVEL LER A FOTO."));
+        reader.readAsDataURL(arquivo);
+    });
+}
+
 /* =========================================================
    SALVAR PERFIL
 ========================================================= */
@@ -3787,6 +3821,28 @@ async function salvarPerfil(){
         "SALVANDO...";
 
     try{
+
+        if(modoConvidadoLocal){
+            const perfilLocal = {
+                display_name:nome,
+                avatar_type:avatarDraft.type,
+                avatar_face:avatarDraft.face,
+                avatar_accessory:avatarDraft.accessory,
+                avatar_extra:avatarDraft.extra,
+                avatar_url:avatarDraft.type === "photo" && avatarDraft.file
+                    ? await arquivoParaDataURL(avatarDraft.file)
+                    : (avatarDraft.type === "photo" ? avatarDraft.url : null)
+            };
+            localStorage.setItem("htmlgames_guest_profile",JSON.stringify(perfilLocal));
+            usuarioAtual.user_metadata = perfilLocal;
+            avatarDraft.file = null;
+            avatarFileInput.value = "";
+            avatarFileName.textContent = "NENHUMA FOTO SELECIONADA.";
+            atualizarInterfacePerfil();
+            mostrarMensagemPerfil("PERFIL SALVO NESTE NAVEGADOR.","success");
+            playSound("fav");
+            return;
+        }
 
         let avatarUrl =
             avatarDraft.url;
@@ -6130,11 +6186,10 @@ function mostrarSite(){
 
 async function fazerLogout(){
 
-    try{
-
-        await supabaseClient.auth.signOut();
-
-    }catch(error){}
+    if(!modoConvidadoLocal){
+        try{ await supabaseClient.auth.signOut(); }catch(error){}
+    }
+    modoConvidadoLocal = false;
 
     usuarioAtual =
         null;
@@ -6167,38 +6222,22 @@ async function fazerLogout(){
 window.addEventListener(
     "load",
     async () => {
-
-        try{
-
-            const {
-                data
-            } =
-                await supabaseClient.auth.getSession();
-
-            if(
-                data &&
-                data.session &&
-                data.session.user
-            ){
-
-                usuarioAtual =
-                    data.session.user;
-
-                await inicializarPerfil(
-                    usuarioAtual
-                );
-
+        try {
+            const {data} = await Promise.race([
+                supabaseClient.auth.getSession(),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error("SUPABASE_TIMEOUT")),7000))
+            ]);
+            atualizarStatusSupabase(true);
+            if(data && data.session && data.session.user){
+                usuarioAtual = data.session.user;
+                modoConvidadoLocal = !!usuarioAtual.is_anonymous;
+                await inicializarPerfil(usuarioAtual);
                 await carregarDadosFavoritos();
-
                 mostrarSite();
             }
-
-        }catch(error){
-
-            console.error(
-                "SESSION ERROR:",
-                error
-            );
+        } catch(error) {
+            console.warn("SUPABASE indisponível:",error);
+            atualizarStatusSupabase(false,error.message==="SUPABASE_TIMEOUT"?"TEMPO DE RESPOSTA ESGOTADO.":"");
         }
     }
 );
