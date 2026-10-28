@@ -1775,6 +1775,11 @@ body::after{
     font-size:9px;
 }
 #versionHash{color:var(--green-bright);}
+.auth-version{
+    width:max-content;
+    margin:22px auto 0;
+    justify-content:center;
+}
 @media(max-width:600px){
     .version-indicator{font-size:13px;margin-top:5px;}
 }
@@ -1881,6 +1886,10 @@ body::after{
             id="authMessage"
         ></div>
 
+        <div class="version-indicator auth-version" title="Versão do site">
+            VERSION <span class="site-version">v1.0.1</span>
+        </div>
+
     </div>
 
 </div>
@@ -1915,7 +1924,7 @@ body::after{
                         </div>
 
                         <div class="version-indicator" title="Versão do site">
-                            VERSION <span id="versionHash">v1.0.1</span>
+                            VERSION <span class="site-version">v1.0.1</span>
                         </div>
 
                     </div>
@@ -2604,6 +2613,11 @@ body::after{
 
 
 <script>
+
+const SITE_VERSION = "v1.0.1";
+document.querySelectorAll(".site-version").forEach(elemento => {
+    elemento.textContent = SITE_VERSION;
+});
 
 /* =========================================================
    SUPABASE
