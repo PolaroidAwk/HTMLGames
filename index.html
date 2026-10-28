@@ -1723,6 +1723,37 @@ body::after{
         flex:1;
     }
 }
+
+/* Painel de detalhes compacto e fixo: a lista rola, o painel não */
+.ports-browser.active{grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start;}
+.ports-browser.active .file-list{column-gap:20px;row-gap:22px;}
+.ports-browser.active .port-details{position:sticky;top:12px;height:auto;max-height:none;min-height:0;overflow:hidden;align-self:start;border-radius:6px;}
+.ports-browser.active .port-detail-layout{display:flex;flex-direction:column;min-height:0;}
+.ports-browser.active .port-detail-art,.ports-browser.active .port-detail-art-fallback{width:100%;aspect-ratio:16 / 9;height:auto;max-height:150px;object-fit:cover;}
+.ports-browser.active .port-detail-art-fallback{font-size:54px;}
+.ports-browser.active .port-detail-body{padding:16px;}
+.ports-browser.active .port-detail-name{font-size:24px;}
+.ports-browser.active .port-detail-description{font-size:15px;line-height:1.4;margin:9px 0 12px;}
+.ports-browser.active .port-detail-tags{margin-bottom:12px;}
+.ports-browser.active .port-detail-play{padding:10px 12px;}
+.ports-browser.active .port-detail-fav{padding:8px;margin-top:7px;}
+.ports-browser.active .file.port-card{cursor:pointer;}
+.ports-browser.active .file.port-card .port-capsule img{object-fit:cover;}
+.ports-browser.active.gemini-mode .file.port-card .capsule-fallback{font-size:clamp(34px,4vw,58px);}
+@media(max-width:850px){
+    .ports-browser.active{grid-template-columns:minmax(0,1fr);}
+    .ports-browser.active .port-details{position:static;max-height:none;overflow:hidden;}
+    .ports-browser.active .port-detail-layout{display:grid;grid-template-columns:minmax(110px,28%) minmax(0,1fr);}
+    .ports-browser.active .port-detail-art,.ports-browser.active .port-detail-art-fallback{height:100%;min-height:140px;max-height:none;aspect-ratio:auto;}
+}
+@media(max-width:600px){
+    .ports-browser.active .file-list{grid-template-columns:repeat(2,minmax(0,1fr)) !important;column-gap:14px;row-gap:18px;}
+    .ports-browser.active .port-detail-layout{grid-template-columns:95px minmax(0,1fr);}
+    .ports-browser.active .port-detail-body{padding:10px;}
+    .ports-browser.active .port-detail-name{font-size:18px;}
+    .ports-browser.active .port-detail-description{font-size:12px;}
+}
+
 </style>
 </head>
 
@@ -5673,7 +5704,11 @@ function renderizarJogos(){
         "";
 
     const portsBrowser = document.getElementById("portsBrowser");
-    if(portsBrowser) portsBrowser.classList.toggle("active", abaAtual === "ports");
+    if(portsBrowser){
+        const modoCapsules = abaAtual === "ports" || abaAtual === "gemini";
+        portsBrowser.classList.toggle("active", modoCapsules);
+        portsBrowser.classList.toggle("gemini-mode", abaAtual === "gemini");
+    }
 
     [
         ["tabTodos", "todos"],
@@ -5694,8 +5729,8 @@ function renderizarJogos(){
                         "div"
                     );
 
-                div.className =
-                    "file" + (jogo.categoria === "ports" ? " port-card" : "");
+                const usaCapsule = jogo.categoria === "ports" || jogo.categoria === "gemini";
+                div.className = "file" + (usaCapsule ? " port-card" : "");
 
                 div.dataset.id =
                     jogo.id;
@@ -5734,7 +5769,7 @@ function renderizarJogos(){
                     `;
                 }
 
-                const capsuleHtml = jogo.categoria === "ports" ? `
+                const capsuleHtml = usaCapsule ? `
                     <div class="port-capsule">
                         <img alt="" loading="lazy" data-capsule="${jogo.capsula}" hidden>
                         <span class="capsule-fallback">${jogo.icone}</span>
@@ -5779,7 +5814,7 @@ function renderizarJogos(){
 
                 const capsuleImage = div.querySelector("img[data-capsule]");
                 if(capsuleImage){
-                    const extensions = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+                    const extensions = [".gif", ".webp", ".png", ".jpg", ".jpeg", ".avif"];
                     const baseUrl = "https://raw.githubusercontent.com/PolaroidAwk/HTMLGames/main/arts/capsules/";
                     let extensionIndex = 0;
                     const capsuleFallback = capsuleImage.parentElement.querySelector(".capsule-fallback");
@@ -5811,7 +5846,7 @@ function renderizarJogos(){
                 div.addEventListener(
                     "click",
                     () => {
-                        if(jogo.categoria === "ports" && abaAtual === "ports"){
+                        if((jogo.categoria === "ports" && abaAtual === "ports") || (jogo.categoria === "gemini" && abaAtual === "gemini")){
                             selecionarPort(jogo);
                             files.forEach(card => card.classList.toggle("selected", card.dataset.id === jogo.id));
                         }else{
@@ -5869,6 +5904,7 @@ function selecionarPort(jogo){
     const panel = document.getElementById("portDetails");
     if(!panel || !jogo) return;
 
+    const categoriaPainel = jogo.categoria === "gemini" ? "GEMINI" : "PORTS";
     const tags = (jogo.tagsCustomizadas || []).map(tag =>
         `<span class="tag-custom" style="border:1px solid ${tag.color};color:${tag.color};background:${tag.color}15;">${tag.text}</span>`
     ).join("");
@@ -5877,7 +5913,7 @@ function selecionarPort(jogo){
         <div class="port-detail-layout">
             <div class="port-detail-art-fallback">${jogo.icone}</div>
             <div class="port-detail-body">
-                <div class="port-detail-kicker">HTMLGAMES / PORTS</div>
+                <div class="port-detail-kicker">HTMLGAMES / ${categoriaPainel}</div>
                 <div class="port-detail-name">${jogo.nome}</div>
                 <div class="port-detail-description">${jogo.desc}</div>
                 <div class="port-detail-tags">${tags}${jogo.externo ? '<span class="external-tag">↗ EXTERNO</span>' : ''}</div>
@@ -5890,7 +5926,7 @@ function selecionarPort(jogo){
     const detailImg = new Image();
     detailImg.className = "port-detail-art";
     detailImg.alt = "";
-    const extensions = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+    const extensions = [".gif", ".webp", ".png", ".jpg", ".jpeg", ".avif"];
     const baseUrl = "https://raw.githubusercontent.com/PolaroidAwk/HTMLGames/main/arts/capsules/";
     let extensionIndex = 0;
     detailImg.onerror = () => {
