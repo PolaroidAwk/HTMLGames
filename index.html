@@ -2012,6 +2012,181 @@ body{
     }
 }
 
+
+
+/* Painel mais largo, quatro capas por linha e detalhes sem perder os botões */
+@media (min-width: 851px){
+    #siteContent[style*="display: block"] .screen{
+        width:100%;
+        max-width:none;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active{
+        grid-template-columns:minmax(0,1fr) minmax(410px,32vw);
+        gap:clamp(16px,1.5vw,26px);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+        column-gap:clamp(10px,1vw,18px);
+        row-gap:clamp(12px,1.4vh,20px);
+    }
+}
+
+/* O painel de detalhes ocupa a altura disponível; só a descrição rola */
+#siteContent[style*="display: block"] .ports-browser.active .port-details{
+    min-height:0;
+    height:100%;
+    max-height:none;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+    min-height:0;
+    height:100%;
+    display:grid;
+    grid-template-columns:minmax(120px,36%) minmax(0,1fr);
+    align-items:stretch;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-art,
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-art-fallback{
+    width:100%;
+    height:100%;
+    min-height:0;
+    max-height:none;
+    aspect-ratio:auto;
+    object-fit:contain;
+    align-self:stretch;
+    box-sizing:border-box;
+    border-bottom:0;
+    border-right:1px solid #174b30;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+    min-width:0;
+    min-height:0;
+    height:100%;
+    padding:clamp(14px,1.3vw,22px);
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+    flex:0 0 auto;
+    overflow-wrap:anywhere;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+    flex:1 1 auto;
+    min-height:50px;
+    max-height:none;
+    margin:10px 0 12px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+    overflow-wrap:anywhere;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-tags{
+    flex:0 0 auto;
+    max-height:72px;
+    overflow-y:auto;
+    margin-bottom:10px;
+    overscroll-behavior:contain;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-play,
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+    flex:0 0 auto;
+    width:100%;
+    box-sizing:border-box;
+    line-height:1.25;
+    white-space:normal;
+    overflow-wrap:anywhere;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-play{
+    padding:12px 10px;
+    font-size:clamp(15px,1.2vw,19px);
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+    margin-top:7px;
+    padding:10px 8px;
+    font-size:clamp(13px,1.1vw,17px);
+}
+
+@media (max-width:850px){
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        height:auto;
+        max-height:42%;
+        min-height:230px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:minmax(90px,28%) minmax(0,1fr);
+        min-height:230px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art-fallback{
+        height:100%;
+        max-height:none;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        height:100%;
+        padding:12px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        min-height:35px;
+    }
+}
+
+@media (max-width:600px){
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        max-height:45%;
+        min-height:210px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:82px minmax(0,1fr);
+        min-height:210px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        padding:9px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        font-size:17px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        font-size:12px;
+        line-height:1.4;
+        margin:6px 0 8px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-play{
+        padding:9px 7px;
+        font-size:13px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+        padding:7px 6px;
+        font-size:11px;
+    }
+}
+
 </style>
 </head>
 
