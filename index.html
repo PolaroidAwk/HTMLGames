@@ -2614,10 +2614,31 @@ body::after{
 
 <script>
 
-const SITE_VERSION = "v1.0.1";
+const SITE_VERSION_FALLBACK = "v1.0.1";
+
 document.querySelectorAll(".site-version").forEach(elemento => {
-    elemento.textContent = SITE_VERSION;
+    elemento.textContent = SITE_VERSION_FALLBACK;
 });
+
+async function atualizarVersaoSite(){
+    try{
+        const resposta = await fetch("./version.json?nocache=" + Date.now(), {
+            cache: "no-store"
+        });
+        if(!resposta.ok) throw new Error("Não foi possível carregar version.json");
+
+        const dados = await resposta.json();
+        if(!dados.version) throw new Error("Versão não encontrada");
+
+        document.querySelectorAll(".site-version").forEach(elemento => {
+            elemento.textContent = "v" + dados.version;
+        });
+    }catch(error){
+        console.warn("Usando versão padrão do site:", error);
+    }
+}
+
+atualizarVersaoSite();
 
 /* =========================================================
    SUPABASE
