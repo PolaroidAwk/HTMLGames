@@ -2450,6 +2450,159 @@ body{
     }
 }
 
+
+
+/* Mobile refinado: menos espaço nos controles, mais área útil para os jogos */
+@media (max-width:600px){
+    #siteContent[style*="display: block"] .monitor{
+        padding:4px 5px 5px;
+    }
+
+    #siteContent[style*="display: block"] .screen{
+        padding:10px 9px 8px;
+    }
+
+    /* Desce o conteúdo e evita um cabeçalho alto demais */
+    #siteContent[style*="display: block"] .header{
+        margin-top:clamp(8px,2.2vh,18px);
+        margin-bottom:9px;
+        padding-bottom:8px;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        margin-bottom:5px;
+        padding:5px 8px;
+        font-size:10px;
+        line-height:1.25;
+    }
+
+    /* Busca e ordenação ficam numa única linha compacta */
+    #siteContent[style*="display: block"] .toolbar{
+        flex-direction:column;
+        gap:5px;
+        margin-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .tabs{
+        gap:5px;
+        padding:1px 1px 4px;
+    }
+
+    #siteContent[style*="display: block"] .tab{
+        min-height:31px;
+        padding:6px 9px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] .search-area{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:5px;
+    }
+
+    #siteContent[style*="display: block"] .search{
+        min-height:33px;
+        height:33px;
+        padding:6px 9px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] #sortSelect,
+    #siteContent[style*="display: block"] .sort-select{
+        min-height:33px;
+        height:33px;
+        max-width:115px;
+        padding:4px 6px;
+        font-size:11px;
+    }
+
+    #siteContent[style*="display: block"] .favorites-panel{
+        max-height:52px;
+        margin-bottom:4px;
+    }
+
+    #siteContent[style*="display: block"] .game-info{
+        margin-bottom:4px;
+        font-size:10px;
+    }
+
+    /* Deixa a lista ser a área principal da tela */
+    #siteContent[style*="display: block"] .ports-browser.active{
+        gap:7px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        min-height:0;
+        gap:8px;
+        padding:2px 3px 8px 1px;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file.port-card{
+        aspect-ratio:3 / 4;
+        border-radius:5px;
+    }
+
+    /* Painel de detalhes mais baixo para sobrar espaço às capas */
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        flex-basis:clamp(135px,23vh,185px);
+        max-height:30%;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:clamp(58px,18vw,78px) minmax(0,1fr);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        padding:7px 8px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-kicker{
+        font-size:8px;
+        margin-bottom:3px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        font-size:14px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        min-height:18px;
+        margin:4px 0;
+        font-size:10px;
+        line-height:1.3;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-tags{
+        max-height:23px;
+        margin-bottom:3px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-play,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+        min-height:27px;
+        margin-top:3px;
+        padding:5px 4px;
+        font-size:10px;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        margin-top:4px;
+        padding-top:4px;
+        font-size:9px;
+    }
+}
+
+@media (max-width:380px){
+    #siteContent[style*="display: block"] .ports-browser.active .file.port-card{
+        aspect-ratio:2 / 3;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        flex-basis:clamp(128px,21vh,165px);
+    }
+}
+
 </style>
 </head>
 
