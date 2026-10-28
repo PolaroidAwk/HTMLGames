@@ -1914,8 +1914,8 @@ body::after{
                             POLAROIDO // DIGITAL GAME ARCHIVE
                         </div>
 
-                        <div class="version-indicator" title="Identificador automático do último commit da versão publicada">
-                            BUILD <span id="versionHash">CARREGANDO...</span>
+                        <div class="version-indicator" title="Versão do site">
+                            VERSION <span id="versionHash">v1.0.1</span>
                         </div>
 
                     </div>
@@ -6397,35 +6397,10 @@ document.addEventListener(
 
 /* =========================================================
    VERSÃO DO SITE
-   Usa o SHA curto do último commit da branch main.
-   Qualquer commit novo altera automaticamente este indicador.
+   Atualize o número manualmente a cada nova publicação.
 ========================================================= */
 
-async function atualizarIndicadorVersao(){
-    const elemento = document.getElementById("versionHash");
-    if(!elemento) return;
 
-    try{
-        const resposta = await fetch(
-            "https://api.github.com/repos/PolaroidAwk/HTMLGames/commits/main",
-            {cache:"no-store", headers:{"Accept":"application/vnd.github+json"}}
-        );
-        if(!resposta.ok) throw new Error("GitHub API indisponível");
-
-        const commit = await resposta.json();
-        if(commit && commit.sha){
-            elemento.textContent = commit.sha.slice(0,7).toUpperCase();
-            elemento.title = "Commit completo: " + commit.sha;
-        }else{
-            throw new Error("SHA não encontrado");
-        }
-    }catch(error){
-        elemento.textContent = "OFFLINE";
-        elemento.title = "Não foi possível consultar o commit mais recente.";
-    }
-}
-
-atualizarIndicadorVersao();
 
 /* =========================================================
    MOSTRAR SITE
