@@ -529,6 +529,19 @@ body::after{
     background:rgba(57,255,136,.1);
 }
 
+.port-filter-wrap{position:relative;display:inline-flex;}
+.port-filter-wrap>.tab{height:100%;white-space:nowrap;}
+.menu-chevron{font-size:.75em;margin-left:5px;opacity:.8;}
+.port-filter-menu{position:absolute;top:calc(100% + 7px);left:0;z-index:1000;width:245px;max-height:min(70vh,520px);overflow-y:auto;padding:7px;border:1px solid var(--green);background:rgba(2,12,7,.98);box-shadow:0 12px 35px rgba(0,0,0,.65),0 0 18px rgba(57,255,136,.12);}
+.port-filter-menu[hidden]{display:none!important;}
+.port-filter-option{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid transparent;background:transparent;color:#63b981;text-align:left;font-family:var(--font);font-size:19px;cursor:pointer;}
+.port-filter-option:hover,.port-filter-option.active{border-color:#176b3b;background:rgba(57,255,136,.09);color:var(--green);}
+.port-filter-option span:first-child{font-size:22px;}
+.port-filter-option strong{display:block;font-weight:normal;color:var(--green);}
+.port-filter-option small{display:block;color:#43885a;font-size:14px;line-height:1.15;}
+.port-filter-heading{padding:9px 10px 4px;color:#287b45;font-size:14px;letter-spacing:2px;border-top:1px solid rgba(57,255,136,.12);margin-top:4px;}
+.gemini-tab{margin-left:2px;opacity:.72;}
+.gemini-tab:hover,.gemini-tab.active{opacity:1;}
 .sort-select{
     border:1px solid var(--green-dark);
     background:rgba(0,20,10,.55);
@@ -1518,7 +1531,7 @@ body::after{
 .ports-browser.active .file.port-card .port-capsule{position:absolute;inset:0;width:100%;height:100%;border:0;background:linear-gradient(145deg,#10271a,#030604);font-size:34px;}
 .port-capsule img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:#030704;}
 .port-capsule img[hidden]{display:none!important;}
-.port-capsule .capsule-fallback{font-size:36px;}
+ .port-capsule .capsule-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:36px;line-height:1;}
 .ports-browser.active .file.port-card .game-content,.ports-browser.active .file.port-card .arrow,.ports-browser.active .file.port-card .icon{display:none;}
 .port-details{min-width:0;min-height:300px;max-height:600px;overflow-y:auto;position:relative;border:1px solid #174b30;background:linear-gradient(155deg,rgba(8,28,17,.97),rgba(2,8,4,.98));box-shadow:inset 0 0 35px rgba(57,255,136,.035);}
 .port-details-empty{min-height:300px;height:100%;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#398d59;}
@@ -2817,49 +2830,33 @@ body{
 
                 <div class="tabs">
 
-                    <button
-                        class="tab active"
-                        onclick="mudarAba('todos')"
-                        id="tabTodos"
-                        type="button"
-                    >
-                        TODOS
-                    </button>
+                    <div class="port-filter-wrap">
+                        <button class="tab active" onclick="alternarMenuPorts()" id="tabPorts" type="button" aria-expanded="false" aria-controls="portFilterMenu">
+                            PORTS <span class="menu-chevron">▾</span>
+                        </button>
+                        <div class="port-filter-menu" id="portFilterMenu" hidden>
+                            <button class="port-filter-option active" type="button" data-port-filter="all" onclick="selecionarFiltroPorts('all')">
+                                <span>▦</span><span><strong>Todos os ports</strong><small>Biblioteca completa de jogos portados</small></span>
+                            </button>
+                            <div class="port-filter-heading">GÊNEROS</div>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:terror" onclick="selecionarFiltroPorts('genre:terror')">Terror</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:acao" onclick="selecionarFiltroPorts('genre:acao')">Ação</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:plataforma" onclick="selecionarFiltroPorts('genre:plataforma')">Plataforma</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:roguelike" onclick="selecionarFiltroPorts('genre:roguelike')">Roguelike / Cartas</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:fps" onclick="selecionarFiltroPorts('genre:fps')">FPS</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:rpg" onclick="selecionarFiltroPorts('genre:rpg')">RPG</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:puzzle" onclick="selecionarFiltroPorts('genre:puzzle')">Puzzle</button>
+                            <div class="port-filter-heading">SÉRIES</div>
+                            <button class="port-filter-option" type="button" data-port-filter="series:fnaf" onclick="selecionarFiltroPorts('series:fnaf')">Five Nights at Freddy's</button>
+                            <button class="port-filter-option" type="button" data-port-filter="series:half-life" onclick="selecionarFiltroPorts('series:half-life')">Half-Life</button>
+                        </div>
+                    </div>
 
-                    <button
-                        class="tab"
-                        onclick="mudarAba('gemini')"
-                        id="tabGemini"
-                        type="button"
-                    >
-                        GEMINI
-                    </button>
+                    <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos" type="button">★ FAVORITOS</button>
 
-                    <button
-                        class="tab"
-                        onclick="mudarAba('ports')"
-                        id="tabPorts"
-                        type="button"
-                    >
-                        PORTS
-                    </button>
+                    <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">SUPORTE</a>
 
-                    <button
-                        class="tab"
-                        onclick="mudarAba('favoritos')"
-                        id="tabFavoritos"
-                        type="button"
-                    >
-                        ★ FAVORITOS
-                    </button>
-
-                    <a
-                        class="tab"
-                        href="https://forms.gle/boRAUm1VEiJNdS5DA"
-                        target="_blank"
-                    >
-                        SUPORTE
-                    </a>
+                    <button class="tab gemini-tab" onclick="mudarAba('gemini')" id="tabGemini" type="button">GEMINI</button>
 
                 </div>
 
@@ -6641,6 +6638,95 @@ function jogoPertenceAPasta(
 }
 
 
+const PORT_GENRES = {
+    "THE BINDING OF ISAAC": ["roguelike", "acao"],
+    "BALATRO": ["roguelike"],
+    "BUCKSHOT ROULETTE": ["terror"],
+    "HOLLOW KNIGHT": ["acao", "plataforma"],
+    "CELESTE CLASSIC": ["plataforma"],
+    "ULTRAKILL": ["acao", "fps"],
+    "HALF LIFE": ["acao", "fps"],
+    "HALF LIFE 2": ["acao", "fps"],
+    "UNDERTALE [SANS]": ["rpg"],
+    "BENDY": ["terror"],
+    "HOTLINE MIAMI": ["acao"],
+    "CUPHEAD": ["acao", "plataforma"]
+};
+const PORT_SERIES = {
+    "FIVE NIGHTS AT FREDDY'S 1": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S 2": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S 3": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S 4": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S: SISTER LOCATION": "fnaf",
+    "FREDDY FAZBEAR'S PIZZERIA SIMULATOR": "fnaf",
+    "ULTIMATE CUSTOM NIGHT": "fnaf",
+    "FNAF WORLD": "fnaf",
+    "HALF LIFE": "half-life",
+    "HALF LIFE 2": "half-life"
+};
+let filtroPortsAtual = "all";
+
+function alternarMenuPorts(){
+    const menu = document.getElementById("portFilterMenu");
+    const button = document.getElementById("tabPorts");
+    if(!menu || !button) return;
+    const abrir = menu.hidden;
+    menu.hidden = !abrir;
+    button.setAttribute("aria-expanded", String(abrir));
+    if(abrir){
+        const fecharFora = event => {
+            if(!event.target.closest(".port-filter-wrap")){
+                menu.hidden = true;
+                button.setAttribute("aria-expanded", "false");
+                document.removeEventListener("click", fecharFora);
+            }
+        };
+        setTimeout(() => document.addEventListener("click", fecharFora), 0);
+    }
+}
+
+function selecionarFiltroPorts(filtro){
+    filtroPortsAtual = filtro;
+    abaAtual = "ports";
+    selectedIndex = 0;
+    const menu = document.getElementById("portFilterMenu");
+    const button = document.getElementById("tabPorts");
+    if(menu) menu.hidden = true;
+    if(button) button.setAttribute("aria-expanded", "false");
+    document.querySelectorAll("[data-port-filter]").forEach(option => {
+        option.classList.toggle("active", option.dataset.portFilter === filtro);
+    });
+    const nomesFiltro = {
+        all: "PORTS",
+        "genre:terror": "PORTS / TERROR",
+        "genre:acao": "PORTS / AÇÃO",
+        "genre:plataforma": "PORTS / PLATAFORMA",
+        "genre:roguelike": "PORTS / ROGUELIKE",
+        "genre:fps": "PORTS / FPS",
+        "genre:rpg": "PORTS / RPG",
+        "genre:puzzle": "PORTS / PUZZLE",
+        "series:fnaf": "PORTS / FIVE NIGHTS AT FREDDY'S",
+        "series:half-life": "PORTS / HALF-LIFE"
+    };
+    const title = document.querySelector(".game-info > div:first-child");
+    if(title) title.dataset.baseLabel = nomesFiltro[filtro] || "PORTS";
+    atualizarPainelFavoritos();
+    renderizarJogos();
+    filtrarJogos();
+}
+
+function jogoPassaFiltroPorts(jogo){
+    if(filtroPortsAtual === "all") return true;
+    if(!jogo || jogo.categoria !== "ports") return false;
+    if(filtroPortsAtual.startsWith("genre:")){
+        return (PORT_GENRES[jogo.nome] || []).includes(filtroPortsAtual.slice(6));
+    }
+    if(filtroPortsAtual.startsWith("series:")){
+        return PORT_SERIES[jogo.nome] === filtroPortsAtual.slice(7);
+    }
+    return true;
+}
+
 function renderizarJogos(){
 
     fileListContainer.innerHTML =
@@ -6654,7 +6740,6 @@ function renderizarJogos(){
     }
 
     [
-        ["tabTodos", "todos"],
         ["tabGemini", "gemini"],
         ["tabPorts", "ports"],
         ["tabFavoritos", "favoritos"]
@@ -6921,52 +7006,18 @@ function abrirJogo(jogo){
 ========================================================= */
 
 function mudarAba(aba){
-
     playSound("click");
-
-    abaAtual =
-        aba;
-
-    selectedIndex =
-        0;
-
-    document
-        .getElementById(
-            "tabTodos"
-        )
-        .classList.toggle(
-            "active",
-            aba === "todos"
-        );
-
-    document
-        .getElementById(
-            "tabGemini"
-        )
-        .classList.toggle(
-            "active",
-            aba === "gemini"
-        );
-
-    document
-        .getElementById(
-            "tabPorts"
-        )
-        .classList.toggle(
-            "active",
-            aba === "ports"
-        );
-
-    document
-        .getElementById(
-            "tabFavoritos"
-        )
-        .classList.toggle(
-            "active",
-            aba === "favoritos"
-        );
-
+    abaAtual = aba;
+    selectedIndex = 0;
+    if(aba === "ports") filtroPortsAtual = "all";
+    if(aba !== "ports"){
+        const menu = document.getElementById("portFilterMenu");
+        if(menu) menu.hidden = true;
+        const button = document.getElementById("tabPorts");
+        if(button) button.setAttribute("aria-expanded", "false");
+    }
     atualizarPainelFavoritos();
+    renderizarJogos();
     filtrarJogos();
 }
 
@@ -7102,14 +7153,13 @@ function filtrarJogos(){
 
             let passaAba = false;
 
-            if(abaAtual === "todos")
-                passaAba = true;
-
-            else if(abaAtual === "gemini")
+            if(abaAtual === "gemini")
                 passaAba = categoria === "gemini";
 
-            else if(abaAtual === "ports")
-                passaAba = categoria === "ports";
+            else if(abaAtual === "ports"){
+                const jogo = listaDeJogosOriginal.find(item => item.id === id);
+                passaAba = categoria === "ports" && jogoPassaFiltroPorts(jogo);
+            }
 
             else if(abaAtual === "favoritos"){
 
@@ -7150,6 +7200,12 @@ function filtrarJogos(){
     gameCount.textContent =
         visiveis +
         (visiveis === 1 ? " JOGO" : " JOGOS");
+
+    const breadcrumb = document.querySelector(".game-info > div:first-child");
+    if(breadcrumb){
+        const label = breadcrumb.dataset.baseLabel || (abaAtual === "gemini" ? "GEMINI" : abaAtual === "favoritos" ? "FAVORITOS" : "PORTS");
+        breadcrumb.firstChild.textContent = label + " / ";
+    }
 
     atualizarSelecaoTeclado();
 }
