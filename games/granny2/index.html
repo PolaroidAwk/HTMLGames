@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en-us"><script>(function(){try{if(window.__nfAudioHook)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC||!window.AudioNode)return;window.__nfAudioHook=true;window.__nfAudioStreams=window.__nfAudioStreams||[];var ensureTap=function(c){if(!c.__nfTap){c.__nfTap=c.createMediaStreamDestination();window.__nfAudioStreams.push(c.__nfTap.stream);}return c.__nfTap;};var oc=window.AudioNode.prototype.connect;window.AudioNode.prototype.connect=function(d){var r=oc.apply(this,arguments);try{var c=this.context;if(c&&d===c.destination)oc.call(this,ensureTap(c));}catch(e){}return r;};var wrap=function(C){var P=function(){var c=Reflect.construct(C,arguments,P);try{ensureTap(c);}catch(e){}return c;};P.prototype=C.prototype;return P;};if(window.AudioContext)window.AudioContext=wrap(window.AudioContext);if(window.webkitAudioContext)window.webkitAudioContext=wrap(window.webkitAudioContext);}catch(e){}})();</script>
+  <head><script>(function(){try{if(window.__nfAudioHook)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC||!window.AudioNode)return;window.__nfAudioHook=true;window.__nfAudioStreams=window.__nfAudioStreams||[];var ensureTap=function(c){if(!c.__nfTap){c.__nfTap=c.createMediaStreamDestination();window.__nfAudioStreams.push(c.__nfTap.stream);}return c.__nfTap;};var oc=window.AudioNode.prototype.connect;window.AudioNode.prototype.connect=function(d){var r=oc.apply(this,arguments);try{var c=this.context;if(c&&d===c.destination)oc.call(this,ensureTap(c));}catch(e){}return r;};var wrap=function(C){var P=function(){var c=Reflect.construct(C,arguments,P);try{ensureTap(c);}catch(e){}return c;};P.prototype=C.prototype;return P;};if(window.AudioContext)window.AudioContext=wrap(window.AudioContext);if(window.webkitAudioContext)window.webkitAudioContext=wrap(window.webkitAudioContext);}catch(e){}})();</script>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>G2</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <script src="TemplateData/UnityProgress.js"></script>
+    <script src="Build/UnityLoader.js"></script>
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #231F20; }
+      .webgl-content { position: fixed; inset: 0; width: 100vw; height: 100vh; margin: 0; transform: none !important; }
+      #unityContainer { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; }
+      #unityContainer canvas { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; display: block !important; }
+      #unityContainer > div:not(canvas) {
+        position: fixed !important;
+        left: 50% !important;
+        right: auto !important; bottom: auto !important;
+        margin: 0 !important;
+      }
+      #unityContainer > div:not(canvas):nth-of-type(1) {
+        top: calc(50% + 30px) !important;
+        transform: translate(-50%, -100%) !important;
+      }
+      #unityContainer > div:not(canvas):nth-of-type(2) {
+        top: calc(50% + 70px) !important;
+        transform: translateX(-50%) !important;
+      }
+      .footer, .fullscreen, .title, .webgl-logo { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <div class="webgl-content">
+      <div id="unityContainer"></div>
+    </div>
+    <script>
+      function fit() {
+        var c = document.querySelector("#unityContainer canvas");
+        if (!c) return;
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        c.style.width = "100vw";
+        c.style.height = "100vh";
+      }
+      var unityInstance = UnityLoader.instantiate("unityContainer", "Build/Granny2WebGLPortByTSBuild2.json", {
+        onProgress: function (instance, progress) {
+          UnityProgress(instance, progress);
+          fit();
+          if (progress === 1) { setTimeout(fit, 0); setTimeout(fit, 200); }
+        }
+      });
+      new MutationObserver(fit).observe(document.getElementById("unityContainer"), { childList: true, subtree: true });
+      window.addEventListener("resize", fit);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Granny: Chapter Two</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #unityContainer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+
+    #unityContainer canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: block !important;
+    }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: #0d0f12;
+      transition: opacity .35s ease;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #game-title {
+      margin-bottom: 22px;
+      font-size: clamp(18px, 3vw, 24px);
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-align: center;
+    }
+
+    #progress-container {
+      width: min(380px, 80vw);
+      height: 8px;
+      background: #252525;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #4caf50;
+      transition: width .15s linear;
+    }
+
+    #loading-status {
+      width: min(380px, 80vw);
+      min-height: 18px;
+      color: #aaa;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    #loading-percent {
+      margin-top: 9px;
+      color: #666;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #loading-error {
+      display: none;
+      width: min(500px, 85vw);
+      margin-top: 20px;
+      color: #ff6666;
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <div id="unityContainer"></div>
+
+  <div id="loading-screen">
+    <div id="game-title">Granny: Chapter Two</div>
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="loading-status">INITIALIZING...</div>
+    <div id="loading-percent">0%</div>
+    <div id="loading-error"></div>
+  </div>
+
+  <script>
+    (() => {
+      const loadingScreen = document.querySelector("#loading-screen");
+      const progressBar = document.querySelector("#progress-bar");
+      const statusText = document.querySelector("#loading-status");
+      const percentText = document.querySelector("#loading-percent");
+      const errorText = document.querySelector("#loading-error");
+
+      const CDN_BASE = "https://cdn.jsdelivr.net/gh/AlexBoops/granny2rip@main";
+      const BUILD_URL = `${CDN_BASE}/Build`;
+      const DATA_BASE_NAME = "Granny2WebGLPortByTSBuild2.data.unityweb";
+
+      function setLoading(percent, message) {
+        const val = Math.max(0, Math.min(100, percent));
+        progressBar.style.width = val + "%";
+        percentText.textContent = Math.round(val) + "%";
+        if (message) statusText.textContent = message;
+      }
+
+      function showError(err) {
+        console.error("[Unity Load Error]:", err);
+        statusText.textContent = "LOADING FAILED";
+        errorText.style.display = "block";
+        errorText.textContent = err && err.message ? err.message : String(err);
+      }
+
+      // Web Audio unlock on user gesture
+      function unlockAudio() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          const tempCtx = new AudioContextClass();
+          if (tempCtx.state === "suspended") tempCtx.resume();
+        }
+      }
+      window.addEventListener("click", unlockAudio, { once: true });
+      window.addEventListener("keydown", unlockAudio, { once: true });
+      window.addEventListener("touchstart", unlockAudio, { once: true });
+
+      // Chunk fetcher with backoff retry
+      async function fetchChunkWithRetry(url, retries = 6, delayMs = 5000) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            const res = await fetch(url);
+            const contentType = res.headers.get("content-type") || "";
+            if (res.ok && !contentType.includes("text/html")) {
+              const buf = await res.arrayBuffer();
+              if (buf.byteLength > 0) return buf;
+            }
+            console.warn(`[jsDelivr Attempt ${attempt}/${retries}] HTTP ${res ? res.status : 'Error'} for ${url}`);
+          } catch (e) {
+            console.warn(`[jsDelivr Attempt ${attempt}/${retries}] Network error for ${url}`);
+          }
+
+          if (attempt < retries) {
+            setLoading(
+              parseFloat(progressBar.style.width) || 0,
+              `RETRYING IN 5s (ATTEMPT ${attempt}/${retries})...`
+            );
+            await new Promise(r => setTimeout(r, delayMs));
+          }
+        }
+        throw new Error(`Failed to download ${url} after ${retries} attempts.`);
+      }
+
+      // Reassemble 1-based, 4-digit padded split chunks (.part0001, .part0002, ...)
+      async function assembleSplitData(startPct, endPct) {
+        const chunks = [];
+        let totalLength = 0;
+        let partIndex = 1;
+
+        while (true) {
+          const partNum = String(partIndex).padStart(4, "0");
+          const chunkUrl = `${BUILD_URL}/${DATA_BASE_NAME}.part${partNum}`;
+
+          try {
+            const checkRes = await fetch(chunkUrl, { method: "HEAD" });
+            if (!checkRes.ok) break;
+          } catch (e) {
+            break;
+          }
+
+          const currentPct = startPct + (partIndex / 16) * (endPct - startPct);
+          setLoading(currentPct, `DOWNLOADING DATA (Part ${partIndex})...`);
+
+          const buf = await fetchChunkWithRetry(chunkUrl);
+          chunks.push(buf);
+          totalLength += buf.byteLength;
+          partIndex++;
+        }
+
+        if (chunks.length === 0) {
+          // Fallback if not split
+          setLoading(startPct, "DOWNLOADING DATA...");
+          const singleBuf = await fetchChunkWithRetry(`${BUILD_URL}/${DATA_BASE_NAME}`);
+          return URL.createObjectURL(new Blob([singleBuf], { type: "application/octet-stream" }));
+        }
+
+        const combined = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+          combined.set(new Uint8Array(chunk), offset);
+          offset += chunk.byteLength;
+        }
+
+        return URL.createObjectURL(new Blob([combined], { type: "application/octet-stream" }));
+      }
+
+      function fitCanvas() {
+        const c = document.querySelector("#unityContainer canvas");
+        if (!c) return;
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        c.style.width = "100vw";
+        c.style.height = "100vh";
+      }
+
+      async function start() {
+        try {
+          setLoading(1, "INITIALIZING...");
+
+          // 1. Download and combine data slices
+          const dataBlobUrl = await assembleSplitData(2, 85);
+
+          // 2. Intercept legacy UnityLoader XHR requests
+          const originalOpen = XMLHttpRequest.prototype.open;
+          XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+            if (typeof url === "string") {
+              if (url.includes(DATA_BASE_NAME)) {
+                url = dataBlobUrl;
+              } else if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("blob:")) {
+                url = `${CDN_BASE}/${url.replace(/^\.?\//, "")}`;
+              }
+            }
+            return originalOpen.call(this, method, url, ...rest);
+          };
+
+          setLoading(86, "LOADING ENGINE LOADER...");
+
+          // 3. Load UnityLoader.js from jsDelivr
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = `${BUILD_URL}/UnityLoader.js`;
+            script.crossOrigin = "anonymous";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`Failed to load ${BUILD_URL}/UnityLoader.js`));
+            document.body.appendChild(script);
+          });
+
+          setLoading(92, "COMPILING ENGINE...");
+
+          // 4. Instantiate legacy Unity WebGL engine
+          const unityInstance = UnityLoader.instantiate(
+            "unityContainer",
+            `${BUILD_URL}/Granny2WebGLPortByTSBuild2.json`,
+            {
+              onProgress: (inst, progress) => {
+                const pct = 92 + (progress * 8);
+                setLoading(pct, progress < 1 ? `STARTING ENGINE... ${Math.round(progress * 100)}%` : "READY");
+                fitCanvas();
+
+                if (progress === 1) {
+                  setTimeout(() => {
+                    loadingScreen.classList.add("hidden");
+                    setTimeout(() => {
+                      loadingScreen.style.display = "none";
+                      fitCanvas();
+                    }, 400);
+                  }, 300);
+                }
+              }
+            }
+          );
+
+          window.unityInstance = unityInstance;
+
+          new MutationObserver(fitCanvas).observe(document.getElementById("unityContainer"), { childList: true, subtree: true });
+          window.addEventListener("resize", fitCanvas);
+
+        } catch (err) {
+          showError(err);
+        }
+      }
+
+      window.addEventListener("keydown", (e) => {
+        if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      start();
+    })();
+  </script>
+</body>
+</html>

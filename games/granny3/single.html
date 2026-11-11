@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>G3</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #unity-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+
+    #unity-canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: block !important;
+      outline: none;
+    }
+
+    #cloak-btn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 1000;
+      padding: 6px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #ddd;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    #cloak-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: #0d0f12;
+      transition: opacity .35s ease;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #game-title {
+      margin-bottom: 22px;
+      font-size: clamp(18px, 3vw, 24px);
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-align: center;
+    }
+
+    #progress-container {
+      width: min(380px, 80vw);
+      height: 8px;
+      background: #252525;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #4caf50;
+      transition: width .15s linear;
+    }
+
+    #loading-status {
+      width: min(380px, 80vw);
+      min-height: 18px;
+      color: #aaa;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    #loading-percent {
+      margin-top: 9px;
+      color: #666;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #loading-error {
+      display: none;
+      width: min(500px, 85vw);
+      margin-top: 20px;
+      color: #ff6666;
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <button id="cloak-btn" title="Open in About:Blank">🌐 About:Blank</button>
+
+  <div id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+  </div>
+
+  <div id="loading-screen">
+    <div id="game-title">G3</div>
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="loading-status">INITIALIZING...</div>
+    <div id="loading-percent">0%</div>
+    <div id="loading-error"></div>
+  </div>
+
+  <script>
+    // About:Blank Cloaker
+    document.getElementById("cloak-btn").addEventListener("click", () => {
+      const win = window.open("about:blank", "_blank");
+      if (!win) {
+        alert("Popup blocked! Allow popups to use the About:Blank cloaker.");
+        return;
+      }
+      win.document.title = "Google Docs";
+      const link = win.document.createElement("link");
+      link.rel = "icon";
+      link.href = "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico";
+      win.document.head.appendChild(link);
+
+      const iframe = win.document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+      iframe.src = window.location.href;
+      win.document.body.style.margin = "0";
+      win.document.body.style.overflow = "hidden";
+      win.document.body.appendChild(iframe);
+
+      window.location.replace("https://classroom.google.com");
+    });
+
+    (() => {
+      const canvas = document.querySelector("#unity-canvas");
+      const loadingScreen = document.querySelector("#loading-screen");
+      const progressBar = document.querySelector("#progress-bar");
+      const statusText = document.querySelector("#loading-status");
+      const percentText = document.querySelector("#loading-percent");
+      const errorText = document.querySelector("#loading-error");
+
+      const CDN_BASE = "https://cdn.jsdelivr.net/gh/AlexBoops/granny3rip@4a27595";
+      const BUILD_URL = `${CDN_BASE}/Build`;
+
+      function setLoading(percent, message) {
+        const val = Math.max(0, Math.min(100, percent));
+        progressBar.style.width = val + "%";
+        percentText.textContent = Math.round(val) + "%";
+        if (message) statusText.textContent = message;
+      }
+
+      function showError(err) {
+        console.error("[Unity Load Error]:", err);
+        statusText.textContent = "LOADING FAILED";
+        errorText.style.display = "block";
+        errorText.textContent = err && err.message ? err.message : String(err);
+      }
+
+      function resizeCanvas() {
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      // Audio unlock handler
+      function unlockAudio() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          const tempCtx = new AudioContextClass();
+          if (tempCtx.state === "suspended") tempCtx.resume();
+        }
+      }
+      window.addEventListener("click", unlockAudio, { once: true });
+      window.addEventListener("keydown", unlockAudio, { once: true });
+      window.addEventListener("touchstart", unlockAudio, { once: true });
+
+      // Chunk fetcher with 5s backoff retry
+      async function fetchChunkWithRetry(url, retries = 6, delayMs = 5000) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            const res = await fetch(url);
+            const contentType = res.headers.get("content-type") || "";
+            if (res.ok && !contentType.includes("text/html")) {
+              const buf = await res.arrayBuffer();
+              if (buf.byteLength > 0) return buf;
+            }
+            console.warn(`[jsDelivr Attempt ${attempt}/${retries}] HTTP ${res ? res.status : 'Error'} for ${url}`);
+          } catch (e) {
+            console.warn(`[jsDelivr Attempt ${attempt}/${retries}] Network error for ${url}`);
+          }
+
+          if (attempt < retries) {
+            setLoading(
+              parseFloat(progressBar.style.width) || 0,
+              `RETRYING IN 5s (ATTEMPT ${attempt}/${retries})...`
+            );
+            await new Promise(r => setTimeout(r, delayMs));
+          }
+        }
+        throw new Error(`Failed to download ${url} after ${retries} attempts.`);
+      }
+
+      // Probes whether split naming format uses .partX or .part000X
+      async function assembleSplitFile(baseName, totalParts, mimeType, startPct, endPct) {
+        const testPaddedUrl = `${BUILD_URL}/${baseName}.part0001`;
+        let usePadding = false;
+
+        try {
+          const checkRes = await fetch(testPaddedUrl, { method: "HEAD" });
+          if (checkRes.ok) usePadding = true;
+        } catch (e) {}
+
+        const buffers = [];
+        let totalLength = 0;
+
+        for (let i = 1; i <= totalParts; i++) {
+          const partSuffix = usePadding ? String(i).padStart(4, "0") : String(i);
+          const chunkUrl = `${BUILD_URL}/${baseName}.part${partSuffix}`;
+
+          const currentPct = startPct + ((i - 1) / totalParts) * (endPct - startPct);
+          setLoading(currentPct, `DOWNLOADING ${baseName} (${i}/${totalParts})...`);
+
+          const buf = await fetchChunkWithRetry(chunkUrl);
+          buffers.push(buf);
+          totalLength += buf.byteLength;
+        }
+
+        const combined = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const buf of buffers) {
+          combined.set(new Uint8Array(buf), offset);
+          offset += buf.byteLength;
+        }
+
+        return URL.createObjectURL(new Blob([combined], { type: mimeType }));
+      }
+
+      async function initializeGame() {
+        try {
+          setLoading(1, "INITIALIZING ASSETS...");
+
+          const dataBlobUrl = await assembleSplitFile("FinalBuild.data", 30, "application/octet-stream", 2, 65);
+          const wasmBlobUrl = await assembleSplitFile("FinalBuild.wasm", 2, "application/wasm", 66, 82);
+
+          setLoading(83, "LOADING ENGINE LOADER...");
+
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = `${BUILD_URL}/FinalBuild.loader.js`;
+            script.crossOrigin = "anonymous";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`Failed to load engine loader from ${BUILD_URL}/FinalBuild.loader.js`));
+            document.body.appendChild(script);
+          });
+
+          const config = {
+            arguments: [],
+            dataUrl: dataBlobUrl,
+            frameworkUrl: `${BUILD_URL}/FinalBuild.framework.js`,
+            codeUrl: wasmBlobUrl,
+            streamingAssetsUrl: `${CDN_BASE}/StreamingAssets`,
+            companyName: "Dvloper",
+            productName: "Granny 3",
+            productVersion: "0.1.0",
+            matchWebGLToCanvasSize: true,
+            devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+          };
+
+          const unityInstance = await createUnityInstance(canvas, config, (progress) => {
+            const pct = 83 + progress * 17;
+            setLoading(
+              pct,
+              progress < 1
+                ? "LAUNCHING ENGINE... " + Math.round(progress * 100) + "%"
+                : "STARTING GAME..."
+            );
+          });
+
+          window.unityInstance = unityInstance;
+          setLoading(100, "READY");
+
+          setTimeout(() => {
+            loadingScreen.classList.add("hidden");
+            setTimeout(() => {
+              loadingScreen.style.display = "none";
+              canvas.focus();
+            }, 400);
+          }, 250);
+
+        } catch (err) {
+          showError(err);
+        }
+      }
+
+      window.addEventListener("keydown", (e) => {
+        if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      canvas.addEventListener("click", () => canvas.focus());
+      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      initializeGame();
+    })();
+  </script>
+</body>
+</html>
