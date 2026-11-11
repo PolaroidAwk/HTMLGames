@@ -2842,13 +2842,14 @@ body{
                             <button class="port-filter-option" type="button" data-port-filter="genre:terror" onclick="selecionarFiltroPorts('genre:terror')">Terror</button>
                             <button class="port-filter-option" type="button" data-port-filter="genre:acao" onclick="selecionarFiltroPorts('genre:acao')">Ação</button>
                             <button class="port-filter-option" type="button" data-port-filter="genre:plataforma" onclick="selecionarFiltroPorts('genre:plataforma')">Plataforma</button>
-                            <button class="port-filter-option" type="button" data-port-filter="genre:roguelike" onclick="selecionarFiltroPorts('genre:roguelike')">Roguelike / Cartas</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:roguelike" onclick="selecionarFiltroPorts('genre:roguelike')">Roguelike</button>
                             <button class="port-filter-option" type="button" data-port-filter="genre:fps" onclick="selecionarFiltroPorts('genre:fps')">FPS</button>
                             <button class="port-filter-option" type="button" data-port-filter="genre:rpg" onclick="selecionarFiltroPorts('genre:rpg')">RPG</button>
                             <button class="port-filter-option" type="button" data-port-filter="genre:puzzle" onclick="selecionarFiltroPorts('genre:puzzle')">Puzzle</button>
                             <div class="port-filter-heading">SÉRIES</div>
                             <button class="port-filter-option" type="button" data-port-filter="series:fnaf" onclick="selecionarFiltroPorts('series:fnaf')">Five Nights at Freddy's</button>
                             <button class="port-filter-option" type="button" data-port-filter="series:half-life" onclick="selecionarFiltroPorts('series:half-life')">Half-Life</button>
+                            <button class="port-filter-option" type="button" data-port-filter="series:granny" onclick="selecionarFiltroPorts('series:granny')">Granny</button>
                         </div>
                     </div>
 
@@ -6671,6 +6672,10 @@ function jogoPertenceAPasta(
 const PORT_GENRES = {
     "THE BINDING OF ISAAC": ["roguelike", "acao"],
     "BALATRO": ["roguelike"],
+    "GAMBONANZA": ["roguelike"],
+    "BUCKSHOT ROULETTE": ["terror"],
+    "GRANNY 2": ["terror"],
+    "GRANNY 3": ["terror"],
     "BUCKSHOT ROULETTE": ["terror"],
     "HOLLOW KNIGHT": ["acao", "plataforma"],
     "CELESTE CLASSIC": ["plataforma"],
@@ -6701,8 +6706,11 @@ const PORT_SERIES = {
     "ULTIMATE CUSTOM NIGHT": "fnaf",
     "FNAF WORLD": "fnaf",
     "HALF LIFE": "half-life",
-    "HALF LIFE 2": "half-life"
-};
+    "HALF LIFE 2": "half-life",
+
+    "GRANNY 2": "granny",
+    "GRANNY 3": "granny"
+}
 let filtroPortsAtual = "all";
 
 function alternarMenuPorts(){
