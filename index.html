@@ -2850,6 +2850,7 @@ body{
                             <button class="port-filter-option" type="button" data-port-filter="series:fnaf" onclick="selecionarFiltroPorts('series:fnaf')">Five Nights at Freddy's</button>
                             <button class="port-filter-option" type="button" data-port-filter="series:half-life" onclick="selecionarFiltroPorts('series:half-life')">Half-Life</button>
                             <button class="port-filter-option" type="button" data-port-filter="series:granny" onclick="selecionarFiltroPorts('series:granny')">Granny</button>
+                            <button class="port-filter-option" type="button" data-port-filter="series:granny" onclick="selecionarFiltroPorts('series:fallout')">Fallout</button>
                         </div>
                     </div>
 
@@ -6335,6 +6336,16 @@ const CONFIG_JOGOS = {
         "half-life-2"
     ],
 
+    "FALLOUT 2":[
+        "Fallout 2: A Post Nuclear Role Playing Game é a sequência do Fallout original. Lançado no outono de 1998, Note exclusivamente para PC, foi desenvolvido pela Black Isle Studios que, antes do lançamento de Fallout 2, havia se tornado uma divisão de desenvolvimento completa da editora Interplay Entertainment. A história se passa cerca de 80 anos após Fallout original em 2241. Um morador da aldeia tribal de Arroyo conhecido como o Escolhido, neto do protagonista do primeiro jogo, foi encarregado de encontrar um GECK. (Kit de Criação do Jardim do Éden). O GECK é um dispositivo que se acredita ser capaz de combater a fome e a seca da aldeia.",
+        "☢️",
+        "games/Fallout-2/single.html",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        false,
+        "ports",
+        "fallout2"
+    ],
+
     "CELESTE CLASSIC":[
         "Celeste Classic é a versão original gratuita do Celeste, criada em 2016. Foi escrito para o console virtual Pico-8. O jogo pode ser encontrado no site do Pico-8 e no itch.io. O código original do jogo foi escrito em uma forma da linguagem de programação Lua adaptada ao Pico-8, embora a versão do Celeste Classic encontrada no jogo Celeste completo seja escrita em C#. Na versão completa do Celeste, o Celeste Classic pode ser desbloqueado ao encontrar uma sala escondida no Celestial Resort Lado A.",
         "🍓",
@@ -6682,6 +6693,7 @@ const PORT_GENRES = {
     "ULTRAKILL": ["acao", "fps"],
     "HALF LIFE": ["acao", "fps"],
     "HALF LIFE 2": ["acao", "fps"],
+    "FALLOUT 2": ["acao", "rpg"],
     "UNDERTALE [SANS]": ["rpg"],
     "BALDI'S BASICS": ["terror", "puzzle"],
     "FIVE NIGHTS AT FREDDY'S 1": ["terror"],
@@ -6709,7 +6721,9 @@ const PORT_SERIES = {
     "HALF LIFE 2": "half-life",
 
     "GRANNY 2": "granny",
-    "GRANNY 3": "granny"
+    "GRANNY 3": "granny",
+
+    "FALLOUT 2": "fallout"
 }
 let filtroPortsAtual = "all";
 

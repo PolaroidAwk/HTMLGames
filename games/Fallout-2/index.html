@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Play Fallout 2 directly in your browser via GitHub Pages.">
+  <meta name="theme-color" content="#050d05">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☢</text></svg>">
+  <title>Fallout 2 - Web Port</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☢</text></svg>">
+  <link rel="preload" href="fallout2-ce.js" as="script">
+  <link rel="preload" href="fallout2-ce.wasm" as="fetch" crossorigin="anonymous">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      background-color: #050d05; 
+      color: #33ff33; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      overflow: hidden; 
+      font-family: 'Courier New', Courier, monospace;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+    
+    body.game-running, html.game-running, body.game-running * {
+      cursor: none !important;
+    }
+    
+    body::after {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 999;
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    canvas { 
+      border: 0px none; 
+      background-color: black; 
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      cursor: none;
+      will-change: contents;
+      transform: translateZ(0);
+    }
+
+    #start-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(ellipse at center, #0a1c0a 0%, #020702 100%);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      z-index: 100;
+      padding: 20px;
+      border: 4px solid #113311;
+    }
+
+    .terminal-container {
+      width: 100%;
+      max-width: 600px;
+      border: 2px solid #33ff33;
+      padding: 30px;
+      background: rgba(5, 20, 5, 0.85);
+      box-shadow: 0 0 15px rgba(51, 255, 51, 0.3);
+      border-radius: 4px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      text-shadow: 0 0 10px #33ff33;
+      letter-spacing: 2px;
+      border-bottom: 2px solid #33ff33;
+      padding-bottom: 10px;
+    }
+
+    .status-text {
+      font-size: 14px;
+      margin-bottom: 25px;
+      line-height: 1.6;
+      min-height: 50px;
+      text-shadow: 0 0 5px #33ff33;
+    }
+
+    #upload-progress {
+      width: 100%;
+      height: 20px;
+      background: rgba(51, 255, 51, 0.1);
+      border: 1px solid #33ff33;
+      border-radius: 2px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+    #upload-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #33ff33;
+      transition: width 0.2s ease;
+      box-shadow: 0 0 8px #33ff33;
+    }
+
+    .btn {
+      display: none;
+      width: 100%;
+      padding: 15px;
+      background: #33ff33;
+      color: #050d05;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-family: inherit;
+      box-shadow: 0 0 10px #33ff33;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      background: #55ff55;
+      box-shadow: 0 0 20px #55ff55;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-reset {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: #ff3333;
+      border: 2px solid #ff3333;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-family: inherit;
+      margin-top: 15px;
+      box-shadow: 0 0 5px rgba(255, 51, 51, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-reset:hover {
+      background: rgba(255, 51, 51, 0.1);
+      box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+    }
+
+    #fs-banner {
+      display: none;
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: rgba(51, 255, 51, 0.15);
+      color: #33ff33; text-align: center;
+      padding: 8px; font-size: 13px; z-index: 200;
+      cursor: pointer; backdrop-filter: blur(4px);
+      border-top: 1px solid rgba(51, 255, 51, 0.3);
+      animation: fadeIn 0.3s;
+    }
+    #fs-banner:hover { background: rgba(51, 255, 51, 0.25); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    #loading-overlay {
+      display: none;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 13, 5, 0.95);
+      z-index: 500;
+      justify-content: center; align-items: center;
+      flex-direction: column;
+      color: #33ff33;
+      font-size: 18px;
+    }
+    #loading-overlay .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(51, 255, 51, 0.2);
+      border-top: 3px solid #33ff33;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="start-screen">
+    <div class="terminal-container">
+      <h1>☢ V.A.S.T. BOOT LOADER v1.0 ☢</h1>
+      <div id="status" class="status-text">Connecting to local databanks...</div>
+      
+      <div id="upload-progress"><div id="upload-progress-bar"></div></div>
+
+      <button id="launch-btn" class="btn" onclick="launchGame()">Initialize Game Runtime</button>
+      <button id="reset-btn" class="btn-reset" onclick="resetFiles()">Reset Stored Game Cache</button>
+    </div>
+  </div>
+
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text">Extracting databanks to WASM memory...</div>
+  </div>
+
+  <div id="fs-banner" onclick="goFullscreen()">⛶ Click here or press F11 to return to fullscreen</div>
+  <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="1"></canvas>
+
+  <script type='text/javascript'>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((registration) => {
+          console.log('ServiceWorker registered:', registration.scope);
+        }).catch((error) => {
+          console.error('ServiceWorker registration failed:', error);
+        });
+      });
+    }
+
+    const DB_NAME = 'Fallout2WebDB';
+    const STORE_NAME = 'files';
+    let _dbInstance = null;
+
+    // Use relative path directly from your GitHub Pages web root
+    const LOCAL_ASSETS_DIR = "./Assets";
+
+    async function openDB() {
+      if (_dbInstance) return _dbInstance;
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        request.onsuccess = (e) => {
+          _dbInstance = e.target.result;
+          _dbInstance.onclose = () => { _dbInstance = null; };
+          resolve(_dbInstance);
+        };
+        request.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function getFile(key) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(key);
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function saveFile(key, blob) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(blob, key);
+        request.onsuccess = () => resolve();
+        request.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    const statusText = document.getElementById('status');
+    const launchBtn = document.getElementById('launch-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const canvasEl = document.getElementById('canvas');
+    const fsBanner = document.getElementById('fs-banner');
+    const uploadProgress = document.getElementById('upload-progress');
+    const uploadProgressBar = document.getElementById('upload-progress-bar');
+
+    async function fetchWithRetry(url, retries = 5, delayMs = 3000) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const buf = await res.arrayBuffer();
+            if (buf.byteLength > 0) return buf;
+          }
+          console.warn(`[Attempt ${attempt}/${retries}] HTTP ${res ? res.status : 'Error'} for ${url}`);
+        } catch (err) {
+          console.warn(`[Attempt ${attempt}/${retries}] Network error fetching ${url}`);
+        }
+
+        if (attempt < retries) {
+          statusText.innerText = `Retrying file stream in 3s... (${attempt}/${retries})`;
+          await new Promise(r => setTimeout(r, delayMs));
+        }
+      }
+      throw new Error(`Failed to fetch ${url} after ${retries} attempts.`);
+    }
+
+    // Direct local 3-digit padded chunk assembly (.part001 to .part017)
+    async function downloadAndAssemble(baseName, totalParts, startPct, endPct) {
+      const buffers = [];
+      let totalLength = 0;
+
+      for (let i = 1; i <= totalParts; i++) {
+        const partNum = String(i).padStart(3, '0');
+        const chunkUrl = `${LOCAL_ASSETS_DIR}/${baseName}.part${partNum}`;
+        
+        const currentPct = Math.round(startPct + ((i - 1) / totalParts) * (endPct - startPct));
+        statusText.innerText = `LOADING FROM HOST: ${baseName} (${i}/${totalParts})...`;
+        uploadProgressBar.style.width = currentPct + '%';
+
+        const buf = await fetchWithRetry(chunkUrl);
+        buffers.push(buf);
+        totalLength += buf.byteLength;
+      }
+
+      const combined = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const buf of buffers) {
+        combined.set(new Uint8Array(buf), offset);
+        offset += buf.byteLength;
+      }
+
+      return new Blob([combined], { type: "application/octet-stream" });
+    }
+
+    var cachedMasterBlob = null;
+    var cachedCritterBlob = null;
+    var masterArrayBuffer = null;
+    var critterArrayBuffer = null;
+
+    async function checkFiles() {
+      try {
+        cachedMasterBlob = await getFile('master.dat');
+        cachedCritterBlob = await getFile('critter.dat');
+
+        if (!cachedMasterBlob || !cachedCritterBlob) {
+          uploadProgress.style.display = 'block';
+          
+          if (!cachedMasterBlob) {
+            cachedMasterBlob = await downloadAndAssemble('master.dat', 17, 0, 70);
+            await saveFile('master.dat', cachedMasterBlob);
+          }
+
+          if (!cachedCritterBlob) {
+            cachedCritterBlob = await downloadAndAssemble('critter.dat', 9, 71, 100);
+            await saveFile('critter.dat', cachedCritterBlob);
+          }
+        }
+
+        uploadProgressBar.style.width = '100%';
+        statusText.innerHTML = "SYSTEM READY.<br>MASTER.DAT (" + (cachedMasterBlob.size / 1024 / 1024).toFixed(1) + " MB) and CRITTER.DAT (" + (cachedCritterBlob.size / 1024 / 1024).toFixed(1) + " MB) stored in IndexedDB.<br><span style='color:yellow'>Pre-extracting assets to RAM...</span>";
+        
+        launchBtn.style.display = 'block';
+        launchBtn.disabled = true;
+        launchBtn.innerText = 'Extracting... (Wait)';
+        resetBtn.style.display = 'block';
+
+        const [mBuf, cBuf] = await Promise.all([
+          cachedMasterBlob.arrayBuffer(),
+          cachedCritterBlob.arrayBuffer()
+        ]);
+        masterArrayBuffer = mBuf;
+        critterArrayBuffer = cBuf;
+        
+        statusText.innerHTML = "SYSTEM READY.<br>Assets successfully pre-extracted to RAM!";
+        launchBtn.innerText = 'Initialize Game Runtime';
+        launchBtn.disabled = false;
+        setTimeout(() => { uploadProgress.style.display = 'none'; }, 600);
+
+      } catch (err) {
+        console.error(err);
+        uploadProgress.style.display = 'none';
+        statusText.innerHTML = "<span style='color:red;'>Initialization Error: " + err.message + "</span>";
+      }
+    }
+
+    async function resetFiles() {
+      if (confirm('Clear stored MASTER.DAT and CRITTER.DAT from browser storage?')) {
+        try {
+          const db = await openDB();
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          store.clear();
+          transaction.oncomplete = () => {
+            _dbInstance = null;
+            location.reload();
+          };
+        } catch (err) {
+          console.error(err);
+          alert('Failed to reset storage: ' + err.message);
+        }
+      }
+    }
+
+    checkFiles();
+
+    var Module = {
+      canvas: (function() {
+        canvasEl.addEventListener("webglcontextlost", function(e) { 
+          alert('WebGL context lost. Reloading page required.'); 
+          e.preventDefault(); 
+        }, false);
+        canvasEl.addEventListener("webglcontextrestored", function() {
+          console.log('WebGL context restored.');
+        }, false);
+        return canvasEl;
+      })(),
+      print: function(text) { if (typeof console !== 'undefined') console.log(text); },
+      printErr: function(text) { if (typeof console !== 'undefined') console.error(text); },
+      INITIAL_MEMORY: 268435456,
+      MAXIMUM_MEMORY: 536870912,
+      mouseState: {dx: 0, dy: 0, lb: 0, rb: 0},
+      preRun: [function() {
+        Module.addRunDependency('load_dat');
+        
+        var checkInterval = setInterval(function() {
+          if (masterArrayBuffer && critterArrayBuffer) {
+            clearInterval(checkInterval);
+            
+            try {
+              FS.mkdir('/home'); FS.mkdir('/home/web_user'); FS.mkdir('/home/web_user/.config'); FS.mkdir('/home/web_user/.config/fallout2-ce');
+              FS.mount(IDBFS, {}, '/home/web_user/.config/fallout2-ce');
+            } catch(e) {}
+            
+            FS.writeFile('master.dat', new Uint8Array(masterArrayBuffer));
+            FS.writeFile('critter.dat', new Uint8Array(critterArrayBuffer));
+            FS.writeFile('ddraw.ini', '[Misc]\nSkipOpeningMovies=1\n');
+            FS.writeFile('f2_res.ini', '[MAIN]\nWINDOWED=1\n');
+            
+            const cfgContent = `[sound]\nmusic_path2=sound\\music\\\nsound_path2=sound\\sfx\\\n\n[system]\ncritter_dat=critter.dat\ncritter_patches=data\nmaster_dat=master.dat\nmaster_patches=data\n`;
+            FS.writeFile('fallout2.cfg', cfgContent);
+            
+            try { FS.mkdir('data'); } catch(e) {}
+            try { FS.mkdir('data/savegame'); FS.mount(IDBFS, {}, 'data/savegame'); } catch(e) {}
+            try { FS.mkdir('sound'); FS.mkdir('sound/music'); FS.mkdir('sound/sfx'); } catch(e) {}
+            
+            FS.syncfs(true, function(err) {
+              Module.removeRunDependency('load_dat');
+            });
+          }
+        }, 100);
+      }],
+      onRuntimeInitialized: function() {
+        window.engineReady = true;
+        if (typeof checkBoot === 'function') checkBoot();
+      }
+    };
+    
+    window.cinematicFinished = false;
+    window.engineReady = false;
+    function checkBoot() {
+      if (window.cinematicFinished && window.engineReady) {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+        if (typeof resizeCanvas === 'function') resizeCanvas();
+      }
+    }
+
+    var virtualX = 320;
+    var virtualY = 240;
+    
+    document.addEventListener('mousemove', function(e) {
+      if (!canvasEl.getBoundingClientRect) return;
+      var rect = canvasEl.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      var normX = (e.clientX - rect.left) / rect.width;
+      var normY = (e.clientY - rect.top) / rect.height;
+      var targetX = Math.round(normX * 640);
+      var targetY = Math.round(normY * 480);
+      
+      targetX = Math.max(0, Math.min(639, targetX));
+      targetY = Math.max(0, Math.min(479, targetY));
+
+      Module.mouseState.dx += (targetX - virtualX);
+      Module.mouseState.dy += (targetY - virtualY);
+      
+      virtualX = targetX;
+      virtualY = targetY;
+    }, { passive: true });
+
+    document.addEventListener('mousedown', function(e) {
+      if (e.button === 0) Module.mouseState.lb = 1;
+      if (e.button === 2) Module.mouseState.rb = 1;
+    }, { passive: false });
+
+    document.addEventListener('mouseup', function(e) {
+      if (e.button === 0) Module.mouseState.lb = 0;
+      if (e.button === 2) Module.mouseState.rb = 0;
+    }, { passive: true });
+
+    function goFullscreen() {
+      var el = document.documentElement;
+      var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (rfs) rfs.call(el);
+      fsBanner.style.display = 'none';
+    }
+
+    function isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+
+    var gameStarted = false;
+
+    function onFsChange() {
+      if (!gameStarted) return;
+      if (isFullscreen()) {
+        fsBanner.style.display = 'none';
+      } else {
+        fsBanner.style.display = 'block';
+      }
+      resizeCanvas();
+    }
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+
+    let _resizeTimer = null;
+    function resizeCanvas() {
+      if (!canvasEl || !canvasEl.width) return;
+      var gameW = 640, gameH = 480;
+      var winW = window.innerWidth, winH = window.innerHeight;
+      var scale = Math.min(winW / gameW, winH / gameH);
+      canvasEl.style.width = Math.floor(gameW * scale) + 'px';
+      canvasEl.style.height = Math.floor(gameH * scale) + 'px';
+    }
+
+    window.addEventListener('resize', function() {
+      if (_resizeTimer) cancelAnimationFrame(_resizeTimer);
+      _resizeTimer = requestAnimationFrame(resizeCanvas);
+    });
+
+    const BLOCKED_CTRL_KEYS = new Set(['s','o','p','w','n','t','f','g','h','l','d','u','j','k']);
+
+    document.addEventListener('keydown', function(e) {
+      if (!gameStarted) return;
+
+      if (e.ctrlKey && BLOCKED_CTRL_KEYS.has(e.key.toLowerCase())) {
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        if (isFullscreen()) {
+          var eFS = document.exitFullscreen || document.webkitExitFullscreen;
+          if (eFS) eFS.call(document);
+        } else {
+          goFullscreen();
+        }
+        return;
+      }
+      if (e.key === 'Tab') e.preventDefault();
+      if (e.key === 'Backspace' && e.target === document.body) e.preventDefault();
+    }, { capture: true });
+
+    document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+    canvasEl.addEventListener('wheel', function(e) { 
+      if (gameStarted) e.preventDefault(); 
+    }, { passive: false });
+
+    canvasEl.addEventListener('touchstart', function(e) {
+      if (gameStarted) e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('visibilitychange', function() {
+      if (!gameStarted) return;
+      if (typeof SDL !== 'undefined' && SDL.audioContext) {
+        if (document.hidden) {
+          SDL.audioContext.suspend();
+        } else {
+          SDL.audioContext.resume();
+        }
+      }
+    });
+
+    function launchGame() {
+      if (!masterArrayBuffer || !critterArrayBuffer) return;
+
+      launchBtn.disabled = true;
+      launchBtn.innerText = 'LAUNCHING...';
+      
+      goFullscreen();
+
+      setInterval(function() {
+        if (gameStarted && typeof FS !== 'undefined') {
+          FS.syncfs(false, function(err) {});
+        }
+      }, 5000);
+
+      document.getElementById('start-screen').style.display = 'none';
+      gameStarted = true;
+      document.body.classList.add('game-running');
+      document.documentElement.classList.add('game-running');
+      
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const loadingText = document.getElementById('loading-text');
+      
+      if (loadingOverlay && loadingText) {
+        loadingOverlay.style.display = 'flex';
+        loadingText.innerHTML = 'Initializing WASM Runtime...';
+        
+        var script = document.createElement('script');
+        script.src = 'fallout2-ce.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        setTimeout(() => { loadingText.innerHTML = 'Mounting MASTER.DAT... <span style="color: #4ade80">[OK]</span>'; }, 600);
+        setTimeout(() => { loadingText.innerHTML = 'Mounting CRITTER.DAT... <span style="color: #4ade80">[OK]</span>'; }, 1200);
+        setTimeout(() => { loadingText.innerHTML = 'Linking Virtual Filesystem... <span style="color: #4ade80">[OK]</span>'; }, 1800);
+        setTimeout(() => { loadingText.innerHTML = 'Booting Fallout 2 engine...'; }, 2400);
+        
+        setTimeout(() => {
+          window.cinematicFinished = true;
+          checkBoot();
+        }, 3000);
+      } else {
+        var script = document.createElement('script');
+        script.src = 'fallout2-ce.js';
+        script.async = true;
+        document.body.appendChild(script);
+        
+        window.cinematicFinished = true;
+        checkBoot();
+      }
+    }
+  </script>
+</body>
+</html>
