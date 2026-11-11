@@ -1,0 +1,7468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HTMLGames</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --green:#39ff88;
+    --green-bright:#9affc4;
+    --green-dark:#167a42;
+    --green-darker:#07351d;
+    --bg:#010503;
+    --panel:rgba(2,14,8,.96);
+    --red:#ff4a4a;
+    --yellow:#ffd84a;
+    --font:"VT323",monospace;
+}
+
+html{
+    background:#000;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            #082616 0%,
+            #020b06 45%,
+            #000 100%
+        );
+    color:var(--green);
+    font-family:var(--font);
+    overflow-x:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:9000;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.025) 0px,
+        rgba(255,255,255,.025) 1px,
+        rgba(0,0,0,.08) 2px,
+        rgba(0,0,0,.08) 4px
+    );
+    mix-blend-mode:screen;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:8999;
+    pointer-events:none;
+    box-shadow:
+        inset 0 0 100px rgba(0,0,0,.95),
+        inset 0 0 250px rgba(0,0,0,.85);
+}
+
+@keyframes monitorPowerOn{
+    0%{
+        opacity:0;
+        transform:scaleY(.005) scaleX(.2);
+        filter:brightness(10);
+    }
+
+    50%{
+        opacity:.8;
+        transform:scaleY(1.02) scaleX(1);
+        filter:brightness(2);
+    }
+
+    100%{
+        opacity:1;
+        transform:scale(1);
+        filter:brightness(1);
+    }
+}
+
+@keyframes logoGlow{
+    0%{
+        border-color:var(--green-dark);
+        box-shadow:0 0 5px rgba(57,255,136,.2);
+    }
+
+    100%{
+        border-color:var(--green);
+        box-shadow:0 0 20px rgba(57,255,136,.6);
+    }
+}
+
+@keyframes blink{
+    0%,45%{opacity:1}
+    46%,100%{opacity:.2}
+}
+
+@keyframes modalIn{
+    from{
+        opacity:0;
+        transform:scale(.96) translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:scale(1) translateY(0);
+    }
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+#authScreen{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
+}
+
+.auth-box{
+    width:min(480px,94vw);
+    border:1px solid var(--green-dark);
+    background:
+        radial-gradient(
+            ellipse at 50% 25%,
+            rgba(13,70,39,.7),
+            rgba(2,14,8,.97) 65%,
+            #010402 100%
+        );
+    border-radius:20px;
+    padding:35px;
+    box-shadow:
+        0 0 25px rgba(57,255,136,.14),
+        0 0 100px rgba(57,255,136,.07),
+        inset 0 0 70px rgba(0,0,0,.8);
+    animation:monitorPowerOn .6s ease-out;
+}
+
+.auth-header{
+    text-align:center;
+    margin-bottom:28px;
+}
+
+.auth-logo{
+    width:62px;
+    height:62px;
+    margin:0 auto 15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.06);
+    font-size:34px;
+    animation:logoGlow 3s infinite alternate;
+}
+
+.auth-title{
+    font-size:48px;
+    line-height:.9;
+    letter-spacing:3px;
+    text-shadow:
+        0 0 5px var(--green),
+        0 0 20px rgba(57,255,136,.45);
+}
+
+.auth-subtitle{
+    margin-top:10px;
+    color:#269653;
+    font-size:18px;
+    letter-spacing:1px;
+}
+
+.auth-terminal{
+    padding:12px 14px;
+    margin-bottom:22px;
+    border-left:2px solid var(--green);
+    background:rgba(57,255,136,.035);
+    color:#238c4e;
+    font-size:18px;
+}
+
+.auth-terminal strong{
+    color:var(--green);
+}
+
+.auth-form{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.auth-label{
+    color:#2fb967;
+    font-size:18px;
+    margin-top:4px;
+}
+
+.auth-input{
+    width:100%;
+    border:1px solid var(--green-dark);
+    background:rgba(0,0,0,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:22px;
+    padding:11px 13px;
+    outline:none;
+}
+
+.auth-input::placeholder{
+    color:#176b3b;
+}
+
+.auth-input:focus{
+    border-color:var(--green);
+    box-shadow:
+        0 0 15px rgba(57,255,136,.2),
+        inset 0 0 15px rgba(57,255,136,.04);
+}
+
+.auth-button{
+    margin-top:10px;
+    width:100%;
+    border:1px solid var(--green);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(57,255,136,.16),
+            rgba(57,255,136,.04)
+        );
+    color:var(--green);
+    font-family:var(--font);
+    font-size:23px;
+    padding:11px;
+    cursor:pointer;
+    text-shadow:0 0 6px var(--green);
+    transition:.2s;
+}
+
+.auth-button:hover{
+    background:rgba(57,255,136,.2);
+    box-shadow:0 0 18px rgba(57,255,136,.25);
+    transform:translateY(-2px);
+}
+
+.auth-button:disabled,
+.guest-button:disabled{
+    opacity:.5;
+    cursor:wait;
+    transform:none;
+}
+
+.auth-switch{
+    margin-top:20px;
+    text-align:center;
+    color:#237f49;
+    font-size:18px;
+}
+
+.auth-switch button{
+    border:none;
+    background:none;
+    color:var(--green);
+    font-family:var(--font);
+    font-size:18px;
+    cursor:pointer;
+    text-decoration:underline;
+}
+
+.guest-button{
+    margin-top:18px;
+    width:100%;
+    border:1px dashed var(--green-dark);
+    background:rgba(0,20,10,.3);
+    color:#2fb967;
+    font-family:var(--font);
+    font-size:19px;
+    padding:9px;
+    cursor:pointer;
+}
+
+.guest-button:hover{
+    color:var(--green);
+    border-color:var(--green);
+    background:rgba(57,255,136,.07);
+}
+
+.auth-message{
+    min-height:24px;
+    margin-top:15px;
+    text-align:center;
+    font-size:17px;
+}
+
+.auth-message.error{
+    color:#ff5c5c;
+}
+
+.auth-message.success{
+    color:var(--green);
+}
+
+/* =========================================================
+   SITE
+========================================================= */
+
+#siteContent{
+    display:none;
+}
+
+.monitor{
+    min-height:100vh;
+    padding:35px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.screen{
+    width:min(1250px,96vw);
+    min-height:760px;
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(
+            ellipse at 50% 30%,
+            rgba(13,70,39,.75),
+            rgba(2,14,8,.96) 60%,
+            #010402 100%
+        );
+    border:1px solid #1d673c;
+    border-radius:24px;
+    padding:30px;
+    box-shadow:
+        0 0 25px rgba(57,255,136,.14),
+        0 0 100px rgba(57,255,136,.07),
+        inset 0 0 70px rgba(0,0,0,.8);
+    animation:monitorPowerOn .6s ease-out;
+}
+
+.header{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding-bottom:20px;
+    margin-bottom:22px;
+    border-bottom:1px solid var(--green-dark);
+}
+
+.logo-area{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.logo-symbol{
+    width:52px;
+    height:52px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.06);
+    font-size:30px;
+    animation:logoGlow 3s infinite alternate;
+}
+
+.system-name{
+    font-size:48px;
+    line-height:.8;
+    letter-spacing:3px;
+    text-shadow:
+        0 0 5px var(--green),
+        0 0 20px rgba(57,255,136,.45);
+}
+
+.subtitle{
+    margin-top:8px;
+    color:#269653;
+    font-size:20px;
+    letter-spacing:1px;
+}
+
+.status-box{
+    text-align:right;
+}
+
+.status{
+    font-size:21px;
+    text-shadow:0 0 8px var(--green);
+}
+
+.status::before{
+    content:"●";
+    margin-right:8px;
+    animation:blink 1s infinite;
+}
+
+.status-detail{
+    margin-top:5px;
+    color:#237f49;
+    font-size:17px;
+}
+
+.account-box{
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    color:#269653;
+    font-size:16px;
+}
+
+.account-user{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--green);
+    cursor:pointer;
+}
+
+.header-avatar{
+    width:32px;
+    height:32px;
+    position:relative;
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.05);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:20px;
+    overflow:hidden;
+}
+
+.header-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.logout-button{
+    margin-left:5px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.55);
+    color:#2fb967;
+    font-family:var(--font);
+    font-size:16px;
+    padding:2px 8px;
+    cursor:pointer;
+}
+
+.logout-button:hover{
+    color:var(--green);
+    border-color:var(--green);
+}
+
+.terminal{
+    position:relative;
+    z-index:2;
+    padding:14px 16px;
+    margin-bottom:20px;
+    border-left:2px solid var(--green);
+    background:rgba(57,255,136,.035);
+    color:#238c4e;
+    font-size:19px;
+}
+
+.terminal-line{
+    margin:2px 0;
+}
+
+.terminal strong{
+    color:var(--green);
+}
+
+.toolbar{
+    position:relative;
+    z-index:3;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+}
+
+.tabs{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+}
+
+.tab{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.55);
+    color:#238d4e;
+    font-family:var(--font);
+    font-size:20px;
+    padding:8px 15px;
+    cursor:pointer;
+    transition:.2s;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.tab:hover,
+.tab.active{
+    color:var(--green);
+    border-color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.port-filter-wrap{position:relative;display:inline-flex;}
+.port-filter-wrap>.tab{height:100%;white-space:nowrap;}
+.menu-chevron{font-size:.75em;margin-left:5px;opacity:.8;}
+.port-filter-menu{position:absolute;top:calc(100% + 7px);left:0;z-index:1000;width:245px;max-height:min(70vh,520px);overflow-y:auto;padding:7px;border:1px solid var(--green);background:rgba(2,12,7,.98);box-shadow:0 12px 35px rgba(0,0,0,.65),0 0 18px rgba(57,255,136,.12);}
+.port-filter-menu[hidden]{display:none!important;}
+.port-filter-option{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid transparent;background:transparent;color:#63b981;text-align:left;font-family:var(--font);font-size:19px;cursor:pointer;}
+.port-filter-option:hover,.port-filter-option.active{border-color:#176b3b;background:rgba(57,255,136,.09);color:var(--green);}
+.port-filter-option span:first-child{font-size:22px;}
+.port-filter-option strong{display:block;font-weight:normal;color:var(--green);}
+.port-filter-option small{display:block;color:#43885a;font-size:14px;line-height:1.15;}
+.port-filter-heading{padding:9px 10px 4px;color:#287b45;font-size:14px;letter-spacing:2px;border-top:1px solid rgba(57,255,136,.12);margin-top:4px;}
+.gemini-tab{margin-left:2px;opacity:.72;}
+.gemini-tab:hover,.gemini-tab.active{opacity:1;}
+.sort-select{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.55);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:20px;
+    padding:8px 12px;
+    cursor:pointer;
+    outline:none;
+}
+
+.sort-select option{
+    background:#020a05;
+    color:var(--green);
+}
+
+.search-area{
+    position:relative;
+    flex:1;
+    min-width:200px;
+}
+
+.search-icon{
+    position:absolute;
+    left:13px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--green-dark);
+    font-size:22px;
+}
+
+.search{
+    width:100%;
+    background:rgba(0,0,0,.5);
+    border:1px solid var(--green-dark);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:22px;
+    padding:9px 42px;
+    outline:none;
+}
+
+.search::placeholder{
+    color:#176b3b;
+}
+
+.search:focus{
+    border-color:var(--green);
+    box-shadow:0 0 15px rgba(57,255,136,.25);
+}
+
+.search-clear{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--green-dark);
+    cursor:pointer;
+    font-size:20px;
+    display:none;
+}
+
+.game-info{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:5px 2px 10px;
+    color:#247d47;
+    font-size:18px;
+}
+
+.game-count{
+    color:var(--green);
+}
+
+.file-list{
+    position:relative;
+    z-index:2;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    max-height:440px;
+    overflow-y:auto;
+    padding-right:5px;
+}
+
+.file-list::-webkit-scrollbar{
+    width:7px;
+}
+
+.file-list::-webkit-scrollbar-track{
+    background:#020a05;
+}
+
+.file-list::-webkit-scrollbar-thumb{
+    background:#125d32;
+    border-radius:4px;
+}
+
+.file{
+    min-height:95px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    padding:12px 15px;
+    border:1px solid #0c4827;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,28,14,.65),
+            rgba(0,10,5,.55)
+        );
+    cursor:pointer;
+    transition:.2s;
+}
+
+.file::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:transparent;
+}
+
+.file:hover,
+.file.selected{
+    transform:translateY(-2px);
+    border-color:var(--green);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(57,255,136,.12),
+            rgba(0,20,10,.75)
+        );
+}
+
+.file:hover::before,
+.file.selected::before{
+    background:var(--green);
+    box-shadow:0 0 10px var(--green);
+}
+
+.icon{
+    width:55px;
+    height:55px;
+    flex-shrink:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-right:14px;
+    border:1px solid #145b31;
+    background:
+        radial-gradient(
+            circle,
+            rgba(57,255,136,.09),
+            rgba(0,0,0,.35)
+        );
+    font-size:30px;
+}
+
+.game-content{
+    min-width:0;
+    flex:1;
+}
+
+.filename-container{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.filename{
+    color:var(--green);
+    font-size:24px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.description{
+    margin-top:1px;
+    color:#2fb967;
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.tags-container{
+    display:flex;
+    gap:8px;
+    margin-top:4px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.tag-badge{
+    font-size:12px;
+    padding:1px 5px;
+    border-radius:3px;
+    letter-spacing:1px;
+    font-weight:bold;
+}
+
+.tag-custom{
+    font-size:12px;
+    padding:1px 5px;
+    border-radius:3px;
+    letter-spacing:1px;
+    font-weight:bold;
+}
+
+.tag-all{
+    border:1px solid var(--green-dark);
+    color:#237f49;
+}
+
+.tag-category{
+    border:1px solid var(--green);
+    color:var(--green);
+}
+
+.external-tag{
+    color:#176b3b;
+    font-size:13px;
+}
+
+.fav-star{
+    display:none;
+    color:#ffd84a;
+    font-size:18px;
+}
+
+.file.favorite .fav-star{
+    display:inline-block;
+}
+
+.arrow{
+    flex-shrink:0;
+    margin-left:10px;
+    color:var(--green-dark);
+    font-size:28px;
+}
+
+.file:hover .arrow,
+.file.selected .arrow{
+    color:var(--green);
+    transform:translateX(5px);
+}
+
+.empty{
+    display:none;
+    grid-column:1/-1;
+    padding:65px 20px;
+    border:1px dashed var(--green-dark);
+    text-align:center;
+    color:#21864a;
+    font-size:25px;
+}
+
+.empty-big{
+    color:var(--green);
+    font-size:42px;
+    margin-bottom:5px;
+}
+
+.footer{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+    padding-top:15px;
+    border-top:1px solid var(--green-dark);
+    color:#176b3b;
+    font-size:17px;
+}
+
+/* =========================================================
+   FAVORITOS
+========================================================= */
+
+.favorites-panel{
+    display:none;
+    position:relative;
+    z-index:3;
+    margin-bottom:12px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.38);
+    padding:10px;
+}
+
+.favorites-panel.visible{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.favorites-label{
+    color:#237f49;
+    font-size:18px;
+}
+
+.folder-list{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    flex:1;
+}
+
+.folder-button{
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.6);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:18px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+.folder-button:hover,
+.folder-button.active{
+    color:var(--green);
+    border-color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.folder-button.main-folder{
+    color:var(--yellow);
+}
+
+.folder-actions{
+    display:flex;
+    gap:6px;
+}
+
+.folder-action{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:18px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+.folder-action:hover{
+    border-color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+/* =========================================================
+   PERFIL
+========================================================= */
+
+.profile-overlay{
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:rgba(0,0,0,.84);
+    backdrop-filter:blur(7px);
+    overflow:auto;
+}
+
+.profile-overlay.open{
+    display:flex;
+}
+
+.profile-window{
+    width:min(900px,96vw);
+    max-height:92vh;
+    overflow-y:auto;
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(13,70,39,.88),
+            rgba(2,14,8,.99) 65%
+        );
+    box-shadow:
+        0 0 40px rgba(57,255,136,.22),
+        inset 0 0 80px rgba(0,0,0,.85);
+    animation:modalIn .2s ease-out;
+}
+
+.profile-header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 22px;
+    border-bottom:1px solid var(--green-dark);
+    background:rgba(2,14,8,.97);
+}
+
+.profile-title{
+    color:var(--green);
+    font-size:34px;
+    letter-spacing:2px;
+}
+
+.profile-subtitle{
+    margin-top:3px;
+    color:#237f49;
+    font-size:15px;
+}
+
+.profile-close{
+    width:38px;
+    height:38px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:27px;
+    cursor:pointer;
+}
+
+.profile-close:hover{
+    border-color:var(--green);
+    background:rgba(57,255,136,.12);
+}
+
+.profile-body{
+    padding:22px;
+}
+
+.profile-top{
+    display:grid;
+    grid-template-columns:250px minmax(0,1fr);
+    gap:22px;
+}
+
+.profile-avatar-card{
+    border:1px solid var(--green-dark);
+    background:rgba(57,255,136,.035);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.avatar-stage{
+    width:170px;
+    height:170px;
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            rgba(57,255,136,.12),
+            rgba(0,0,0,.8)
+        );
+    box-shadow:
+        0 0 20px rgba(57,255,136,.1),
+        inset 0 0 30px rgba(0,0,0,.8);
+}
+
+.avatar-photo{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:10;
+    display:none;
+}
+
+.avatar-layer{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    user-select:none;
+}
+
+.avatar-face{
+    z-index:1;
+    font-size:100px;
+    line-height:1;
+}
+
+.avatar-accessory{
+    z-index:3;
+    font-size:62px;
+    transform:translateY(-48px);
+}
+
+.avatar-extra{
+    z-index:4;
+    font-size:38px;
+    transform:translate(53px,53px);
+}
+
+.avatar-stage.photo-mode .avatar-photo{
+    display:block;
+}
+
+.avatar-stage.photo-mode .avatar-layer{
+    display:none;
+}
+
+.profile-avatar-name{
+    width:100%;
+    margin-top:14px;
+    text-align:center;
+    color:var(--green);
+    font-size:27px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.profile-avatar-type{
+    margin-top:3px;
+    color:#237f49;
+    font-size:16px;
+}
+
+.profile-editor{
+    min-width:0;
+}
+
+.profile-section{
+    border:1px solid #0d4c29;
+    background:rgba(0,20,10,.25);
+    padding:16px;
+    margin-bottom:14px;
+}
+
+.profile-section-title{
+    color:var(--green);
+    font-size:22px;
+    margin-bottom:12px;
+}
+
+.profile-label{
+    display:block;
+    color:#2fb967;
+    font-size:18px;
+    margin:9px 0 5px;
+}
+
+.profile-input{
+    width:100%;
+    border:1px solid var(--green-dark);
+    background:rgba(0,0,0,.55);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:21px;
+    padding:9px 11px;
+    outline:none;
+}
+
+.profile-input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 12px rgba(57,255,136,.15);
+}
+
+.profile-input:disabled{
+    opacity:.55;
+}
+
+.profile-note{
+    margin-top:7px;
+    color:#176b3b;
+    font-size:15px;
+    line-height:1.1;
+}
+
+.profile-actions{
+    display:flex;
+    gap:10px;
+}
+
+.secondary-button{
+    flex:1;
+    border:1px solid var(--green);
+    background:rgba(57,255,136,.06);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:19px;
+    padding:9px;
+    cursor:pointer;
+}
+
+.secondary-button:hover{
+    background:rgba(57,255,136,.15);
+}
+
+.secondary-button:disabled{
+    opacity:.5;
+    cursor:wait;
+}
+
+.profile-message{
+    min-height:24px;
+    margin-top:12px;
+    text-align:center;
+    font-size:17px;
+}
+
+.profile-message.success{
+    color:var(--green);
+}
+
+.profile-message.error{
+    color:#ff5c5c;
+}
+
+.profile-message.info{
+    color:var(--yellow);
+}
+
+/* =========================================================
+   AVATAR EDITOR
+========================================================= */
+
+.avatar-mode-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    margin-bottom:14px;
+}
+
+.avatar-mode-button{
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:19px;
+    padding:8px;
+    cursor:pointer;
+}
+
+.avatar-mode-button.active,
+.avatar-mode-button:hover{
+    border-color:var(--green);
+    color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.avatar-editor,
+.photo-editor{
+    display:none;
+}
+
+.avatar-editor.active,
+.photo-editor.active{
+    display:block;
+}
+
+.avatar-category-tabs{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-bottom:10px;
+}
+
+.avatar-category-button{
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.55);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:17px;
+    padding:6px;
+    cursor:pointer;
+}
+
+.avatar-category-button.active,
+.avatar-category-button:hover{
+    border-color:var(--green);
+    color:var(--green);
+}
+
+.emoji-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:7px;
+}
+
+.emoji-option{
+    min-height:52px;
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.55);
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.emoji-option:hover,
+.emoji-option.selected{
+    border-color:var(--green);
+    background:rgba(57,255,136,.12);
+    transform:translateY(-1px);
+}
+
+.avatar-file{
+    display:none;
+}
+
+.avatar-upload{
+    display:block;
+    width:100%;
+    border:1px dashed var(--green-dark);
+    background:rgba(57,255,136,.04);
+    color:#2fb967;
+    font-family:var(--font);
+    font-size:19px;
+    padding:12px;
+    cursor:pointer;
+    text-align:center;
+}
+
+.avatar-upload:hover{
+    color:var(--green);
+    border-color:var(--green);
+}
+
+.avatar-file-name{
+    margin-top:8px;
+    color:#176b3b;
+    font-size:15px;
+    text-align:center;
+    min-height:18px;
+}
+
+.guest-warning{
+    display:none;
+    border:1px solid #6f5b19;
+    background:rgba(255,216,74,.04);
+    color:#ffd84a;
+    padding:10px;
+    font-size:16px;
+    line-height:1.15;
+    margin-bottom:10px;
+}
+
+.guest-warning.visible{
+    display:block;
+}
+
+/* =========================================================
+   PASTA MODAL
+========================================================= */
+
+.folder-overlay{
+    position:fixed;
+    inset:0;
+    z-index:11000;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:rgba(0,0,0,.84);
+    backdrop-filter:blur(7px);
+}
+
+.folder-overlay.open{
+    display:flex;
+}
+
+.folder-window{
+    width:min(520px,94vw);
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(13,70,39,.88),
+            rgba(2,14,8,.99) 70%
+        );
+    box-shadow:
+        0 0 40px rgba(57,255,136,.2),
+        inset 0 0 80px rgba(0,0,0,.8);
+    animation:modalIn .2s ease-out;
+}
+
+.folder-window-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    border-bottom:1px solid var(--green-dark);
+}
+
+.folder-window-title{
+    color:var(--green);
+    font-size:28px;
+}
+
+.folder-window-close{
+    width:34px;
+    height:34px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:24px;
+    cursor:pointer;
+}
+
+.folder-window-body{
+    padding:18px;
+}
+
+.folder-input{
+    width:100%;
+    border:1px solid var(--green-dark);
+    background:rgba(0,0,0,.55);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:22px;
+    padding:10px 12px;
+    outline:none;
+}
+
+.folder-input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 12px rgba(57,255,136,.15);
+}
+
+.folder-modal-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+
+.folder-modal-button{
+    flex:1;
+    border:1px solid var(--green);
+    background:rgba(57,255,136,.06);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:19px;
+    padding:9px;
+    cursor:pointer;
+}
+
+.folder-modal-button:hover{
+    background:rgba(57,255,136,.15);
+}
+
+.folder-modal-button.cancel{
+    border-color:var(--green-dark);
+    color:#237f49;
+}
+
+.folder-modal-message{
+    min-height:22px;
+    margin-top:10px;
+    color:#ff5c5c;
+    text-align:center;
+    font-size:16px;
+}
+
+/* =========================================================
+   MOVER FAVORITO
+========================================================= */
+
+.move-overlay{
+    position:fixed;
+    inset:0;
+    z-index:11000;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:rgba(0,0,0,.84);
+    backdrop-filter:blur(7px);
+}
+
+.move-overlay.open{
+    display:flex;
+}
+
+.move-window{
+    width:min(520px,94vw);
+    border:1px solid var(--green);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(13,70,39,.88),
+            rgba(2,14,8,.99) 70%
+        );
+    box-shadow:
+        0 0 40px rgba(57,255,136,.2),
+        inset 0 0 80px rgba(0,0,0,.8);
+    animation:modalIn .2s ease-out;
+}
+
+.move-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    border-bottom:1px solid var(--green-dark);
+}
+
+.move-title{
+    color:var(--green);
+    font-size:28px;
+}
+
+.move-close{
+    width:34px;
+    height:34px;
+    border:1px solid var(--green-dark);
+    background:rgba(0,20,10,.5);
+    color:var(--green);
+    font-family:var(--font);
+    font-size:24px;
+    cursor:pointer;
+}
+
+.move-body{
+    padding:18px;
+}
+
+.move-game-name{
+    color:#237f49;
+    font-size:19px;
+    margin-bottom:12px;
+}
+
+.move-folder-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    max-height:300px;
+    overflow-y:auto;
+}
+
+.move-folder-button{
+    width:100%;
+    border:1px solid #0c4827;
+    background:rgba(0,20,10,.55);
+    color:#237f49;
+    font-family:var(--font);
+    font-size:20px;
+    padding:9px;
+    text-align:left;
+    cursor:pointer;
+}
+
+.move-folder-button:hover{
+    border-color:var(--green);
+    color:var(--green);
+    background:rgba(57,255,136,.1);
+}
+
+.move-message{
+    min-height:22px;
+    margin-top:10px;
+    text-align:center;
+    color:#ff5c5c;
+    font-size:16px;
+}
+
+/* PORTS: cápsulas verticais e painel lateral */
+.ports-browser{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:stretch;}
+.ports-browser:not(.active){display:block;}
+.ports-browser:not(.active) .port-details{display:none;}
+.ports-browser .file-list{min-width:0;}
+.ports-browser.active .file-list{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-rows:max-content;align-items:start;column-gap:22px;row-gap:24px;max-height:min(82vh,820px);overflow-y:auto;overflow-x:hidden;padding:10px 14px 18px 6px;align-content:start;box-sizing:border-box;}
+.file.port-card{min-width:0;min-height:120px;position:relative;border:1px solid #174b30;background:linear-gradient(145deg,rgba(8,28,17,.96),rgba(2,8,4,.98));box-shadow:0 5px 18px rgba(0,0,0,.25);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.file.port-card:hover,.file.port-card.selected{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,136,.18),0 8px 22px rgba(0,0,0,.4);}
+.ports-browser:not(.active) .file.port-card{display:flex;align-items:center;padding:12px 15px;aspect-ratio:auto;overflow:hidden;}
+.ports-browser:not(.active) .file.port-card .port-capsule{position:relative;inset:auto;flex:0 0 78px;width:78px;height:108px;margin-right:15px;border:1px solid #174b30;background:#030704;font-size:30px;}
+.ports-browser:not(.active) .file.port-card .game-content{display:block;min-width:0;flex:1;}
+.ports-browser:not(.active) .file.port-card .arrow{display:block;}
+.ports-browser:not(.active) .file.port-card .icon{display:none;}
+.ports-browser.active .file.port-card{width:100%;min-width:0;min-height:0;aspect-ratio:2 / 3;padding:0;display:block;overflow:hidden;border-radius:3px;box-sizing:border-box;}
+.ports-browser.active .file.port-card .port-capsule{position:absolute;inset:0;width:100%;height:100%;border:0;background:linear-gradient(145deg,#10271a,#030604);font-size:34px;}
+.port-capsule img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:#030704;}
+.port-capsule img[hidden]{display:none!important;}
+ .port-capsule .capsule-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:36px;line-height:1;}
+.ports-browser.active .file.port-card .game-content,.ports-browser.active .file.port-card .arrow,.ports-browser.active .file.port-card .icon{display:none;}
+.port-details{min-width:0;min-height:300px;max-height:600px;overflow-y:auto;position:relative;border:1px solid #174b30;background:linear-gradient(155deg,rgba(8,28,17,.97),rgba(2,8,4,.98));box-shadow:inset 0 0 35px rgba(57,255,136,.035);}
+.port-details-empty{min-height:300px;height:100%;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#398d59;}
+.port-details-mark{font-size:54px;line-height:1;margin-bottom:18px;color:#1e8a4a;}
+.port-details-title{font-size:19px;letter-spacing:2px;color:var(--green);}
+.port-details-empty p{font-size:15px;line-height:1.6;}
+.port-detail-art{width:100%;aspect-ratio:2 / 3;max-height:300px;object-fit:cover;object-position:center;display:block;background:#030704;border-bottom:1px solid #174b30;}
+.port-detail-art-fallback{aspect-ratio:2 / 3;max-height:300px;display:flex;align-items:center;justify-content:center;font-size:68px;background:radial-gradient(circle,rgba(57,255,136,.1),#030704 70%);border-bottom:1px solid #174b30;}
+.port-detail-body{padding:20px;}
+.port-detail-kicker{font-size:12px;letter-spacing:2px;color:#3a8d59;margin-bottom:8px;}
+.port-detail-name{font-size:25px;line-height:1.2;color:var(--green);overflow-wrap:anywhere;}
+.port-detail-description{font-size:16px;line-height:1.55;color:#80c998;margin:13px 0 17px;}
+.port-detail-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:17px;}
+.port-detail-play{width:100%;padding:13px 14px;border:1px solid var(--green);background:linear-gradient(135deg,#168344,#075127);color:#f0fff5;font-family:var(--font);font-size:19px;font-weight:bold;letter-spacing:1px;cursor:pointer;transition:.18s;}
+.port-detail-play:hover{filter:brightness(1.2);box-shadow:0 0 18px rgba(57,255,136,.2);}
+.port-detail-fav{width:100%;margin-top:8px;padding:10px;border:1px solid #245d39;background:#06150b;color:#75c990;font-family:var(--font);font-size:18px;cursor:pointer;}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media(max-width:850px){
+
+    .screen{
+        padding:22px;
+    }
+
+    .file-list{
+        grid-template-columns:1fr;
+    }
+
+    .ports-browser.active{grid-template-columns:minmax(0,1fr);}
+    .ports-browser.active .file-list{grid-template-columns:repeat(3,minmax(0,1fr)) !important;column-gap:18px;row-gap:20px;max-height:min(78vh,760px);}
+    .port-details{max-height:none;}
+
+    .toolbar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .header{
+        align-items:center;
+    }
+
+    .profile-top{
+        grid-template-columns:1fr;
+    }
+
+    .profile-avatar-card{
+        max-width:400px;
+        width:100%;
+        margin:auto;
+    }
+}
+
+@media(max-width:600px){
+
+    .monitor{
+        padding:8px;
+    }
+
+    .screen{
+        min-height:95vh;
+        padding:16px;
+        border-radius:15px;
+    }
+
+    .system-name{
+        font-size:35px;
+    }
+
+    .logo-symbol{
+        width:43px;
+        height:43px;
+        font-size:24px;
+    }
+
+    .subtitle{
+        font-size:17px;
+    }
+
+    .status-box{
+        display:none;
+    }
+
+    .file{
+        min-height:85px;
+        padding:10px;
+    }
+
+    .ports-browser.active{grid-template-columns:minmax(0,1fr);}
+    .ports-browser.active .file-list{grid-template-columns:repeat(2,minmax(0,1fr)) !important;column-gap:14px;row-gap:18px;max-height:72vh;}
+    .port-details{max-height:none;min-height:0;}
+    .port-details-empty{min-height:150px;}
+    .port-detail-layout{display:grid;grid-template-columns:100px minmax(0,1fr);}
+    .port-detail-art,.port-detail-art-fallback{aspect-ratio:2 / 3;max-height:150px;}
+    .port-detail-body{padding:12px;}
+    .port-detail-name{font-size:18px;}
+    .port-detail-description{font-size:12px;margin:8px 0 10px;}
+
+    .icon{
+        width:48px;
+        height:48px;
+        font-size:25px;
+        margin-right:10px;
+    }
+
+    .filename{
+        font-size:20px;
+    }
+
+    .description{
+        font-size:13px;
+    }
+
+    .footer{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:5px;
+    }
+
+    .auth-box{
+        padding:25px 20px;
+    }
+
+    .auth-title{
+        font-size:38px;
+    }
+
+    .profile-overlay{
+        padding:7px;
+        align-items:flex-start;
+    }
+
+    .profile-window{
+        width:100%;
+        max-height:96vh;
+    }
+
+    .profile-header{
+        padding:14px;
+    }
+
+    .profile-title{
+        font-size:28px;
+    }
+
+    .profile-body{
+        padding:12px;
+    }
+
+    .profile-avatar-card{
+        padding:15px;
+    }
+
+    .avatar-stage{
+        width:145px;
+        height:145px;
+    }
+
+    .avatar-face{
+        font-size:85px;
+    }
+
+    .avatar-accessory{
+        font-size:52px;
+        transform:translateY(-40px);
+    }
+
+    .avatar-extra{
+        font-size:32px;
+        transform:translate(45px,45px);
+    }
+
+    .profile-actions{
+        flex-direction:column;
+    }
+
+    .emoji-grid{
+        grid-template-columns:repeat(5,1fr);
+    }
+
+    .emoji-option{
+        min-height:48px;
+        font-size:25px;
+    }
+
+    .favorites-panel.visible{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .folder-list{
+        width:100%;
+    }
+
+    .folder-actions{
+        width:100%;
+    }
+
+    .folder-action{
+        flex:1;
+    }
+}
+
+/* Painel de detalhes compacto e fixo: a lista rola, o painel não */
+.ports-browser.active{grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start;}
+.ports-browser.active .file-list{column-gap:20px;row-gap:22px;}
+.ports-browser.active .port-details{position:sticky;top:12px;height:auto;max-height:none;min-height:0;overflow:hidden;align-self:start;border-radius:6px;}
+.ports-browser.active .port-detail-layout{display:flex;flex-direction:column;min-height:0;}
+.ports-browser.active .port-detail-art,.ports-browser.active .port-detail-art-fallback{width:100%;aspect-ratio:16 / 9;height:auto;max-height:150px;object-fit:cover;}
+.ports-browser.active .port-detail-art-fallback{font-size:54px;}
+.ports-browser.active .port-detail-body{padding:16px;}
+.ports-browser.active .port-detail-name{font-size:24px;}
+.ports-browser.active .port-detail-description{font-size:15px;line-height:1.4;margin:9px 0 12px;}
+.ports-browser.active .port-detail-tags{margin-bottom:12px;}
+.ports-browser.active .port-detail-play{padding:10px 12px;}
+.ports-browser.active .port-detail-fav{padding:8px;margin-top:7px;}
+.ports-browser.active .file.port-card{cursor:pointer;}
+.ports-browser.active .file.port-card .port-capsule img{object-fit:cover;}
+.ports-browser.active.gemini-mode .file.port-card .capsule-fallback{font-size:clamp(34px,4vw,58px);}
+@media(max-width:850px){
+    .ports-browser.active{grid-template-columns:minmax(0,1fr);}
+    .ports-browser.active .port-details{position:static;max-height:none;overflow:hidden;}
+    .ports-browser.active .port-detail-layout{display:grid;grid-template-columns:minmax(110px,28%) minmax(0,1fr);}
+    .ports-browser.active .port-detail-art,.ports-browser.active .port-detail-art-fallback{height:100%;min-height:140px;max-height:none;aspect-ratio:auto;}
+}
+@media(max-width:600px){
+    .ports-browser.active .file-list{grid-template-columns:repeat(2,minmax(0,1fr)) !important;column-gap:14px;row-gap:18px;}
+    .ports-browser.active .port-detail-layout{grid-template-columns:95px minmax(0,1fr);}
+    .ports-browser.active .port-detail-body{padding:10px;}
+    .ports-browser.active .port-detail-name{font-size:18px;}
+    .ports-browser.active .port-detail-description{font-size:12px;}
+}
+
+
+.version-indicator{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:7px;
+    padding:3px 8px;
+    border:1px solid rgba(57,255,136,.35);
+    background:rgba(57,255,136,.06);
+    color:#62b982;
+    font-family:var(--font);
+    font-size:15px;
+    letter-spacing:1px;
+    line-height:1.1;
+}
+.version-indicator::before{
+    content:"●";
+    color:var(--green);
+    font-size:9px;
+}
+#versionHash{color:var(--green-bright);}
+.auth-version{
+    width:max-content;
+    margin:22px auto 0;
+    justify-content:center;
+}
+@media(max-width:600px){
+    .version-indicator{font-size:13px;margin-top:5px;}
+}
+
+
+/* Layout fixo na viewport: só as áreas internas podem rolar */
+html,
+body{
+    width:100%;
+    height:100%;
+    min-height:0;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"]{
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .monitor{
+    width:100%;
+    height:100%;
+    min-height:0;
+    max-height:100%;
+    padding:clamp(8px,2vh,22px) clamp(8px,2vw,24px);
+    box-sizing:border-box;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .screen{
+    width:min(1500px,100%);
+    height:100%;
+    min-height:0;
+    max-height:100%;
+    margin:0 auto;
+    padding:clamp(12px,1.7vw,26px);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-sizing:border-box;
+    border-radius:clamp(10px,1.5vw,22px);
+}
+
+#siteContent[style*="display: block"] .header,
+#siteContent[style*="display: block"] .terminal,
+#siteContent[style*="display: block"] .toolbar,
+#siteContent[style*="display: block"] .game-info,
+#siteContent[style*="display: block"] .footer{
+    flex:0 0 auto;
+    min-width:0;
+}
+
+#siteContent[style*="display: block"] .header{
+    margin-bottom:clamp(8px,1.4vh,18px);
+    padding-bottom:clamp(8px,1.4vh,18px);
+}
+
+#siteContent[style*="display: block"] .terminal{
+    margin-bottom:clamp(8px,1.2vh,14px);
+}
+
+#siteContent[style*="display: block"] .toolbar{
+    margin-bottom:clamp(8px,1.2vh,14px);
+    gap:clamp(6px,1vw,14px);
+}
+
+#siteContent[style*="display: block"] .favorites-panel{
+    flex:0 1 auto;
+    min-height:0;
+    max-height:clamp(70px,16vh,150px);
+    overflow:auto;
+}
+
+#siteContent[style*="display: block"] .game-info{
+    margin-bottom:clamp(6px,1vh,12px);
+}
+
+#siteContent[style*="display: block"] .ports-browser{
+    flex:1 1 0;
+    min-height:0;
+    max-height:none;
+    overflow:hidden;
+    align-items:stretch;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .file-list{
+    height:100%;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    align-content:start;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-details{
+    min-height:0;
+    max-height:100%;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+}
+
+#siteContent[style*="display: block"] .footer{
+    margin-top:clamp(8px,1.2vh,14px);
+    padding-top:clamp(8px,1.2vh,14px);
+}
+
+@media(max-width:850px){
+    #siteContent[style*="display: block"] .screen{
+        padding:clamp(10px,2vw,18px);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser{
+        overflow:hidden;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        height:auto;
+        flex:1 1 auto;
+        min-height:0;
+        max-height:100%;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        max-height:35%;
+        overflow-y:auto;
+    }
+}
+
+@media(max-width:600px){
+    #siteContent[style*="display: block"] .monitor{
+        padding:5px;
+    }
+
+    #siteContent[style*="display: block"] .screen{
+        padding:10px;
+        border-radius:10px;
+    }
+
+    #siteContent[style*="display: block"] .header{
+        gap:8px;
+        margin-bottom:7px;
+        padding-bottom:7px;
+    }
+
+    #siteContent[style*="display: block"] .system-name{
+        font-size:clamp(25px,7vw,35px);
+    }
+
+    #siteContent[style*="display: block"] .subtitle{
+        font-size:clamp(11px,3.2vw,16px);
+    }
+
+    #siteContent[style*="display: block"] .version-indicator{
+        margin-top:3px;
+        font-size:11px;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        margin-bottom:6px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] .toolbar{
+        gap:6px;
+        margin-bottom:6px;
+    }
+
+    #siteContent[style*="display: block"] .tabs{
+        gap:4px;
+        flex-wrap:wrap;
+    }
+
+    #siteContent[style*="display: block"] .tab{
+        padding:5px 7px;
+        font-size:14px;
+    }
+
+    #siteContent[style*="display: block"] .search-area,
+    #siteContent[style*="display: block"] .search{
+        min-width:0;
+    }
+
+    #siteContent[style*="display: block"] .game-info{
+        margin-bottom:5px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser{
+        gap:8px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        height:100%;
+        max-height:100%;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        max-height:30%;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        gap:5px;
+        margin-top:6px;
+        padding-top:6px;
+        font-size:11px;
+    }
+}
+
+@media(max-height:650px){
+    #siteContent[style*="display: block"] .header{
+        margin-bottom:5px;
+        padding-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        margin-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .toolbar{
+        margin-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        margin-top:5px;
+        padding-top:5px;
+    }
+}
+
+
+
+/* Painel mais largo, quatro capas por linha e detalhes sem perder os botões */
+@media (min-width: 851px){
+    #siteContent[style*="display: block"] .screen{
+        width:100%;
+        max-width:none;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active{
+        grid-template-columns:minmax(0,1fr) minmax(410px,32vw);
+        gap:clamp(16px,1.5vw,26px);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+        column-gap:clamp(10px,1vw,18px);
+        row-gap:clamp(12px,1.4vh,20px);
+    }
+}
+
+/* O painel de detalhes ocupa a altura disponível; só a descrição rola */
+#siteContent[style*="display: block"] .ports-browser.active .port-details{
+    min-height:0;
+    height:100%;
+    max-height:none;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+    min-height:0;
+    height:100%;
+    display:grid;
+    grid-template-columns:minmax(120px,36%) minmax(0,1fr);
+    align-items:stretch;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-art,
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-art-fallback{
+    width:100%;
+    height:100%;
+    min-height:0;
+    max-height:none;
+    aspect-ratio:auto;
+    object-fit:contain;
+    align-self:stretch;
+    box-sizing:border-box;
+    border-bottom:0;
+    border-right:1px solid #174b30;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+    min-width:0;
+    min-height:0;
+    height:100%;
+    padding:clamp(14px,1.3vw,22px);
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+    flex:0 0 auto;
+    overflow-wrap:anywhere;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+    flex:1 1 auto;
+    min-height:50px;
+    max-height:none;
+    margin:10px 0 12px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+    overflow-wrap:anywhere;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-tags{
+    flex:0 0 auto;
+    max-height:72px;
+    overflow-y:auto;
+    margin-bottom:10px;
+    overscroll-behavior:contain;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-play,
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+    flex:0 0 auto;
+    width:100%;
+    box-sizing:border-box;
+    line-height:1.25;
+    white-space:normal;
+    overflow-wrap:anywhere;
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-play{
+    padding:12px 10px;
+    font-size:clamp(15px,1.2vw,19px);
+}
+
+#siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+    margin-top:7px;
+    padding:10px 8px;
+    font-size:clamp(13px,1.1vw,17px);
+}
+
+@media (max-width:850px){
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        height:auto;
+        max-height:42%;
+        min-height:230px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:minmax(90px,28%) minmax(0,1fr);
+        min-height:230px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art-fallback{
+        height:100%;
+        max-height:none;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        height:100%;
+        padding:12px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        min-height:35px;
+    }
+}
+
+@media (max-width:600px){
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        max-height:45%;
+        min-height:210px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:82px minmax(0,1fr);
+        min-height:210px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        padding:9px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        font-size:17px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        font-size:12px;
+        line-height:1.4;
+        margin:6px 0 8px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-play{
+        padding:9px 7px;
+        font-size:13px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+        padding:7px 6px;
+        font-size:11px;
+    }
+}
+
+
+
+/* Mobile: controles acessíveis, lista e detalhes com rolagem própria */
+@media (max-width:600px){
+    #siteContent[style*="display: block"] .monitor{
+        padding:4px;
+    }
+
+    #siteContent[style*="display: block"] .screen{
+        padding:9px;
+        border-radius:9px;
+        gap:0;
+    }
+
+    #siteContent[style*="display: block"] .header{
+        align-items:flex-start;
+        gap:8px;
+        margin-bottom:7px;
+        padding-bottom:7px;
+    }
+
+    #siteContent[style*="display: block"] .system-name{
+        font-size:clamp(24px,7vw,32px);
+        line-height:1;
+    }
+
+    #siteContent[style*="display: block"] .subtitle{
+        font-size:11px;
+        line-height:1.3;
+    }
+
+    #siteContent[style*="display: block"] .version-indicator{
+        font-size:10px;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        padding:7px 9px;
+        font-size:11px;
+        line-height:1.35;
+        margin-bottom:7px;
+    }
+
+    #siteContent[style*="display: block"] .toolbar{
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:8px;
+        margin-bottom:7px;
+    }
+
+    #siteContent[style*="display: block"] .tabs{
+        display:flex;
+        flex-wrap:nowrap;
+        gap:6px;
+        width:100%;
+        max-width:100%;
+        overflow-x:auto;
+        overflow-y:hidden;
+        padding:2px 1px 6px;
+        scrollbar-width:thin;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    #siteContent[style*="display: block"] .tab{
+        flex:0 0 auto;
+        min-height:38px;
+        padding:8px 11px;
+        font-size:13px;
+        white-space:nowrap;
+    }
+
+    #siteContent[style*="display: block"] .search-area{
+        display:flex;
+        width:100%;
+        min-width:0;
+        gap:6px;
+    }
+
+    #siteContent[style*="display: block"] .search{
+        width:100%;
+        min-width:0;
+        min-height:40px;
+        box-sizing:border-box;
+        font-size:14px;
+    }
+
+    #siteContent[style*="display: block"] .sort-select,
+    #siteContent[style*="display: block"] #sortSelect{
+        min-height:40px;
+        max-width:42%;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] .favorites-panel{
+        max-height:76px;
+        margin-bottom:6px;
+        overflow:auto;
+    }
+
+    #siteContent[style*="display: block"] .game-info{
+        font-size:11px;
+        margin-bottom:6px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active{
+        display:flex;
+        flex:1 1 0;
+        flex-direction:column;
+        min-height:0;
+        gap:8px;
+        overflow:hidden;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        display:grid !important;
+        flex:1 1 0;
+        width:100%;
+        height:auto;
+        min-height:90px;
+        max-height:none;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        grid-auto-rows:max-content;
+        align-content:start;
+        align-items:start;
+        gap:10px;
+        padding:3px 4px 8px 2px;
+        overflow-x:hidden;
+        overflow-y:auto;
+        overscroll-behavior:contain;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file.port-card{
+        width:100%;
+        min-width:0;
+        aspect-ratio:2 / 3;
+        border-radius:5px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        display:flex;
+        flex:0 0 clamp(170px,31vh,245px);
+        width:100%;
+        height:auto;
+        min-height:0;
+        max-height:42%;
+        overflow:hidden;
+        border-radius:5px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        display:grid;
+        flex:1 1 auto;
+        width:100%;
+        height:100%;
+        min-height:0;
+        grid-template-columns:clamp(64px,22vw,100px) minmax(0,1fr);
+        overflow:hidden;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-art-fallback{
+        width:100%;
+        height:100%;
+        min-height:0;
+        max-height:none;
+        aspect-ratio:auto;
+        object-fit:contain;
+        border-right:1px solid #174b30;
+        border-bottom:0;
+        font-size:36px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        display:flex;
+        flex-direction:column;
+        min-width:0;
+        min-height:0;
+        height:100%;
+        padding:9px;
+        overflow:hidden;
+        box-sizing:border-box;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-kicker{
+        flex:0 0 auto;
+        margin-bottom:4px;
+        font-size:9px;
+        letter-spacing:1px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        flex:0 0 auto;
+        font-size:clamp(14px,4vw,18px);
+        line-height:1.15;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        flex:1 1 auto;
+        min-height:25px;
+        margin:5px 0;
+        font-size:11px;
+        line-height:1.35;
+        overflow-x:hidden;
+        overflow-y:auto;
+        overscroll-behavior:contain;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-tags{
+        flex:0 0 auto;
+        max-height:32px;
+        gap:3px;
+        margin-bottom:5px;
+        overflow-x:hidden;
+        overflow-y:auto;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-tags span{
+        font-size:9px;
+        padding:2px 4px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-play,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+        flex:0 0 auto;
+        min-height:34px;
+        margin-top:4px;
+        padding:7px 5px;
+        font-size:11px;
+        line-height:1.15;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        flex-direction:row;
+        flex-wrap:wrap;
+        align-items:center;
+        justify-content:space-between;
+        gap:4px 8px;
+        margin-top:6px;
+        padding-top:6px;
+        font-size:10px;
+    }
+}
+
+@media (max-width:380px){
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        gap:7px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        flex-basis:clamp(165px,30vh,215px);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:64px minmax(0,1fr);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        padding:7px;
+    }
+}
+
+
+
+/* Mobile refinado: menos espaço nos controles, mais área útil para os jogos */
+@media (max-width:600px){
+    #siteContent[style*="display: block"] .monitor{
+        padding:4px 5px 5px;
+    }
+
+    #siteContent[style*="display: block"] .screen{
+        padding:10px 9px 8px;
+    }
+
+    /* Desce o conteúdo e evita um cabeçalho alto demais */
+    #siteContent[style*="display: block"] .header{
+        margin-top:clamp(8px,2.2vh,18px);
+        margin-bottom:9px;
+        padding-bottom:8px;
+    }
+
+    #siteContent[style*="display: block"] .terminal{
+        margin-bottom:5px;
+        padding:5px 8px;
+        font-size:10px;
+        line-height:1.25;
+    }
+
+    /* Busca e ordenação ficam numa única linha compacta */
+    #siteContent[style*="display: block"] .toolbar{
+        flex-direction:column;
+        gap:5px;
+        margin-bottom:5px;
+    }
+
+    #siteContent[style*="display: block"] .tabs{
+        gap:5px;
+        padding:1px 1px 4px;
+    }
+
+    #siteContent[style*="display: block"] .tab{
+        min-height:31px;
+        padding:6px 9px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] .search-area{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:5px;
+    }
+
+    #siteContent[style*="display: block"] .search{
+        min-height:33px;
+        height:33px;
+        padding:6px 9px;
+        font-size:12px;
+    }
+
+    #siteContent[style*="display: block"] #sortSelect,
+    #siteContent[style*="display: block"] .sort-select{
+        min-height:33px;
+        height:33px;
+        max-width:115px;
+        padding:4px 6px;
+        font-size:11px;
+    }
+
+    #siteContent[style*="display: block"] .favorites-panel{
+        max-height:52px;
+        margin-bottom:4px;
+    }
+
+    #siteContent[style*="display: block"] .game-info{
+        margin-bottom:4px;
+        font-size:10px;
+    }
+
+    /* Deixa a lista ser a área principal da tela */
+    #siteContent[style*="display: block"] .ports-browser.active{
+        gap:7px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file-list{
+        min-height:0;
+        gap:8px;
+        padding:2px 3px 8px 1px;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .file.port-card{
+        aspect-ratio:3 / 4;
+        border-radius:5px;
+    }
+
+    /* Painel de detalhes mais baixo para sobrar espaço às capas */
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        flex-basis:clamp(135px,23vh,185px);
+        max-height:30%;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-layout{
+        grid-template-columns:clamp(58px,18vw,78px) minmax(0,1fr);
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-body{
+        padding:7px 8px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-kicker{
+        font-size:8px;
+        margin-bottom:3px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-name{
+        font-size:14px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-description{
+        min-height:18px;
+        margin:4px 0;
+        font-size:10px;
+        line-height:1.3;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-tags{
+        max-height:23px;
+        margin-bottom:3px;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-play,
+    #siteContent[style*="display: block"] .ports-browser.active .port-detail-fav{
+        min-height:27px;
+        margin-top:3px;
+        padding:5px 4px;
+        font-size:10px;
+    }
+
+    #siteContent[style*="display: block"] .footer{
+        margin-top:4px;
+        padding-top:4px;
+        font-size:9px;
+    }
+}
+
+@media (max-width:380px){
+    #siteContent[style*="display: block"] .ports-browser.active .file.port-card{
+        aspect-ratio:2 / 3;
+    }
+
+    #siteContent[style*="display: block"] .ports-browser.active .port-details{
+        flex-basis:clamp(128px,21vh,165px);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     LOGIN
+========================================================= -->
+
+<div id="authScreen">
+
+    <div class="auth-box">
+
+        <div class="auth-header">
+
+            <div class="auth-logo">▣</div>
+
+            <div class="auth-title">
+                HTMLGAMES
+            </div>
+
+            <div class="auth-subtitle">
+                SISTEMA DE CONTAS
+            </div>
+
+        </div>
+
+        <div class="auth-terminal">
+            C:\SISTEMA&gt;
+            <strong id="authTerminalText">
+                AUTENTICAÇÃO NECESSÁRIA...
+            </strong>
+        </div>
+
+        <div id="serviceStatus" role="status" aria-live="polite"></div>
+
+        <form class="auth-form" id="authForm">
+
+            <label class="auth-label">
+                EMAIL
+            </label>
+
+            <input
+                id="authEmail"
+                class="auth-input"
+                type="email"
+                placeholder="SEU@EMAIL.COM"
+                autocomplete="email"
+                required
+            >
+
+            <label class="auth-label">
+                SENHA
+            </label>
+
+            <input
+                id="authPassword"
+                class="auth-input"
+                type="password"
+                placeholder="SENHA"
+                autocomplete="current-password"
+                minlength="6"
+                required
+            >
+
+            <button
+                class="auth-button"
+                id="authSubmit"
+                type="submit"
+            >
+                ENTRAR
+            </button>
+
+        </form>
+
+        <div class="auth-switch">
+
+            <span id="authSwitchText">
+                NÃO TEM UMA CONTA?
+            </span>
+
+            <button
+                type="button"
+                id="authSwitchButton"
+            >
+                CRIAR CONTA
+            </button>
+
+        </div>
+
+        <button
+            class="guest-button"
+            id="guestButton"
+            type="button"
+        >
+            CONTINUAR SEM PERFIL
+        </button>
+
+        <div
+            class="auth-message"
+            id="authMessage"
+        ></div>
+
+        <div class="version-indicator auth-version" title="Versão do site">
+            VERSION <span class="site-version">v1.0.1</span>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     SITE
+========================================================= -->
+
+<div id="siteContent">
+
+    <div class="monitor">
+
+        <div class="screen">
+
+            <header class="header">
+
+                <div class="logo-area">
+
+                    <div class="logo-symbol">
+                        ▣
+                    </div>
+
+                    <div>
+
+                        <div class="system-name">
+                            HTMLGAMES
+                        </div>
+
+                        <div class="subtitle">
+                            POLAROIDO // DIGITAL GAME ARCHIVE
+                        </div>
+
+                        <div class="version-indicator" title="Versão do site">
+                            VERSION <span class="site-version">v1.0.1</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="status-box">
+
+                    <div class="status">
+                        SISTEMA ONLINE
+                    </div>
+
+                    <div class="status-detail">
+                        CONEXÃO: ESTÁVEL
+                    </div>
+
+                    <div class="account-box">
+
+                        <div
+                            class="account-user"
+                            id="profileButton"
+                        >
+
+                            <div
+                                class="header-avatar"
+                                id="headerAvatar"
+                            >
+                                😀
+                            </div>
+
+                            <span id="accountDisplayName">
+                                PLAYER
+                            </span>
+
+                        </div>
+
+                        <button
+                            class="logout-button"
+                            onclick="fazerLogout()"
+                            type="button"
+                        >
+                            SAIR
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            <div id="siteServiceStatus" style="display:none;margin-bottom:16px;padding:10px 12px;border:1px solid #8a6320;background:rgba(255,190,40,.07);color:#ffd84a;font-size:18px;line-height:1.2"></div>
+
+            <div class="terminal">
+
+                <div class="terminal-line">
+                    C:\JOGOS&gt;
+                    <strong>
+                        ACESSANDO BANCO DE JOGOS...
+                    </strong>
+                </div>
+
+                <div class="terminal-line">
+                    C:\JOGOS&gt;
+                    BANCO CARREGADO // SELECIONE UM JOGO
+                </div>
+
+            </div>
+
+            <div class="toolbar">
+
+                <div class="tabs">
+
+                    <div class="port-filter-wrap">
+                        <button class="tab active" onclick="alternarMenuPorts()" id="tabPorts" type="button" aria-expanded="false" aria-controls="portFilterMenu">
+                            PORTS <span class="menu-chevron">▾</span>
+                        </button>
+                        <div class="port-filter-menu" id="portFilterMenu" hidden>
+                            <button class="port-filter-option active" type="button" data-port-filter="all" onclick="selecionarFiltroPorts('all')">
+                                <span>▦</span><span><strong>Todos os ports</strong><small>Biblioteca completa de jogos portados</small></span>
+                            </button>
+                            <div class="port-filter-heading">GÊNEROS</div>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:terror" onclick="selecionarFiltroPorts('genre:terror')">Terror</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:acao" onclick="selecionarFiltroPorts('genre:acao')">Ação</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:plataforma" onclick="selecionarFiltroPorts('genre:plataforma')">Plataforma</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:roguelike" onclick="selecionarFiltroPorts('genre:roguelike')">Roguelike / Cartas</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:fps" onclick="selecionarFiltroPorts('genre:fps')">FPS</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:rpg" onclick="selecionarFiltroPorts('genre:rpg')">RPG</button>
+                            <button class="port-filter-option" type="button" data-port-filter="genre:puzzle" onclick="selecionarFiltroPorts('genre:puzzle')">Puzzle</button>
+                            <div class="port-filter-heading">SÉRIES</div>
+                            <button class="port-filter-option" type="button" data-port-filter="series:fnaf" onclick="selecionarFiltroPorts('series:fnaf')">Five Nights at Freddy's</button>
+                            <button class="port-filter-option" type="button" data-port-filter="series:half-life" onclick="selecionarFiltroPorts('series:half-life')">Half-Life</button>
+                        </div>
+                    </div>
+
+                    <button class="tab" onclick="mudarAba('favoritos')" id="tabFavoritos" type="button">★ FAVORITOS</button>
+
+                    <a class="tab" href="https://forms.gle/boRAUm1VEiJNdS5DA" target="_blank">SUPORTE</a>
+
+                    <button class="tab gemini-tab" onclick="mudarAba('gemini')" id="tabGemini" type="button">GEMINI</button>
+
+                </div>
+
+                <select
+                    id="sortSelect"
+                    class="sort-select"
+                    onchange="mudarOrdenacao()"
+                >
+                    <option value="padrao">
+                        ORDEM: PADRÃO
+                    </option>
+
+                    <option value="alfabetica">
+                        ORDEM: A-Z
+                    </option>
+
+                    <option value="reversa">
+                        ORDEM: Z-A
+                    </option>
+                </select>
+
+                <div class="search-area">
+
+                    <span class="search-icon">
+                        &gt;_
+                    </span>
+
+                    <input
+                        id="search"
+                        class="search"
+                        type="text"
+                        placeholder="PROCURAR JOGO..."
+                        autocomplete="off"
+                    >
+
+                    <span
+                        id="searchClear"
+                        class="search-clear"
+                        onclick="limparBusca()"
+                    >
+                        ×
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 PAINEL DE FAVORITOS
+            ================================================== -->
+
+            <div
+                class="favorites-panel"
+                id="favoritesPanel"
+            >
+
+                <div class="favorites-label">
+                    PASTAS:
+                </div>
+
+                <div
+                    class="folder-list"
+                    id="folderList"
+                ></div>
+
+                <div class="folder-actions">
+
+                    <button
+                        class="folder-action"
+                        id="createFolderButton"
+                        type="button"
+                    >
+                        + PASTA
+                    </button>
+
+                    <button
+                        class="folder-action"
+                        id="renameFolderButton"
+                        type="button"
+                    >
+                        ✎ RENOMEAR
+                    </button>
+
+                    <button
+                        class="folder-action"
+                        id="deleteFolderButton"
+                        type="button"
+                    >
+                        × EXCLUIR
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="game-info">
+
+                <div>
+                    BANCO /
+                    <span
+                        class="game-count"
+                        id="gameCount"
+                    >
+                        0 JOGOS
+                    </span>
+                </div>
+
+                <div>
+                    CLIQUE DIREITO = ★ FAVORITO
+                </div>
+
+            </div>
+
+            <div class="ports-browser" id="portsBrowser">
+                <div
+                    class="file-list"
+                    id="fileList"
+                >
+                    <div class="empty" id="empty">
+                        <div class="empty-big">[ 404 ]</div>
+                        NENHUM JOGO ENCONTRADO.
+                    </div>
+                </div>
+
+                <aside class="port-details" id="portDetails" aria-live="polite">
+                    <div class="port-details-empty">
+                        <div class="port-details-mark">▧</div>
+                        <div class="port-details-title">SELECIONE UM JOGO</div>
+                        <p>Escolha uma capsule para ver os detalhes.</p>
+                    </div>
+                </aside>
+            </div>
+
+            <footer class="footer">
+
+                <div>
+                    <strong>●</strong>
+                    SISTEMA PRONTO
+                </div>
+
+                <div>
+                    ↑ ↓ NAVEGAR
+                    &nbsp;//&nbsp;
+                    ENTER ABRIR
+                </div>
+
+                <div>
+                    ESC LIMPAR BUSCA
+                </div>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PERFIL
+========================================================= -->
+
+<div
+    class="profile-overlay"
+    id="profileModal"
+>
+
+    <div class="profile-window">
+
+        <div class="profile-header">
+
+            <div>
+
+                <div class="profile-title">
+                    MEU PERFIL
+                </div>
+
+                <div class="profile-subtitle">
+                    C:\USUARIO&gt; CONFIGURAÇÃO DO PERFIL
+                </div>
+
+            </div>
+
+            <button
+                class="profile-close"
+                id="profileClose"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="profile-body">
+
+            <div class="profile-top">
+
+                <div class="profile-avatar-card">
+
+                    <div
+                        class="avatar-stage"
+                        id="avatarStage"
+                    >
+
+                        <img
+                            id="avatarPhoto"
+                            class="avatar-photo"
+                            alt="Avatar"
+                        >
+
+                        <div
+                            class="avatar-layer avatar-face"
+                            id="avatarFace"
+                        >
+                            😀
+                        </div>
+
+                        <div
+                            class="avatar-layer avatar-accessory"
+                            id="avatarAccessory"
+                        ></div>
+
+                        <div
+                            class="avatar-layer avatar-extra"
+                            id="avatarExtra"
+                        ></div>
+
+                    </div>
+
+                    <div
+                        class="profile-avatar-name"
+                        id="profilePreviewName"
+                    >
+                        PLAYER
+                    </div>
+
+                    <div
+                        class="profile-avatar-type"
+                        id="profileAvatarType"
+                    >
+                        AVATAR EMOJI
+                    </div>
+
+                </div>
+
+                <div class="profile-editor">
+
+                    <div class="profile-section">
+
+                        <div class="profile-section-title">
+                            IDENTIDADE
+                        </div>
+
+                        <label class="profile-label">
+                            NOME DE EXIBIÇÃO
+                        </label>
+
+                        <input
+                            id="profileNameInput"
+                            class="profile-input"
+                            maxlength="24"
+                            placeholder="SEU NOME"
+                            autocomplete="nickname"
+                        >
+
+                        <div class="profile-note">
+                            Esse nome será mostrado no HTMLGames.
+                        </div>
+
+                    </div>
+
+                    <div class="profile-section">
+
+                        <div class="profile-section-title">
+                            AVATAR
+                        </div>
+
+                        <div class="avatar-mode-tabs">
+
+                            <button
+                                class="avatar-mode-button active"
+                                id="avatarEmojiMode"
+                                type="button"
+                            >
+                                EMOJI
+                            </button>
+
+                            <button
+                                class="avatar-mode-button"
+                                id="avatarPhotoMode"
+                                type="button"
+                            >
+                                FOTO
+                            </button>
+
+                        </div>
+
+                        <div
+                            class="avatar-editor active"
+                            id="emojiEditor"
+                        >
+
+                            <div class="avatar-category-tabs">
+
+                                <button
+                                    class="avatar-category-button active"
+                                    data-category="face"
+                                    type="button"
+                                >
+                                    ROSTO
+                                </button>
+
+                                <button
+                                    class="avatar-category-button"
+                                    data-category="accessory"
+                                    type="button"
+                                >
+                                    ACESSÓRIO
+                                </button>
+
+                                <button
+                                    class="avatar-category-button"
+                                    data-category="extra"
+                                    type="button"
+                                >
+                                    EXTRA
+                                </button>
+
+                            </div>
+
+                            <div
+                                class="emoji-grid"
+                                id="emojiGrid"
+                            ></div>
+
+                        </div>
+
+                        <div
+                            class="photo-editor"
+                            id="photoEditor"
+                        >
+
+                            <label class="avatar-upload">
+
+                                📷 ESCOLHER FOTO DO PC
+
+                                <input
+                                    id="avatarFileInput"
+                                    class="avatar-file"
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                >
+
+                            </label>
+
+                            <div
+                                class="avatar-file-name"
+                                id="avatarFileName"
+                            >
+                                NENHUMA FOTO SELECIONADA.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="profile-section"
+                        id="accountSection"
+                    >
+
+                        <div class="profile-section-title">
+                            CONTA
+                        </div>
+
+                        <div
+                            class="guest-warning"
+                            id="guestWarning"
+                        >
+                            ⚠ MODO CONVIDADO — este perfil não possui email e senha. Ele não pode ser recuperado em outro dispositivo.
+                        </div>
+
+                        <label class="profile-label">
+                            EMAIL
+                        </label>
+
+                        <input
+                            id="profileEmailInput"
+                            class="profile-input"
+                            type="email"
+                            autocomplete="email"
+                        >
+
+                        <label class="profile-label">
+                            NOVA SENHA
+                        </label>
+
+                        <input
+                            id="profilePasswordInput"
+                            class="profile-input"
+                            type="password"
+                            minlength="6"
+                            placeholder="DEIXE VAZIO PARA NÃO ALTERAR"
+                            autocomplete="new-password"
+                        >
+
+                        <div class="profile-note">
+                            Alterar o email pode exigir uma confirmação enviada pelo Supabase.
+                        </div>
+
+                    </div>
+
+                    <div class="profile-actions">
+
+                        <button
+                            class="secondary-button"
+                            id="saveProfileButton"
+                            type="button"
+                        >
+                            SALVAR ALTERAÇÕES
+                        </button>
+
+                        <button
+                            class="secondary-button"
+                            id="closeProfileButton"
+                            type="button"
+                        >
+                            FECHAR
+                        </button>
+
+                    </div>
+
+                    <div
+                        class="profile-message"
+                        id="profileMessage"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL DE PASTA
+========================================================= -->
+
+<div
+    class="folder-overlay"
+    id="folderModal"
+>
+
+    <div class="folder-window">
+
+        <div class="folder-window-header">
+
+            <div
+                class="folder-window-title"
+                id="folderModalTitle"
+            >
+                NOVA PASTA
+            </div>
+
+            <button
+                class="folder-window-close"
+                id="folderModalClose"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="folder-window-body">
+
+            <input
+                id="folderNameInput"
+                class="folder-input"
+                maxlength="32"
+                placeholder="NOME DA PASTA..."
+                autocomplete="off"
+            >
+
+            <div class="folder-modal-actions">
+
+                <button
+                    class="folder-modal-button"
+                    id="folderModalConfirm"
+                    type="button"
+                >
+                    CONFIRMAR
+                </button>
+
+                <button
+                    class="folder-modal-button cancel"
+                    id="folderModalCancel"
+                    type="button"
+                >
+                    CANCELAR
+                </button>
+
+            </div>
+
+            <div
+                class="folder-modal-message"
+                id="folderModalMessage"
+            ></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL DE MOVER FAVORITO
+========================================================= -->
+
+<div
+    class="move-overlay"
+    id="moveModal"
+>
+
+    <div class="move-window">
+
+        <div class="move-header">
+
+            <div class="move-title">
+                MOVER FAVORITO
+            </div>
+
+            <button
+                class="move-close"
+                id="moveModalClose"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="move-body">
+
+            <div
+                class="move-game-name"
+                id="moveGameName"
+            ></div>
+
+            <div
+                class="move-folder-list"
+                id="moveFolderList"
+            ></div>
+
+            <div
+                class="move-message"
+                id="moveMessage"
+            ></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const SITE_VERSION_FALLBACK = "v1.0.57";
+
+document.querySelectorAll(".site-version").forEach(elemento => {
+    elemento.textContent = SITE_VERSION_FALLBACK;
+});
+
+async function atualizarVersaoSite(){
+    try{
+        const resposta = await fetch("./version.json?nocache=" + Date.now(), {
+            cache: "no-store"
+        });
+        if(!resposta.ok) throw new Error("Não foi possível carregar version.json");
+
+        const dados = await resposta.json();
+        if(!dados.version) throw new Error("Versão não encontrada");
+
+        document.querySelectorAll(".site-version").forEach(elemento => {
+            elemento.textContent = "v" + dados.version;
+        });
+    }catch(error){
+        console.warn("Usando versão padrão do site:", error);
+    }
+}
+
+atualizarVersaoSite();
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://xsbbgoohvlgpprhqevyo.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let usuarioAtual = null;
+let modoConvidadoLocal = false;
+let supabaseDisponivel = true;
+
+let avatarDraft = {
+    type:"emoji",
+    face:"😀",
+    accessory:"",
+    extra:"",
+    file:null,
+    url:null
+};
+
+let avatarCategoria = "face";
+let modoCadastro = false;
+
+let favoritosConta = [];
+let pastasFavoritos = [];
+
+let pastaFavoritosAtual = null;
+
+let pastaModalModo = "criar";
+let pastaModalId = null;
+
+let favoritoMovendo = null;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const authScreen =
+    document.getElementById("authScreen");
+
+const siteContent =
+    document.getElementById("siteContent");
+
+const authForm =
+    document.getElementById("authForm");
+
+const authEmail =
+    document.getElementById("authEmail");
+
+const authPassword =
+    document.getElementById("authPassword");
+
+const authSubmit =
+    document.getElementById("authSubmit");
+
+const authMessage =
+    document.getElementById("authMessage");
+
+const authSwitchButton =
+    document.getElementById("authSwitchButton");
+
+const authSwitchText =
+    document.getElementById("authSwitchText");
+
+const authTerminalText =
+    document.getElementById("authTerminalText");
+
+const guestButton =
+    document.getElementById("guestButton");
+
+const accountDisplayName =
+    document.getElementById("accountDisplayName");
+
+const headerAvatar =
+    document.getElementById("headerAvatar");
+
+const profileButton =
+    document.getElementById("profileButton");
+
+const profileModal =
+    document.getElementById("profileModal");
+
+const profileNameInput =
+    document.getElementById("profileNameInput");
+
+const profileEmailInput =
+    document.getElementById("profileEmailInput");
+
+const profilePasswordInput =
+    document.getElementById("profilePasswordInput");
+
+const profileMessage =
+    document.getElementById("profileMessage");
+
+const avatarStage =
+    document.getElementById("avatarStage");
+
+const avatarPhoto =
+    document.getElementById("avatarPhoto");
+
+const avatarFace =
+    document.getElementById("avatarFace");
+
+const avatarAccessory =
+    document.getElementById("avatarAccessory");
+
+const avatarExtra =
+    document.getElementById("avatarExtra");
+
+const avatarFileInput =
+    document.getElementById("avatarFileInput");
+
+const avatarFileName =
+    document.getElementById("avatarFileName");
+
+const emojiGrid =
+    document.getElementById("emojiGrid");
+
+const emojiEditor =
+    document.getElementById("emojiEditor");
+
+const photoEditor =
+    document.getElementById("photoEditor");
+
+const avatarEmojiMode =
+    document.getElementById("avatarEmojiMode");
+
+const avatarPhotoMode =
+    document.getElementById("avatarPhotoMode");
+
+const guestWarning =
+    document.getElementById("guestWarning");
+
+const profileAvatarType =
+    document.getElementById("profileAvatarType");
+
+const favoritesPanel =
+    document.getElementById("favoritesPanel");
+
+const folderList =
+    document.getElementById("folderList");
+
+const folderModal =
+    document.getElementById("folderModal");
+
+const folderModalTitle =
+    document.getElementById("folderModalTitle");
+
+const folderNameInput =
+    document.getElementById("folderNameInput");
+
+const folderModalMessage =
+    document.getElementById("folderModalMessage");
+
+const folderModalConfirm =
+    document.getElementById("folderModalConfirm");
+
+const moveModal =
+    document.getElementById("moveModal");
+
+const moveGameName =
+    document.getElementById("moveGameName");
+
+const moveFolderList =
+    document.getElementById("moveFolderList");
+
+const moveMessage =
+    document.getElementById("moveMessage");
+
+
+/* =========================================================
+   METADATA DO USUÁRIO
+========================================================= */
+
+function obterMetadata(user){
+
+    return user?.user_metadata || {};
+}
+
+
+function obterPerfilDoUsuario(user){
+
+    const metadata =
+        obterMetadata(user);
+
+    return {
+
+        display_name:
+            metadata.display_name ||
+            "PLAYER",
+
+        avatar_type:
+            metadata.avatar_type ||
+            "emoji",
+
+        avatar_face:
+            metadata.avatar_face ||
+            "😀",
+
+        avatar_accessory:
+            metadata.avatar_accessory ||
+            "",
+
+        avatar_extra:
+            metadata.avatar_extra ||
+            "",
+
+        avatar_url:
+            metadata.avatar_url ||
+            null
+    };
+}
+
+
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
+function mostrarMensagemAuth(texto,tipo=""){
+
+    authMessage.textContent = texto;
+
+    authMessage.className =
+        "auth-message";
+
+    if(tipo)
+        authMessage.classList.add(tipo);
+}
+
+
+function mostrarMensagemPerfil(texto,tipo=""){
+
+    profileMessage.textContent = texto;
+
+    profileMessage.className =
+        "profile-message";
+
+    if(tipo)
+        profileMessage.classList.add(tipo);
+}
+
+
+function traduzirErro(error){
+
+    const msg =
+        String(
+            error?.message ||
+            error ||
+            ""
+        ).toLowerCase();
+
+    if(msg.includes("invalid login credentials"))
+        return "EMAIL OU SENHA INCORRETOS.";
+
+    if(msg.includes("user already registered"))
+        return "ESTE EMAIL JÁ POSSUI UMA CONTA.";
+
+    if(msg.includes("email not confirmed"))
+        return "ESTE EMAIL AINDA NÃO FOI CONFIRMADO.";
+
+    if(msg.includes("anonymous sign-ins"))
+        return "O LOGIN SEM PERFIL NÃO ESTÁ ATIVADO NO SUPABASE.";
+
+    if(msg.includes("password should be at least"))
+        return "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.";
+
+    if(msg.includes("invalid email"))
+        return "O EMAIL INFORMADO NÃO É VÁLIDO.";
+
+    if(msg.includes("same password"))
+        return "A NOVA SENHA PRECISA SER DIFERENTE.";
+
+    if(msg.includes("rate limit"))
+        return "MUITAS TENTATIVAS. AGUARDE UM POUCO.";
+
+    if(msg.includes("failed to fetch") || msg.includes("timeout") || msg.includes("network"))
+        return "SUPABASE INDISPONÍVEL OU DESATIVADO. USE O MODO CONVIDADO LOCAL.";
+
+    if(msg.includes("row-level security"))
+        return "O SUPABASE BLOQUEOU ESTA OPERAÇÃO.";
+
+    if(msg.includes("duplicate key"))
+        return "ESTE FAVORITO JÁ ESTÁ NESSA PASTA.";
+
+    if(msg.includes("bucket"))
+        return "NÃO FOI POSSÍVEL ACESSAR O ARMAZENAMENTO.";
+
+    return String(
+        error?.message ||
+        "OCORREU UM ERRO."
+    ).toUpperCase();
+}
+
+
+/* =========================================================
+   AUTENTICAÇÃO
+========================================================= */
+
+function trocarModoAuth(){
+
+    modoCadastro =
+        !modoCadastro;
+
+    mostrarMensagemAuth("");
+
+    authPassword.value = "";
+
+    if(modoCadastro){
+
+        authSubmit.textContent =
+            "CRIAR CONTA";
+
+        authSwitchText.textContent =
+            "JÁ POSSUI UMA CONTA?";
+
+        authSwitchButton.textContent =
+            "ENTRAR";
+
+        authTerminalText.textContent =
+            "CRIANDO NOVA CONTA...";
+
+    }else{
+
+        authSubmit.textContent =
+            "ENTRAR";
+
+        authSwitchText.textContent =
+            "NÃO TEM UMA CONTA?";
+
+        authSwitchButton.textContent =
+            "CRIAR CONTA";
+
+        authTerminalText.textContent =
+            "AUTENTICAÇÃO NECESSÁRIA...";
+    }
+}
+
+
+authSwitchButton.addEventListener(
+    "click",
+    trocarModoAuth
+);
+
+
+authForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const email =
+            authEmail.value.trim();
+
+        const password =
+            authPassword.value;
+
+        if(!email || !password){
+
+            mostrarMensagemAuth(
+                "PREENCHA EMAIL E SENHA.",
+                "error"
+            );
+
+            return;
+        }
+
+        if(password.length < 6){
+
+            mostrarMensagemAuth(
+                "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.",
+                "error"
+            );
+
+            return;
+        }
+
+        authSubmit.disabled = true;
+
+        try{
+
+            if(modoCadastro){
+
+                authSubmit.textContent =
+                    "CRIANDO...";
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth.signUp({
+                        email,
+                        password
+                    });
+
+                if(error)
+                    throw error;
+
+                if(!data.user)
+                    throw new Error(
+                        "A conta não foi criada."
+                    );
+
+                if(data.session){
+
+                    usuarioAtual =
+                        data.user;
+
+                    await inicializarPerfil(
+                        usuarioAtual
+                    );
+
+                    await carregarDadosFavoritos();
+
+                    mostrarSite();
+
+                }else{
+
+                    mostrarMensagemAuth(
+                        "CONTA CRIADA. CONFIRME O EMAIL SE NECESSÁRIO E DEPOIS ENTRE.",
+                        "success"
+                    );
+
+                }
+
+            }else{
+
+                authSubmit.textContent =
+                    "ENTRANDO...";
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+
+                if(error)
+                    throw error;
+
+                usuarioAtual =
+                    data.user;
+
+                await inicializarPerfil(
+                    usuarioAtual
+                );
+
+                await carregarDadosFavoritos();
+
+                mostrarSite();
+            }
+
+        }catch(error){
+
+            console.error(
+                "AUTH ERROR:",
+                error
+            );
+
+            mostrarMensagemAuth(
+                traduzirErro(error),
+                "error"
+            );
+
+        }finally{
+
+            authSubmit.disabled = false;
+
+            authSubmit.textContent =
+                modoCadastro
+                    ? "CRIAR CONTA"
+                    : "ENTRAR";
+        }
+    }
+);
+
+
+/* =========================================================
+   CONVIDADO
+========================================================= */
+
+guestButton.addEventListener(
+    "click",
+    entrarComoConvidado
+);
+
+
+function atualizarStatusSupabase(disponivel, detalhe=""){
+    supabaseDisponivel = disponivel;
+    const authStatus = document.getElementById("serviceStatus");
+    const siteStatus = document.getElementById("siteServiceStatus");
+    const texto = disponivel
+        ? "SUPABASE ONLINE. CONTAS E SINCRONIZAÇÃO DISPONÍVEIS."
+        : "⚠ SUPABASE INDISPONÍVEL/DESATIVADO. O MODO CONVIDADO LOCAL FUNCIONA, MAS CONTAS E DADOS NA NUVEM NÃO ESTÃO DISPONÍVEIS." +
+          (detalhe ? " " + detalhe : "");
+    authStatus.textContent = texto;
+    authStatus.classList.toggle("visible", !disponivel);
+    siteStatus.textContent = texto;
+    siteStatus.style.display = disponivel ? "none" : "block";
+}
+
+function obterPerfilConvidadoLocal(){
+    try { return JSON.parse(localStorage.getItem("htmlgames_guest_profile") || "{}"); }
+    catch(error) { return {}; }
+}
+
+function entrarConvidadoLocal(){
+    modoConvidadoLocal = true;
+    const salvo = obterPerfilConvidadoLocal();
+    usuarioAtual = {
+        id:"local-guest", is_anonymous:true, email:null,
+        user_metadata:{
+            display_name:salvo.display_name || "GUEST",
+            avatar_type:salvo.avatar_type || "emoji",
+            avatar_face:salvo.avatar_face || "😀",
+            avatar_accessory:salvo.avatar_accessory || "",
+            avatar_extra:salvo.avatar_extra || "",
+            avatar_url:salvo.avatar_url || null
+        }
+    };
+    carregarDadosFavoritosLocais();
+    mostrarSite();
+}
+
+async function entrarComoConvidado(){
+    guestButton.disabled = true;
+    guestButton.textContent = "VERIFICANDO SERVIÇO...";
+    try {
+        const {data,error} = await Promise.race([
+            supabaseClient.auth.signInAnonymously(),
+            new Promise((_,reject)=>setTimeout(()=>reject(new Error("SUPABASE_TIMEOUT")),7000))
+        ]);
+        if(error) throw error;
+        modoConvidadoLocal = false;
+        usuarioAtual = data.user;
+        try { await inicializarPerfil(usuarioAtual); }
+        catch(profileError) {
+            console.warn("Falha ao inicializar perfil remoto:",profileError);
+            entrarConvidadoLocal();
+            atualizarStatusSupabase(false,"O serviço respondeu, mas não permitiu inicializar o perfil.");
+            mostrarMensagemAuth("SUPABASE COM PROBLEMAS. ENTRANDO EM MODO CONVIDADO LOCAL.","success");
+            return;
+        }
+        carregarDadosFavoritosLocais();
+        atualizarStatusSupabase(true);
+        mostrarSite();
+    } catch(error) {
+        console.warn("SUPABASE indisponível; usando convidado local:",error);
+        atualizarStatusSupabase(false,error.message==="SUPABASE_TIMEOUT"?"TEMPO DE RESPOSTA ESGOTADO.":"");
+        entrarConvidadoLocal();
+        mostrarMensagemAuth("SUPABASE INDISPONÍVEL. VOCÊ ENTROU EM MODO LOCAL; PERFIL E FAVORITOS FICAM SALVOS NESTE NAVEGADOR.","success");
+    } finally {
+        guestButton.disabled = false;
+        guestButton.textContent = "CONTINUAR SEM PERFIL";
+    }
+}
+
+/* =========================================================
+   PERFIL
+========================================================= */
+
+async function inicializarPerfil(user){
+
+    if(!user || modoConvidadoLocal)
+        return;
+
+    const metadata =
+        obterMetadata(user);
+
+    const precisaInicializar =
+        !metadata.display_name;
+
+    if(!precisaInicializar)
+        return;
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.updateUser({
+            data:{
+                display_name:
+                    user.is_anonymous
+                        ? "GUEST"
+                        : "PLAYER",
+
+                avatar_type:"emoji",
+
+                avatar_face:"😀",
+
+                avatar_accessory:"",
+
+                avatar_extra:"",
+
+                avatar_url:null
+            }
+        });
+
+    if(error)
+        throw error;
+
+    if(data?.user)
+        usuarioAtual =
+            data.user;
+}
+
+
+function atualizarInterfacePerfil(){
+
+    if(!usuarioAtual)
+        return;
+
+    const perfil =
+        obterPerfilDoUsuario(
+            usuarioAtual
+        );
+
+    accountDisplayName.textContent =
+        perfil.display_name;
+
+    profileNameInput.value =
+        perfil.display_name;
+
+    profileEmailInput.value =
+        usuarioAtual.email || "";
+
+    profileEmailInput.disabled =
+        usuarioAtual.is_anonymous;
+
+    profilePasswordInput.disabled =
+        usuarioAtual.is_anonymous;
+
+    guestWarning.classList.toggle(
+        "visible",
+        usuarioAtual.is_anonymous
+    );
+
+    avatarDraft = {
+
+        type:perfil.avatar_type,
+
+        face:perfil.avatar_face,
+
+        accessory:perfil.avatar_accessory,
+
+        extra:perfil.avatar_extra,
+
+        file:null,
+
+        url:perfil.avatar_url
+    };
+
+    atualizarAvatarDraft();
+    renderizarAvatarHeader();
+    renderizarOpcoesAvatar();
+}
+
+
+function atualizarAvatarDraft(){
+
+    if(
+        avatarDraft.type === "photo" &&
+        avatarDraft.url
+    ){
+
+        avatarStage.classList.add(
+            "photo-mode"
+        );
+
+        avatarPhoto.src =
+            avatarDraft.url;
+
+    }else{
+
+        avatarStage.classList.remove(
+            "photo-mode"
+        );
+
+        avatarPhoto.removeAttribute(
+            "src"
+        );
+
+        avatarFace.textContent =
+            avatarDraft.face || "😀";
+
+        avatarAccessory.textContent =
+            avatarDraft.accessory || "";
+
+        avatarExtra.textContent =
+            avatarDraft.extra || "";
+    }
+
+    document.getElementById(
+        "profilePreviewName"
+    ).textContent =
+        profileNameInput.value ||
+        "PLAYER";
+
+    profileAvatarType.textContent =
+        avatarDraft.type === "photo"
+            ? "AVATAR COM FOTO"
+            : "AVATAR EMOJI";
+}
+
+
+function renderizarAvatarHeader(){
+
+    const perfil =
+        obterPerfilDoUsuario(
+            usuarioAtual
+        );
+
+    if(
+        perfil.avatar_type === "photo" &&
+        perfil.avatar_url
+    ){
+
+        headerAvatar.innerHTML = "";
+
+        const img =
+            document.createElement("img");
+
+        img.src =
+            perfil.avatar_url;
+
+        img.alt =
+            "Avatar";
+
+        headerAvatar.appendChild(
+            img
+        );
+
+    }else{
+
+        headerAvatar.textContent =
+            perfil.avatar_face ||
+            "😀";
+    }
+}
+
+
+function abrirPerfil(){
+
+    if(!usuarioAtual)
+        return;
+
+    mostrarMensagemPerfil("");
+
+    atualizarInterfacePerfil();
+
+    definirModoAvatar(
+        avatarDraft.type === "photo"
+            ? "photo"
+            : "emoji"
+    );
+
+    profileModal.classList.add(
+        "open"
+    );
+}
+
+
+function fecharPerfil(){
+
+    profileModal.classList.remove(
+        "open"
+    );
+
+    avatarFileInput.value = "";
+
+    avatarFileName.textContent =
+        "NENHUMA FOTO SELECIONADA.";
+
+    mostrarMensagemPerfil("");
+}
+
+
+profileButton.addEventListener(
+    "click",
+    abrirPerfil
+);
+
+
+document
+    .getElementById("profileClose")
+    .addEventListener(
+        "click",
+        fecharPerfil
+    );
+
+
+document
+    .getElementById("closeProfileButton")
+    .addEventListener(
+        "click",
+        fecharPerfil
+    );
+
+
+profileModal.addEventListener(
+    "click",
+    event => {
+
+        if(
+            event.target ===
+            profileModal
+        )
+            fecharPerfil();
+    }
+);
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+const AVATAR_OPTIONS = {
+
+    face:[
+        "😀",
+        "😎",
+        "🤓",
+        "😈",
+        "👽",
+        "🤖",
+        "👻",
+        "💀",
+        "😺",
+        "🐸",
+        "👾",
+        "😶",
+        "😡",
+        "🥶",
+        "🥸",
+        "🤠",
+        "😴",
+        "🤡"
+    ],
+
+    accessory:[
+        "",
+        "🧢",
+        "🎩",
+        "👑",
+        "👒",
+        "🎓",
+        "🪖",
+        "🕶️",
+        "🥽",
+        "🎧",
+        "👓"
+    ],
+
+    extra:[
+        "",
+        "⭐",
+        "🔥",
+        "⚡",
+        "💥",
+        "❤️",
+        "🎮",
+        "👾",
+        "💎",
+        "🌟",
+        "☠️",
+        "🍀"
+    ]
+};
+
+
+function definirModoAvatar(modo){
+
+    const emoji =
+        modo === "emoji";
+
+    avatarEmojiMode.classList.toggle(
+        "active",
+        emoji
+    );
+
+    avatarPhotoMode.classList.toggle(
+        "active",
+        !emoji
+    );
+
+    emojiEditor.classList.toggle(
+        "active",
+        emoji
+    );
+
+    photoEditor.classList.toggle(
+        "active",
+        !emoji
+    );
+
+    if(emoji){
+
+        avatarDraft.type =
+            "emoji";
+
+        avatarDraft.file =
+            null;
+
+        avatarDraft.url =
+            null;
+
+        atualizarAvatarDraft();
+
+    }else{
+
+        avatarDraft.type =
+            "photo";
+
+        if(avatarDraft.url){
+
+            avatarStage.classList.add(
+                "photo-mode"
+            );
+
+            avatarPhoto.src =
+                avatarDraft.url;
+        }
+    }
+
+    renderizarOpcoesAvatar();
+}
+
+
+avatarEmojiMode.addEventListener(
+    "click",
+    () => definirModoAvatar("emoji")
+);
+
+
+avatarPhotoMode.addEventListener(
+    "click",
+    () => definirModoAvatar("photo")
+);
+
+
+document
+    .querySelectorAll(
+        ".avatar-category-button"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                avatarCategoria =
+                    button.dataset.category;
+
+                document
+                    .querySelectorAll(
+                        ".avatar-category-button"
+                    )
+                    .forEach(
+                        item =>
+                            item.classList.toggle(
+                                "active",
+                                item === button
+                            )
+                    );
+
+                renderizarOpcoesAvatar();
+            }
+        );
+    });
+
+
+function renderizarOpcoesAvatar(){
+
+    emojiGrid.innerHTML = "";
+
+    const opcoes =
+        AVATAR_OPTIONS[
+            avatarCategoria
+        ];
+
+    opcoes.forEach(
+        emoji => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "emoji-option";
+
+            let selecionado = false;
+
+            if(
+                avatarCategoria === "face"
+            )
+                selecionado =
+                    avatarDraft.face === emoji;
+
+            if(
+                avatarCategoria === "accessory"
+            )
+                selecionado =
+                    avatarDraft.accessory === emoji;
+
+            if(
+                avatarCategoria === "extra"
+            )
+                selecionado =
+                    avatarDraft.extra === emoji;
+
+            if(selecionado)
+                button.classList.add(
+                    "selected"
+                );
+
+            button.textContent =
+                emoji || "∅";
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    definirModoAvatar(
+                        "emoji"
+                    );
+
+                    if(
+                        avatarCategoria === "face"
+                    )
+                        avatarDraft.face =
+                            emoji;
+
+                    else if(
+                        avatarCategoria === "accessory"
+                    )
+                        avatarDraft.accessory =
+                            emoji;
+
+                    else
+                        avatarDraft.extra =
+                            emoji;
+
+                    atualizarAvatarDraft();
+                    renderizarOpcoesAvatar();
+                }
+            );
+
+            emojiGrid.appendChild(
+                button
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   FOTO
+========================================================= */
+
+avatarFileInput.addEventListener(
+    "change",
+    event => {
+
+        const file =
+            event.target.files[0];
+
+        if(!file)
+            return;
+
+        if(
+            !file.type.startsWith(
+                "image/"
+            )
+        ){
+
+            mostrarMensagemPerfil(
+                "ESCOLHA UMA IMAGEM VÁLIDA.",
+                "error"
+            );
+
+            avatarFileInput.value = "";
+
+            return;
+        }
+
+        if(
+            file.size >
+            5 * 1024 * 1024
+        ){
+
+            mostrarMensagemPerfil(
+                "A FOTO PRECISA TER NO MÁXIMO 5 MB.",
+                "error"
+            );
+
+            avatarFileInput.value = "";
+
+            return;
+        }
+
+        avatarDraft.type =
+            "photo";
+
+        avatarDraft.file =
+            file;
+
+        const reader =
+            new FileReader();
+
+        reader.onload =
+            () => {
+
+                avatarDraft.url =
+                    reader.result;
+
+                avatarStage.classList.add(
+                    "photo-mode"
+                );
+
+                avatarPhoto.src =
+                    reader.result;
+
+                avatarEmojiMode.classList.remove(
+                    "active"
+                );
+
+                avatarPhotoMode.classList.add(
+                    "active"
+                );
+
+                emojiEditor.classList.remove(
+                    "active"
+                );
+
+                photoEditor.classList.add(
+                    "active"
+                );
+
+                avatarFileName.textContent =
+                    file.name;
+
+                profileAvatarType.textContent =
+                    "AVATAR COM FOTO";
+
+                mostrarMensagemPerfil(
+                    "FOTO SELECIONADA. CLIQUE EM SALVAR ALTERAÇÕES.",
+                    "success"
+                );
+            };
+
+        reader.readAsDataURL(file);
+    }
+);
+
+
+/* =========================================================
+   UPLOAD DA FOTO
+========================================================= */
+
+async function enviarFotoAvatar(file){
+
+    if(!usuarioAtual)
+        throw new Error(
+            "NENHUM USUÁRIO CONECTADO."
+        );
+
+    const extensaoOriginal =
+        file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+    const extensao =
+        ["png","jpg","jpeg","webp"]
+            .includes(extensaoOriginal)
+            ? extensaoOriginal
+            : "png";
+
+    const nomeArquivo =
+        `avatar_${Date.now()}.${extensao}`;
+
+    const caminho =
+        `${usuarioAtual.id}/${nomeArquivo}`;
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .storage
+            .from("avatars")
+            .upload(
+                caminho,
+                file,
+                {
+                    upsert:false,
+                    contentType:file.type,
+                    cacheControl:"3600"
+                }
+            );
+
+    if(error)
+        throw error;
+
+    const {
+        data
+    } =
+        supabaseClient
+            .storage
+            .from("avatars")
+            .getPublicUrl(
+                caminho
+            );
+
+    if(
+        !data ||
+        !data.publicUrl
+    )
+        throw new Error(
+            "NÃO FOI POSSÍVEL OBTER A URL DA FOTO."
+        );
+
+    return data.publicUrl;
+}
+
+
+function arquivoParaDataURL(arquivo){
+    return new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(reader.result);
+        reader.onerror=()=>reject(new Error("NÃO FOI POSSÍVEL LER A FOTO."));
+        reader.readAsDataURL(arquivo);
+    });
+}
+
+/* =========================================================
+   SALVAR PERFIL
+========================================================= */
+
+document
+    .getElementById(
+        "saveProfileButton"
+    )
+    .addEventListener(
+        "click",
+        salvarPerfil
+    );
+
+
+async function salvarPerfil(){
+
+    if(!usuarioAtual)
+        return;
+
+    const nome =
+        profileNameInput.value.trim();
+
+    if(!nome){
+
+        mostrarMensagemPerfil(
+            "ESCOLHA UM NOME.",
+            "error"
+        );
+
+        return;
+    }
+
+    if(nome.length > 24){
+
+        mostrarMensagemPerfil(
+            "O NOME PODE TER NO MÁXIMO 24 CARACTERES.",
+            "error"
+        );
+
+        return;
+    }
+
+    const novaSenha =
+        profilePasswordInput.value;
+
+    if(
+        !usuarioAtual.is_anonymous &&
+        novaSenha &&
+        novaSenha.length < 6
+    ){
+
+        mostrarMensagemPerfil(
+            "A NOVA SENHA PRECISA TER PELO MENOS 6 CARACTERES.",
+            "error"
+        );
+
+        return;
+    }
+
+    const botao =
+        document.getElementById(
+            "saveProfileButton"
+        );
+
+    botao.disabled = true;
+
+    botao.textContent =
+        "SALVANDO...";
+
+    try{
+
+        if(modoConvidadoLocal){
+            const perfilLocal = {
+                display_name:nome,
+                avatar_type:avatarDraft.type,
+                avatar_face:avatarDraft.face,
+                avatar_accessory:avatarDraft.accessory,
+                avatar_extra:avatarDraft.extra,
+                avatar_url:avatarDraft.type === "photo" && avatarDraft.file
+                    ? await arquivoParaDataURL(avatarDraft.file)
+                    : (avatarDraft.type === "photo" ? avatarDraft.url : null)
+            };
+            localStorage.setItem("htmlgames_guest_profile",JSON.stringify(perfilLocal));
+            usuarioAtual.user_metadata = perfilLocal;
+            avatarDraft.file = null;
+            avatarFileInput.value = "";
+            avatarFileName.textContent = "NENHUMA FOTO SELECIONADA.";
+            atualizarInterfacePerfil();
+            mostrarMensagemPerfil("PERFIL SALVO NESTE NAVEGADOR.","success");
+            playSound("fav");
+            return;
+        }
+
+        let avatarUrl =
+            avatarDraft.url;
+
+        if(
+            avatarDraft.type === "photo" &&
+            avatarDraft.file
+        ){
+
+            avatarUrl =
+                await enviarFotoAvatar(
+                    avatarDraft.file
+                );
+        }
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.updateUser({
+
+                email:
+                    !usuarioAtual.is_anonymous
+                    ? profileEmailInput.value.trim()
+                    : undefined,
+
+                password:
+                    !usuarioAtual.is_anonymous &&
+                    novaSenha
+                    ? novaSenha
+                    : undefined,
+
+                data:{
+
+                    display_name:
+                        nome,
+
+                    avatar_type:
+                        avatarDraft.type,
+
+                    avatar_face:
+                        avatarDraft.face,
+
+                    avatar_accessory:
+                        avatarDraft.accessory,
+
+                    avatar_extra:
+                        avatarDraft.extra,
+
+                    avatar_url:
+                        avatarDraft.type === "photo"
+                            ? avatarUrl
+                            : null
+                }
+            });
+
+        if(error)
+            throw error;
+
+        if(!data?.user)
+            throw new Error(
+                "O SUPABASE NÃO RETORNOU O USUÁRIO ATUALIZADO."
+            );
+
+        usuarioAtual =
+            data.user;
+
+        profilePasswordInput.value =
+            "";
+
+        avatarDraft.file =
+            null;
+
+        avatarFileInput.value =
+            "";
+
+        avatarFileName.textContent =
+            "NENHUMA FOTO SELECIONADA.";
+
+        atualizarInterfacePerfil();
+
+        mostrarMensagemPerfil(
+            "ALTERAÇÕES SALVAS COM SUCESSO.",
+            "success"
+        );
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "PROFILE SAVE ERROR:",
+            error
+        );
+
+        mostrarMensagemPerfil(
+            "ERRO AO SALVAR: " +
+            traduzirErro(error),
+            "error"
+        );
+
+    }finally{
+
+        botao.disabled =
+            false;
+
+        botao.textContent =
+            "SALVAR ALTERAÇÕES";
+    }
+}
+
+
+/* =========================================================
+   FAVORITOS — LOCAL
+   Usado somente para convidados.
+========================================================= */
+
+function obterFavoritosLocais(){
+
+    try{
+
+        return JSON.parse(
+            localStorage.getItem(
+                "htmlgames_favs"
+            )
+        ) || [];
+
+    }catch(error){
+
+        return [];
+    }
+}
+
+
+function salvarFavoritosLocais(favoritos){
+
+    localStorage.setItem(
+        "htmlgames_favs",
+        JSON.stringify(
+            favoritos
+        )
+    );
+}
+
+
+function carregarDadosFavoritosLocais(){
+
+    const favoritos =
+        obterFavoritosLocais();
+
+    favoritosConta =
+        favoritos.map(
+            id => ({
+                id:`local-${id}`,
+                user_id:null,
+                game_id:id,
+                folder_id:null
+            })
+        );
+
+    pastasFavoritos = [];
+
+    pastaFavoritosAtual =
+        null;
+}
+
+
+/* =========================================================
+   FAVORITOS — SUPABASE
+========================================================= */
+
+async function carregarDadosFavoritos(){
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        carregarDadosFavoritosLocais();
+
+        return;
+    }
+
+    const [
+        favoritosResult,
+        pastasResult
+    ] =
+        await Promise.all([
+
+            supabaseClient
+                .from("favorites")
+                .select(
+                    "id,user_id,game_id,folder_id,created_at"
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending:true
+                    }
+                ),
+
+            supabaseClient
+                .from("favorite_folders")
+                .select(
+                    "id,user_id,name,created_at"
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending:true
+                    }
+                )
+        ]);
+
+    if(favoritosResult.error)
+        throw favoritosResult.error;
+
+    if(pastasResult.error)
+        throw pastasResult.error;
+
+    favoritosConta =
+        favoritosResult.data || [];
+
+    pastasFavoritos =
+        pastasResult.data || [];
+
+    /*
+        A pasta atual volta para a principal
+        quando uma nova sessão é carregada.
+    */
+
+    pastaFavoritosAtual =
+        null;
+
+    renderizarPastas();
+}
+
+
+/* =========================================================
+   DADOS DE FAVORITOS
+========================================================= */
+
+function obterFavoritosIds(){
+
+    return favoritosConta.map(
+        favorito =>
+            favorito.game_id
+    );
+}
+
+
+function jogoEstaFavoritado(id){
+
+    return favoritosConta.some(
+        favorito =>
+            favorito.game_id === id
+    );
+}
+
+
+function favoritoDoJogo(id){
+
+    return favoritosConta.find(
+        favorito =>
+            favorito.game_id === id
+    );
+}
+
+
+/* =========================================================
+   ADICIONAR / REMOVER FAVORITO
+========================================================= */
+
+async function alternarFavorito(id){
+
+    if(!usuarioAtual)
+        return;
+
+    const existente =
+        favoritoDoJogo(id);
+
+    try{
+
+        if(
+            usuarioAtual.is_anonymous
+        ){
+
+            let favoritos =
+                obterFavoritosLocais();
+
+            if(
+                favoritos.includes(id)
+            ){
+
+                favoritos =
+                    favoritos.filter(
+                        item =>
+                            item !== id
+                    );
+
+            }else{
+
+                favoritos.push(id);
+            }
+
+            salvarFavoritosLocais(
+                favoritos
+            );
+
+            carregarDadosFavoritosLocais();
+
+        }else{
+
+            if(existente){
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from("favorites")
+                        .delete()
+                        .eq(
+                            "id",
+                            existente.id
+                        )
+                        .eq(
+                            "user_id",
+                            usuarioAtual.id
+                        );
+
+                if(error)
+                    throw error;
+
+                favoritosConta =
+                    favoritosConta.filter(
+                        item =>
+                            item.id !==
+                            existente.id
+                    );
+
+            }else{
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("favorites")
+                        .insert({
+                            user_id:
+                                usuarioAtual.id,
+
+                            game_id:
+                                id,
+
+                            folder_id:
+                                pastaFavoritosAtual
+                        })
+                        .select()
+                        .single();
+
+                if(error)
+                    throw error;
+
+                favoritosConta.push(
+                    data
+                );
+            }
+        }
+
+        playSound("fav");
+
+        carregarFavoritos();
+        filtrarJogos();
+
+    }catch(error){
+
+        console.error(
+            "FAVORITE ERROR:",
+            error
+        );
+
+        alert(
+            "ERRO AO ALTERAR FAVORITO:\n\n" +
+            traduzirErro(error)
+        );
+    }
+}
+
+
+/* =========================================================
+   MARCAR FAVORITOS NA LISTA
+========================================================= */
+
+function carregarFavoritos(){
+
+    const favoritos =
+        obterFavoritosIds();
+
+    files.forEach(
+        file => {
+
+            file.classList.toggle(
+                "favorite",
+                favoritos.includes(
+                    file.dataset.id
+                )
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   PASTAS
+========================================================= */
+
+function renderizarPastas(){
+
+    folderList.innerHTML =
+        "";
+
+    const botaoTodos =
+        document.createElement(
+            "button"
+        );
+
+    botaoTodos.type =
+        "button";
+
+    botaoTodos.className =
+        "folder-button main-folder";
+
+    if(
+        pastaFavoritosAtual === null
+    )
+        botaoTodos.classList.add(
+            "active"
+        );
+
+    botaoTodos.textContent =
+        "★ TODOS";
+
+    botaoTodos.addEventListener(
+        "click",
+        () => {
+
+            pastaFavoritosAtual =
+                null;
+
+            renderizarPastas();
+            filtrarJogos();
+        }
+    );
+
+    folderList.appendChild(
+        botaoTodos
+    );
+
+    pastasFavoritos.forEach(
+        pasta => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "folder-button";
+
+            if(
+                pastaFavoritosAtual ===
+                pasta.id
+            )
+                button.classList.add(
+                    "active"
+                );
+
+            button.textContent =
+                "📁 " +
+                pasta.name;
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    pastaFavoritosAtual =
+                        pasta.id;
+
+                    renderizarPastas();
+                    filtrarJogos();
+                }
+            );
+
+            folderList.appendChild(
+                button
+            );
+        }
+    );
+}
+
+
+function atualizarPainelFavoritos(){
+
+    const mostrar =
+        abaAtual ===
+        "favoritos";
+
+    favoritesPanel.classList.toggle(
+        "visible",
+        mostrar
+    );
+
+    if(mostrar)
+        renderizarPastas();
+}
+
+
+/* =========================================================
+   CRIAR / EDITAR PASTA
+========================================================= */
+
+function abrirModalPasta(
+    modo,
+    pasta=null
+){
+
+    pastaModalModo =
+        modo;
+
+    pastaModalId =
+        pasta?.id || null;
+
+    folderModalMessage.textContent =
+        "";
+
+    folderNameInput.value =
+        pasta?.name || "";
+
+    folderModalTitle.textContent =
+        modo === "criar"
+            ? "NOVA PASTA"
+            : "RENOMEAR PASTA";
+
+    folderModalConfirm.textContent =
+        modo === "criar"
+            ? "CRIAR"
+            : "SALVAR";
+
+    folderModal.classList.add(
+        "open"
+    );
+
+    setTimeout(
+        () =>
+            folderNameInput.focus(),
+        50
+    );
+}
+
+
+function fecharModalPasta(){
+
+    folderModal.classList.remove(
+        "open"
+    );
+
+    folderNameInput.value =
+        "";
+
+    folderModalMessage.textContent =
+        "";
+}
+
+
+async function confirmarPasta(){
+
+    const nome =
+        folderNameInput.value.trim();
+
+    if(!nome){
+
+        folderModalMessage.textContent =
+            "DIGITE UM NOME PARA A PASTA.";
+
+        return;
+    }
+
+    if(nome.length > 32){
+
+        folderModalMessage.textContent =
+            "O NOME PODE TER NO MÁXIMO 32 CARACTERES.";
+
+        return;
+    }
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        folderModalMessage.textContent =
+            "ENTRE EM UMA CONTA PARA CRIAR PASTAS.";
+
+        return;
+    }
+
+    folderModalConfirm.disabled =
+        true;
+
+    try{
+
+        if(
+            pastaModalModo ===
+            "criar"
+        ){
+
+            const existe =
+                pastasFavoritos.some(
+                    pasta =>
+                        pasta.name
+                            .toLowerCase() ===
+                        nome.toLowerCase()
+                );
+
+            if(existe){
+
+                folderModalMessage.textContent =
+                    "JÁ EXISTE UMA PASTA COM ESSE NOME.";
+
+                return;
+            }
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "favorite_folders"
+                    )
+                    .insert({
+                        user_id:
+                            usuarioAtual.id,
+
+                        name:
+                            nome
+                    })
+                    .select()
+                    .single();
+
+            if(error)
+                throw error;
+
+            pastasFavoritos.push(
+                data
+            );
+
+            pastaFavoritosAtual =
+                data.id;
+
+        }else{
+
+            const pasta =
+                pastasFavoritos.find(
+                    item =>
+                        item.id ===
+                        pastaModalId
+                );
+
+            if(!pasta)
+                throw new Error(
+                    "PASTA NÃO ENCONTRADA."
+                );
+
+            const existe =
+                pastasFavoritos.some(
+                    item =>
+                        item.id !== pasta.id &&
+                        item.name
+                            .toLowerCase() ===
+                        nome.toLowerCase()
+                );
+
+            if(existe){
+
+                folderModalMessage.textContent =
+                    "JÁ EXISTE UMA PASTA COM ESSE NOME.";
+
+                return;
+            }
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "favorite_folders"
+                    )
+                    .update({
+                        name:
+                            nome
+                    })
+                    .eq(
+                        "id",
+                        pasta.id
+                    )
+                    .eq(
+                        "user_id",
+                        usuarioAtual.id
+                    )
+                    .select()
+                    .single();
+
+            if(error)
+                throw error;
+
+            Object.assign(
+                pasta,
+                data
+            );
+        }
+
+        fecharModalPasta();
+
+        renderizarPastas();
+        filtrarJogos();
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "FOLDER ERROR:",
+            error
+        );
+
+        folderModalMessage.textContent =
+            traduzirErro(error);
+
+    }finally{
+
+        folderModalConfirm.disabled =
+            false;
+    }
+}
+
+
+document
+    .getElementById(
+        "createFolderButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if(
+                usuarioAtual?.is_anonymous
+            ){
+
+                alert(
+                    "ENTRE EM UMA CONTA PARA CRIAR SUBPASTAS."
+                );
+
+                return;
+            }
+
+            abrirModalPasta(
+                "criar"
+            );
+        }
+    );
+
+
+document
+    .getElementById(
+        "renameFolderButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if(
+                !pastaFavoritosAtual
+            ){
+
+                alert(
+                    "SELECIONE UMA SUBPASTA PRIMEIRO."
+                );
+
+                return;
+            }
+
+            const pasta =
+                pastasFavoritos.find(
+                    item =>
+                        item.id ===
+                        pastaFavoritosAtual
+                );
+
+            if(pasta)
+                abrirModalPasta(
+                    "editar",
+                    pasta
+                );
+        }
+    );
+
+
+document
+    .getElementById(
+        "deleteFolderButton"
+    )
+    .addEventListener(
+        "click",
+        excluirPasta
+    );
+
+
+folderModalConfirm.addEventListener(
+    "click",
+    confirmarPasta
+);
+
+
+document
+    .getElementById(
+        "folderModalCancel"
+    )
+    .addEventListener(
+        "click",
+        fecharModalPasta
+    );
+
+
+document
+    .getElementById(
+        "folderModalClose"
+    )
+    .addEventListener(
+        "click",
+        fecharModalPasta
+    );
+
+
+folderModal.addEventListener(
+    "click",
+    event => {
+
+        if(
+            event.target ===
+            folderModal
+        )
+            fecharModalPasta();
+    }
+);
+
+
+folderNameInput.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key ===
+            "Enter"
+        ){
+
+            event.preventDefault();
+
+            confirmarPasta();
+        }
+
+        if(
+            event.key ===
+            "Escape"
+        ){
+
+            event.preventDefault();
+
+            fecharModalPasta();
+        }
+    }
+);
+
+
+/* =========================================================
+   EXCLUIR PASTA
+========================================================= */
+
+async function excluirPasta(){
+
+    if(
+        !pastaFavoritosAtual
+    ){
+
+        alert(
+            "SELECIONE UMA SUBPASTA PRIMEIRO."
+        );
+
+        return;
+    }
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        alert(
+            "ENTRE EM UMA CONTA PARA GERENCIAR PASTAS."
+        );
+
+        return;
+    }
+
+    const pasta =
+        pastasFavoritos.find(
+            item =>
+                item.id ===
+                pastaFavoritosAtual
+        );
+
+    if(!pasta)
+        return;
+
+    const confirmar =
+        confirm(
+            `EXCLUIR A PASTA "${pasta.name}"?\n\nOS JOGOS NÃO SERÃO APAGADOS. ELES VOLTARÃO PARA "TODOS".`
+        );
+
+    if(!confirmar)
+        return;
+
+    try{
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from(
+                    "favorite_folders"
+                )
+                .delete()
+                .eq(
+                    "id",
+                    pasta.id
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                );
+
+        if(error)
+            throw error;
+
+        /*
+            O banco está configurado com
+            ON DELETE SET NULL.
+            Portanto os favoritos dessa pasta
+            voltam para a pasta principal.
+        */
+
+        favoritosConta =
+            favoritosConta.map(
+                favorito => {
+
+                    if(
+                        favorito.folder_id ===
+                        pasta.id
+                    )
+                        favorito.folder_id =
+                            null;
+
+                    return favorito;
+                }
+            );
+
+        pastasFavoritos =
+            pastasFavoritos.filter(
+                item =>
+                    item.id !==
+                    pasta.id
+            );
+
+        pastaFavoritosAtual =
+            null;
+
+        renderizarPastas();
+        filtrarJogos();
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "DELETE FOLDER ERROR:",
+            error
+        );
+
+        alert(
+            "ERRO AO EXCLUIR PASTA:\n\n" +
+            traduzirErro(error)
+        );
+    }
+}
+
+
+/* =========================================================
+   MOVER FAVORITO
+========================================================= */
+
+function abrirMoverFavorito(gameId){
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    ){
+
+        alert(
+            "ENTRE EM UMA CONTA PARA ORGANIZAR FAVORITOS EM SUBPASTAS."
+        );
+
+        return;
+    }
+
+    const jogo =
+        listaDeJogosOriginal.find(
+            item =>
+                item.id ===
+                gameId
+        );
+
+    if(!jogo)
+        return;
+
+    favoritoMovendo =
+        gameId;
+
+    moveGameName.textContent =
+        "JOGO: " +
+        jogo.nome;
+
+    moveMessage.textContent =
+        "";
+
+    moveFolderList.innerHTML =
+        "";
+
+    const criarBotaoPasta =
+        (
+            id,
+            nome,
+            icone
+        ) => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "move-folder-button";
+
+            button.textContent =
+                icone +
+                " " +
+                nome;
+
+            button.addEventListener(
+                "click",
+                () =>
+                    moverFavorito(
+                        gameId,
+                        id
+                    )
+            );
+
+            moveFolderList.appendChild(
+                button
+            );
+        };
+
+    criarBotaoPasta(
+        null,
+        "TODOS",
+        "★"
+    );
+
+    pastasFavoritos.forEach(
+        pasta => {
+
+            criarBotaoPasta(
+                pasta.id,
+                pasta.name,
+                "📁"
+            );
+        }
+    );
+
+    moveModal.classList.add(
+        "open"
+    );
+}
+
+
+function fecharMoverFavorito(){
+
+    moveModal.classList.remove(
+        "open"
+    );
+
+    favoritoMovendo =
+        null;
+
+    moveFolderList.innerHTML =
+        "";
+
+    moveMessage.textContent =
+        "";
+}
+
+
+async function moverFavorito(
+    gameId,
+    folderId
+){
+
+    if(
+        !usuarioAtual ||
+        usuarioAtual.is_anonymous
+    )
+        return;
+
+    const favorito =
+        favoritoDoJogo(gameId);
+
+    if(!favorito)
+        return;
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("favorites")
+                .update({
+                    folder_id:
+                        folderId
+                })
+                .eq(
+                    "id",
+                    favorito.id
+                )
+                .eq(
+                    "user_id",
+                    usuarioAtual.id
+                )
+                .select()
+                .single();
+
+        if(error)
+            throw error;
+
+        Object.assign(
+            favorito,
+            data
+        );
+
+        fecharMoverFavorito();
+
+        renderizarPastas();
+        filtrarJogos();
+
+        playSound("fav");
+
+    }catch(error){
+
+        console.error(
+            "MOVE FAVORITE ERROR:",
+            error
+        );
+
+        moveMessage.textContent =
+            "ERRO: " +
+            traduzirErro(error);
+    }
+}
+
+
+moveModal.addEventListener(
+    "click",
+    event => {
+
+        if(
+            event.target ===
+            moveModal
+        )
+            fecharMoverFavorito();
+    }
+);
+
+
+document
+    .getElementById(
+        "moveModalClose"
+    )
+    .addEventListener(
+        "click",
+        fecharMoverFavorito
+    );
+
+
+/* =========================================================
+   LISTA DE JOGOS
+========================================================= */
+
+const CONFIG_JOGOS = {
+
+    "FNAF GEMINI":[
+        "Monitore as câmeras, gerencie a energia e sobreviva à noite.",
+        "🐻",
+        "games/fnaf/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "MINESWEEPER":[
+        "Desarme o campo usando lógica pura sem explodir nenhuma mina.",
+        "💣",
+        "games/campo-minado/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "SNAKE":[
+        "Cresça comendo maçãs e desvie das próprias curvas.",
+        "🐍",
+        "games/snake/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "TIGRINHO":[
+        "Simulador de caça-níqueis retrô. Teste sua sorte.",
+        "🎰",
+        "games/tigre/index.html",
+        [ { text: "🪪 CONTAS", color: "#fcba03" } ],
+        false,
+        "gemini"
+    ],
+
+    "COUNT-CHAOS":[
+        "Conte até 10 sem errar enquanto o jogo muda os botões.",
+        "🔢",
+        "games/countchaos/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "NOVA-TERMINAL":[
+        "Opere no mercado de ações através de uma interface terminal.",
+        "📈",
+        "games/novaterminal/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "THE-PASSWORD":[
+        "Crie uma senha perfeita que atenda a dezenas de regras.",
+        "🔑",
+        "games/password/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "SYMBOL MEMORY":[
+        "Memorize sequências de símbolos em ritmo acelerado.",
+        "🧠",
+        "games/symbol/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "COLOR MATCH":[
+        "Misture, combine e encontre os tons exatos contra o relógio.",
+        "🎨",
+        "games/colormatch/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "CODE BREAKER":[
+        "Use raciocínio lógico para quebrar o código de segurança.",
+        "👨🏻‍💻",
+        "games/codebreaker/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "MINI MARKET":[
+        "Atenda clientes, gerencie seu estoque e expanda seu mercado.",
+        "🛒",
+        "games/minimart/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "DÚVIDO":[
+        "Pare o cronômetro no limite sem ultrapassar.",
+        "⏱️",
+        "games/duvido/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "BOMB DISPOSAL":[
+        "Comunique-se com seu aliado para desarmar uma bomba.",
+        "🧨",
+        "games/bombdisposal/index.html",
+        [],
+        false,
+        "gemini"
+    ],
+
+    "THE BINDING OF ISAAC":[
+        "The Binding of Isaac (TBOI) é um jogo eletrônico indie do gênero roguelike, criado por Edmund McMillen e Florian Himsl e lançado inicialmente em 2011 para Microsoft Windows. O enredo do jogo é vagamente baseado na história bíblica do sacrifício de Isaque. Os jogadores controlam Isaque — ou um dos outros sete personagens desbloqueáveis ​​— e percorrem uma masmorra gerada aleatoriamente, seguindo o estilo roguelike e inspirada na série The Legend of Zelda. Ao longo da jornada, é preciso derrotar monstros em combates em tempo real, coletar itens e aprimoramentos para vencer chefes, além de conquistar conteúdos desbloqueáveis, o que incentiva os jogadores a realizar novas partidas.",
+        "😭",
+        "https://patlamontagne.github.io/the-binding-of-isaac-js/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "tboi"
+    ],
+
+    "UNDERTALE [SANS]":[
+        "Apenas a batalha contra Sans.",
+        "💀",
+        "https://jcw87.github.io/c2-sans-fight/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "undertale-sans"
+    ],
+
+    "BALATRO":[
+        "Balatro é um jogo de construção de decks roguelike desenvolvido pela LocalThunk e publicado pela Playstack. Foi lançado inicialmente em 20 de fevereiro de 2024 no Steam (versões Windows e Steam Deck do Linux), PlayStation, Xbox e Switch, e uma versão para dispositivos móveis foi lançada em 26 de setembro de 2024 na Apple App Store, Apple Arcade e Google Play.",
+        "🃏",
+        "balatro.html",
+        [],
+        false,
+        "ports",
+        "balatro"
+    ],
+
+    "BUCKSHOT ROULETTE":[
+        "Buckshot Roulette é um videogame indietabletophorror de 2023 desenvolvido e publicado pelo desenvolvedor de videogames estoniano Mike Klubnika no itch.io. Foi lançado no Steam pela Critical Reflex em 4 de abril de 2024 para coincidir com uma nova atualização. O jogo foi comparado ao videogame roguelike Inscryption de 2021, apesar dos estilos visuais contrastantes. Klubnika desenvolveu o jogo no Godot motor de jogo e também compôs a trilha sonora do jogo.",
+        "🚬",
+        "buckshot.html",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        false,
+        "ports",
+        "buckshot-roulette"
+    ],
+
+    "HOLLOW KNIGHT":[
+        "Hollow Knight é um jogo de ação e aventura side-scrolling 2D no estilo Metroidvania. Desenvolvido pela Team Cherry e inicialmente lançado para Microsoft Windows em 24 de Fevereiro de 2017, e posteriormente macOS e Linux. Foi portado em 2018 para o Nintendo Switch, Xbox One e Playstation 4 pela Shark Jump Studios.",
+        "💀",
+        "Hollow Knight.html",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" }, { text: "🪪 CONTAS", color: "#fcba03" } ],
+        false,
+        "ports",
+        "hollow_knight"
+    ],
+
+    "FIVE NIGHTS AT FREDDY'S 1":[
+        "Five Nights at Freddy's, comumente abreviado como FNaF e frequentemente referido como Five Nights at Freddy's 1 ou FNaF 1, é um jogo de terror independente de apontar e clicar, sentar e sobreviver, desenvolvido e publicado pela Scottgames, LLC, que foi lançado em 8 de agosto de 2014,[1] para Windows, como o primeiro jogo da série Five Nights at Freddy's. Pouco depois, o jogo foi portado para Android em 24 de agosto de 2014, Amazon Fire OS em 26 de agosto de 2014, iOS em 11 de setembro de 2014, e Windows Phone em 2 de dezembro de 2014.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/1/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf1"
+    ],
+
+    "FIVE NIGHTS AT FREDDY'S 2":[
+        "Five Nights at Freddy's 2 é o segundo jogo da série, se passando antes de Five Nights at Freddy's na linha do tempo do jogo. É um jogo indie point-and-click de survival horror, no qual o jogador deve sobreviver às noites na nova e otimizada Pizzaria Freddy Fazbear evitando os animatrônicos. Existem seis animatrônicos novos, assim como as versões degradadas dos cinco originais do primeiro jogo, totalizando onze antagonistas. Existem várias diferenças entre a mecânica de sobrevivência do primeiro jogo, com destaque a remoção de portas e adição da Máscara de Freddy Fazbear e da Lanterna. Foi lançado no Steam e Desura no dia 11 de Novembro de 2014 depois de um atraso na liberação da Demo. Foi lançado para Android no dia 15 de Novembro e, poucos dias depois, no dia 20 de Novembro, lançado para iOS.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/2/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf-2"
+    ],
+
+    "FIVE NIGHTS AT FREDDY'S 3":[
+        "Five Nights at Freddy's 3 (FNaF 3) é um videogame de terror de sobrevivência de pontos e cliques de 2015 desenvolvido e publicado por Scott Cawthon. É o terceiro jogo principal da série Five Nights at Freddy's e se passa em uma atração com tema de terror baseada na rede de restaurantes apresentada nos dois primeiros jogos. O jogador assume o papel de um segurança não identificado que deve se defender de um animatrônico decrépito chamado Springtrap que percorre a atração, enquanto enfrenta alucinações fantasmas de outros animatrônicos.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/3/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf-3"
+    ],
+
+    "FIVE NIGHTS AT FREDDY'S 4":[
+        "Five Nights at Freddy's 4, originalmente chamado de Five Nights at Freddy's 4: The Final Chapter durante o desenvolvimento e abreviado como FNaF 4, é um jogo de terror independente de apontar e clicar, sentar e sobreviver, desenvolvido e publicado pela Scottgames, LLC, que foi lançado em 23 de julho de 2015, para Windows, como o quarto jogo da série Five Nights at Freddy's. O jogo foi portado para Android em 25 de julho de 2015, Amazon Fire OS em 26 de julho de 2015, e iOS em 3 de agosto de 2015.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/4/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf-4"
+    ],
+
+    "FIVE NIGHTS AT FREDDY'S: SISTER LOCATION":[
+        "Five Nights at Freddy's: Sister Location, comumente abreviado como FNaF: SL e frequentemente chamado de Five Nights at Freddy's 5 ou FNaF 5, é um jogo de terror independente de apontar e clicar, sentar e sobreviver, desenvolvido e publicado pela Scottgames, LLC, que foi lançado em 7 de outubro de 2016, para Windows, como o quinto jogo da série Five Nights at Freddy's. O jogo foi portado para Android em 22 de dezembro de 2016 e iOS em 3 de janeiro de 2017.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/sl/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf-5"
+    ],
+
+    "FREDDY FAZBEAR'S PIZZERIA SIMULATOR":[
+        "Freddy Fazbear's Pizzeria Simulator, comumente abreviado para FFPS e também conhecido como FNaF 6: Pizzeria Simulator, é um jogo de terror independente de apontar e clicar, sentar e sobreviver, desenvolvido e publicado pela Scottgames, LLC, lançado em 4 de dezembro de 2017, para Windows, e é o sexto jogo da série Five Nights at Freddy's.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/ps/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf-6"
+    ],
+
+    "ULTIMATE CUSTOM NIGHT":[
+        "Ultimate Custom Night, também conhecido pela sigla UCN, é um jogo point-and-click de survival horror criado por Scott Cawthon. É o sétimo jogo da série Five Nights At Freddy's (FNAF). O jogo foi lançado em 27 de junho de 2018 gratuitamente na Steam e no GameJolt. Originalmente ia ser uma DLC do Freddy Fazbear's Pizzeria Simulator, até o Scott decidir tornar a DLC um jogo separado. O jogo é feito no programa de computador chamado Clickteam Fusion 2.5 assim como todos os jogos anteriores.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/ucn/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "ucn"
+    ],
+
+    "FNAF WORLD":[
+        "FNaF World, totalmente intitulado Five Nights at Freddy's World e também conhecido como FNaF World 1, é um jogo independente de aventura e RPG de fantasia desenvolvido e publicado pela Scottgames, LLC, lançado em 21 de janeiro de 2016, para Windows via Steam, e é o primeiro spin-off da série Five Nights at Freddy's. Logo após o lançamento, o jogo foi removido do Steam em 25 de janeiro de 2016 devido a críticas polarizadas, com um relançamento atualizado e gratuito chegando ao Game Jolt em 8 de fevereiro de 2016.",
+        "🍕",
+        "https://irv77.github.io/hd_fnaf/w/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "fnaf-world"
+    ],
+
+    "HALF LIFE":[
+        "Half-Life, estilizado como HλLF-LIFE, é um jogo de tiro em primeira pessoa de ficção científica desenvolvido e publicado pela Valve. O jogador assume a perspectiva do cientista Gordon Freeman, que luta para escapar de uma instalação de pesquisa subterrânea depois que um experimento fracassado causa uma invasão alienígena massiva através de uma fenda dimensional, basicamente uma cascata de ressonância. Projetado inicialmente para Microsoft Windows e posteriormente levado para outras plataformas como PS2 e OS X, o jogo usa o mecanismo GoldSrc, uma versão consideravelmente modificada do mecanismo do Quake com algum código de outros jogos do Quake séries, incluindo QuakeWorld e Quake II.",
+        "🔫",
+        "half-life.html",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        false,
+        "ports",
+        "half-life"
+    ],
+
+    "HALF LIFE 2":[
+        "Ocorrendo em City 17 e arredores, quase duas décadas após os eventos do primeiro jogo, Half-Life 2 acompanha o físico Gordon Freeman enquanto ele é lançado em um ambiente desconhecido no qual as consequências do Incidente de Black Mesa repercutiram totalmente na sociedade humana. Freeman é forçado a lutar contra probabilidades cada vez mais desfavoráveis, a fim de libertar a humanidade da opressiva Combine, uma raça alienígena que conquistou a Terra. Em sua luta, ele é acompanhado por vários aliados, incluindo colegas cientistas, rebeldes e amigos (como Alyx Vance) — todos chocados ao vê-lo vivo.",
+        "🔫",
+        "half-life-2/index.html",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        false,
+        "ports",
+        "half-life-2"
+    ],
+
+    "CELESTE CLASSIC":[
+        "Celeste Classic é a versão original gratuita do Celeste, criada em 2016. Foi escrito para o console virtual Pico-8. O jogo pode ser encontrado no site do Pico-8 e no itch.io. O código original do jogo foi escrito em uma forma da linguagem de programação Lua adaptada ao Pico-8, embora a versão do Celeste Classic encontrada no jogo Celeste completo seja escrita em C#. Na versão completa do Celeste, o Celeste Classic pode ser desbloqueado ao encontrar uma sala escondida no Celestial Resort Lado A.",
+        "🍓",
+        "https://verdini.github.io/celeste-classic-web/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "celeste-classic"
+    ],
+
+    "ULTRAKILL":[
+        "ULTRAKILL é um jogo de tiro em primeira pessoa ultraviolento e rápido da velha escola desenvolvido por Arsi Hakita Patala e publicado pela New Blood Interactive. Você joga como V1, uma máquina de combate alimentada por sangue que se aventurou nas profundezas do Inferno após a extinção da humanidade. O inferno está repleto de demônios e almas atormentadas, fontes de sangue que você deve separar para se reabastecer e sobreviver.",
+        "🔫",
+        "https://chickenstrips05.github.io/Ultrakill-web/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "ultrakill"
+    ],
+
+    "BALDI'S BASICS":[
+        "Baldi's Basics in Education and Learning é um videogame de terror de sobrevivência de 2018 desenvolvido e publicado por Micah McGonigal. Parodiando jogos educativos dos anos 1990, foi feito para o Meta Game Jam em 2018. O jogador tem a tarefa de coletar sete cadernos e escapar de uma escola, evitando ser pego pelo professor titular da escola, Baldi. O jogador pode usar vários itens para impedir Baldi ou outros personagens.",
+        "📏",
+        "https://michaelsoft1853.github.io/baldi-s-basics-webgl/",
+        [ { text: "🖥️ PC ONLY", color: "#ff4a4a" } ],
+        true,
+        "ports",
+        "baldi-basics"
+    ]
+};
+
+
+const listaDeJogosOriginal =
+    Object.entries(
+        CONFIG_JOGOS
+    ).map(
+        ([nome,dados],index) => ({
+
+            id:
+                `game-${index}`,
+
+            nome,
+
+            desc:
+                dados[0],
+
+            icone:
+                dados[1],
+
+            url:
+                dados[2],
+
+            tagsCustomizadas:
+                dados[3] || [],
+
+            externo:
+                dados[4],
+
+            categoria:
+                dados[5],
+
+            // Nome-base do arquivo em arts/capsules/. Pode ser diferente do nome do jogo.
+            capsula:
+                dados[6] || nome.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+
+            indiceOriginal:
+                index
+        })
+    );
+
+
+/* =========================================================
+   ÁUDIO
+========================================================= */
+
+let audioCtx = null;
+
+
+function getAudioContext(){
+
+    if(!audioCtx){
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if(AudioContextClass)
+            audioCtx =
+                new AudioContextClass();
+    }
+
+    if(
+        audioCtx &&
+        audioCtx.state === "suspended"
+    )
+        audioCtx.resume();
+
+    return audioCtx;
+}
+
+
+function playSound(tipo){
+
+    try{
+
+        const ctx =
+            getAudioContext();
+
+        if(
+            !ctx ||
+            ctx.state !== "running"
+        )
+            return;
+
+        const osc =
+            ctx.createOscillator();
+
+        const gain =
+            ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(
+            ctx.destination
+        );
+
+        const now =
+            ctx.currentTime;
+
+        if(tipo === "hover"){
+
+            osc.type =
+                "triangle";
+
+            osc.frequency.setValueAtTime(
+                320,
+                now
+            );
+
+            gain.gain.setValueAtTime(
+                .015,
+                now
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .0001,
+                now + .04
+            );
+
+            osc.start(now);
+            osc.stop(
+                now + .04
+            );
+        }
+
+        if(tipo === "click"){
+
+            osc.type =
+                "square";
+
+            osc.frequency.setValueAtTime(
+                520,
+                now
+            );
+
+            osc.frequency.setValueAtTime(
+                800,
+                now + .03
+            );
+
+            gain.gain.setValueAtTime(
+                .04,
+                now
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .0001,
+                now + .1
+            );
+
+            osc.start(now);
+            osc.stop(
+                now + .1
+            );
+        }
+
+        if(tipo === "fav"){
+
+            osc.type =
+                "sine";
+
+            osc.frequency.setValueAtTime(
+                523.25,
+                now
+            );
+
+            osc.frequency.setValueAtTime(
+                659.25,
+                now + .05
+            );
+
+            osc.frequency.setValueAtTime(
+                783.99,
+                now + .1
+            );
+
+            gain.gain.setValueAtTime(
+                .04,
+                now
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .0001,
+                now + .18
+            );
+
+            osc.start(now);
+            osc.stop(
+                now + .18
+            );
+        }
+
+    }catch(error){}
+}
+
+
+/* =========================================================
+   RENDERIZAÇÃO
+========================================================= */
+
+let files = [];
+
+let abaAtual =
+    "ports";
+
+let ordemAtual =
+    "padrao";
+
+let selectedIndex =
+    0;
+
+
+const fileListContainer =
+    document.getElementById(
+        "fileList"
+    );
+
+const search =
+    document.getElementById(
+        "search"
+    );
+
+const empty =
+    document.getElementById(
+        "empty"
+    );
+
+const gameCount =
+    document.getElementById(
+        "gameCount"
+    );
+
+const searchClear =
+    document.getElementById(
+        "searchClear"
+    );
+
+const sortSelect =
+    document.getElementById(
+        "sortSelect"
+    );
+
+
+function obterListaOrdenada(){
+
+    const lista =
+        [...listaDeJogosOriginal];
+
+    if(
+        ordemAtual ===
+        "alfabetica"
+    ){
+
+        lista.sort(
+            (a,b) =>
+                a.nome.localeCompare(
+                    b.nome
+                )
+        );
+
+    }else if(
+        ordemAtual ===
+        "reversa"
+    ){
+
+        lista.sort(
+            (a,b) =>
+                b.nome.localeCompare(
+                    a.nome
+                )
+        );
+
+    }else{
+
+        lista.sort(
+            (a,b) =>
+                a.indiceOriginal -
+                b.indiceOriginal
+        );
+    }
+
+    return lista;
+}
+
+
+function jogoPertenceAPasta(
+    gameId
+){
+
+    if(
+        pastaFavoritosAtual ===
+        null
+    )
+        return true;
+
+    return favoritosConta.some(
+        favorito =>
+            favorito.game_id ===
+            gameId &&
+            favorito.folder_id ===
+            pastaFavoritosAtual
+    );
+}
+
+
+const PORT_GENRES = {
+    "THE BINDING OF ISAAC": ["roguelike", "acao"],
+    "BALATRO": ["roguelike"],
+    "BUCKSHOT ROULETTE": ["terror"],
+    "HOLLOW KNIGHT": ["acao", "plataforma"],
+    "CELESTE CLASSIC": ["plataforma"],
+    "ULTRAKILL": ["acao", "fps"],
+    "HALF LIFE": ["acao", "fps"],
+    "HALF LIFE 2": ["acao", "fps"],
+    "UNDERTALE [SANS]": ["rpg"],
+    "BALDI'S BASICS": ["terror", "puzzle"],
+    "FIVE NIGHTS AT FREDDY'S 1": ["terror"],
+    "FIVE NIGHTS AT FREDDY'S 2": ["terror"],
+    "FIVE NIGHTS AT FREDDY'S 3": ["terror"],
+    "FIVE NIGHTS AT FREDDY'S 4": ["terror"],
+    "FIVE NIGHTS AT FREDDY'S: SISTER LOCATION": ["terror"],
+    "FREDDY FAZBEAR'S PIZZERIA SIMULATOR": ["terror"],
+    "ULTIMATE CUSTOM NIGHT": ["terror"],
+    "FNAF WORLD": ["terror"],
+    "BENDY": ["terror"],
+    "HOTLINE MIAMI": ["acao"],
+    "CUPHEAD": ["acao", "plataforma"]
+};
+const PORT_SERIES = {
+    "FIVE NIGHTS AT FREDDY'S 1": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S 2": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S 3": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S 4": "fnaf",
+    "FIVE NIGHTS AT FREDDY'S: SISTER LOCATION": "fnaf",
+    "FREDDY FAZBEAR'S PIZZERIA SIMULATOR": "fnaf",
+    "ULTIMATE CUSTOM NIGHT": "fnaf",
+    "FNAF WORLD": "fnaf",
+    "HALF LIFE": "half-life",
+    "HALF LIFE 2": "half-life"
+};
+let filtroPortsAtual = "all";
+
+function alternarMenuPorts(){
+    const menu = document.getElementById("portFilterMenu");
+    const button = document.getElementById("tabPorts");
+    if(!menu || !button) return;
+    const abrir = menu.hidden;
+    menu.hidden = !abrir;
+    button.setAttribute("aria-expanded", String(abrir));
+    if(abrir){
+        const fecharFora = event => {
+            if(!event.target.closest(".port-filter-wrap")){
+                menu.hidden = true;
+                button.setAttribute("aria-expanded", "false");
+                document.removeEventListener("click", fecharFora);
+            }
+        };
+        setTimeout(() => document.addEventListener("click", fecharFora), 0);
+    }
+}
+
+function selecionarFiltroPorts(filtro){
+    filtroPortsAtual = filtro;
+    abaAtual = "ports";
+    selectedIndex = 0;
+    const menu = document.getElementById("portFilterMenu");
+    const button = document.getElementById("tabPorts");
+    if(menu) menu.hidden = true;
+    if(button) button.setAttribute("aria-expanded", "false");
+    document.querySelectorAll("[data-port-filter]").forEach(option => {
+        option.classList.toggle("active", option.dataset.portFilter === filtro);
+    });
+    const nomesFiltro = {
+        all: "PORTS",
+        "genre:terror": "PORTS / TERROR",
+        "genre:acao": "PORTS / AÇÃO",
+        "genre:plataforma": "PORTS / PLATAFORMA",
+        "genre:roguelike": "PORTS / ROGUELIKE",
+        "genre:fps": "PORTS / FPS",
+        "genre:rpg": "PORTS / RPG",
+        "genre:puzzle": "PORTS / PUZZLE",
+        "series:fnaf": "PORTS / FIVE NIGHTS AT FREDDY'S",
+        "series:half-life": "PORTS / HALF-LIFE"
+    };
+    const title = document.querySelector(".game-info > div:first-child");
+    if(title) title.dataset.baseLabel = nomesFiltro[filtro] || "PORTS";
+    atualizarPainelFavoritos();
+    renderizarJogos();
+    filtrarJogos();
+}
+
+function jogoPassaFiltroPorts(jogo){
+    if(filtroPortsAtual === "all") return true;
+    if(!jogo || jogo.categoria !== "ports") return false;
+    if(filtroPortsAtual.startsWith("genre:")){
+        return (PORT_GENRES[jogo.nome] || []).includes(filtroPortsAtual.slice(6));
+    }
+    if(filtroPortsAtual.startsWith("series:")){
+        return PORT_SERIES[jogo.nome] === filtroPortsAtual.slice(7);
+    }
+    return true;
+}
+
+function renderizarJogos(){
+
+    fileListContainer.innerHTML =
+        "";
+
+    const portsBrowser = document.getElementById("portsBrowser");
+    if(portsBrowser){
+        const modoCapsules = abaAtual === "ports" || abaAtual === "gemini";
+        portsBrowser.classList.toggle("active", modoCapsules);
+        portsBrowser.classList.toggle("gemini-mode", abaAtual === "gemini");
+    }
+
+    [
+        ["tabGemini", "gemini"],
+        ["tabPorts", "ports"],
+        ["tabFavoritos", "favoritos"]
+    ].forEach(([id, aba]) => {
+        const tab = document.getElementById(id);
+        if(tab) tab.classList.toggle("active", abaAtual === aba);
+    });
+
+    obterListaOrdenada()
+        .forEach(
+            jogo => {
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+                const usaCapsule = jogo.categoria === "ports" || jogo.categoria === "gemini";
+                div.className = "file" + (usaCapsule ? " port-card" : "");
+
+                div.dataset.id =
+                    jogo.id;
+
+                div.dataset.categoria =
+                    jogo.categoria;
+
+                div.dataset.name =
+                    (
+                        jogo.nome +
+                        " " +
+                        jogo.desc
+                    ).toLowerCase();
+
+                let tagsHtml = `
+                    <span class="tag-badge tag-category">
+                        ${jogo.categoria.toUpperCase()}
+                    </span>
+                `;
+
+                if(jogo.tagsCustomizadas && jogo.tagsCustomizadas.length > 0){
+                    jogo.tagsCustomizadas.forEach(t => {
+                        tagsHtml += `
+                            <span class="tag-custom" style="border:1px solid ${t.color}; color:${t.color}; background:${t.color}15;">
+                                ${t.text}
+                            </span>
+                        `;
+                    });
+                }
+
+                if(jogo.externo){
+                    tagsHtml += `
+                        <span class="external-tag">
+                            ↗ EXTERNO
+                        </span>
+                    `;
+                }
+
+                const capsuleHtml = usaCapsule ? `
+                    <div class="port-capsule">
+                        <img alt="" loading="lazy" data-capsule="${jogo.capsula}" hidden>
+                        <span class="capsule-fallback">${jogo.icone}</span>
+                    </div>
+                ` : `
+                    <div class="icon">
+                        ${jogo.icone}
+                    </div>
+                `;
+
+                div.innerHTML = `
+                    ${capsuleHtml}
+
+                    <div class="game-content">
+
+                        <div class="filename-container">
+
+                            <span class="filename">
+                                ${jogo.nome}
+                            </span>
+
+                            <span class="fav-star">
+                                ★
+                            </span>
+
+                        </div>
+
+                        <div class="description">
+                            ${jogo.desc}
+                        </div>
+
+                        <div class="tags-container">
+                            ${tagsHtml}
+                        </div>
+
+                    </div>
+
+                    <div class="arrow">
+                        ›
+                    </div>
+                `;
+
+                const capsuleImage = div.querySelector("img[data-capsule]");
+                if(capsuleImage){
+                    const extensions = [".gif", ".webp", ".png", ".jpg", ".jpeg", ".avif"];
+                    const baseUrl = "https://raw.githubusercontent.com/PolaroidAwk/HTMLGames/main/arts/capsules/";
+                    let extensionIndex = 0;
+                    const capsuleFallback = capsuleImage.parentElement.querySelector(".capsule-fallback");
+                    const tryNextCapsule = () => {
+                        if(extensionIndex >= extensions.length){
+                            capsuleImage.hidden = true;
+                            if(capsuleFallback) capsuleFallback.style.display = "flex";
+                            return;
+                        }
+                        capsuleImage.hidden = false;
+                        capsuleImage.src = baseUrl + encodeURIComponent(capsuleImage.dataset.capsule) + extensions[extensionIndex++];
+                    };
+                    capsuleImage.addEventListener("error", tryNextCapsule);
+                    capsuleImage.addEventListener("load", () => {
+                        capsuleImage.hidden = false;
+                        if(capsuleFallback) capsuleFallback.style.display = "none";
+                    });
+                    tryNextCapsule();
+                }
+
+                div.addEventListener(
+                    "mouseenter",
+                    () =>
+                        playSound(
+                            "hover"
+                        )
+                );
+
+                div.addEventListener(
+                    "click",
+                    () => {
+                        if((jogo.categoria === "ports" && abaAtual === "ports") || (jogo.categoria === "gemini" && abaAtual === "gemini")){
+                            selecionarPort(jogo);
+                            files.forEach(card => card.classList.toggle("selected", card.dataset.id === jogo.id));
+                        }else{
+                            abrirJogo(jogo);
+                        }
+                    }
+                );
+
+                div.addEventListener(
+                    "contextmenu",
+                    event => {
+
+                        event.preventDefault();
+
+                        alternarFavorito(
+                            jogo.id
+                        );
+                    }
+                );
+
+                div.addEventListener(
+                    "dblclick",
+                    event => {
+
+                        event.preventDefault();
+
+                        if(
+                            jogoEstaFavoritado(
+                                jogo.id
+                            )
+                        )
+                            abrirMoverFavorito(
+                                jogo.id
+                            );
+                    }
+                );
+
+                fileListContainer.appendChild(
+                    div
+                );
+            }
+        );
+
+    files =
+        document.querySelectorAll(
+            ".file"
+        );
+
+    carregarFavoritos();
+    filtrarJogos();
+}
+
+
+function selecionarPort(jogo){
+    const panel = document.getElementById("portDetails");
+    if(!panel || !jogo) return;
+
+    const categoriaPainel = jogo.categoria === "gemini" ? "GEMINI" : "PORTS";
+    const tags = (jogo.tagsCustomizadas || []).map(tag =>
+        `<span class="tag-custom" style="border:1px solid ${tag.color};color:${tag.color};background:${tag.color}15;">${tag.text}</span>`
+    ).join("");
+
+    panel.innerHTML = `
+        <div class="port-detail-layout">
+            <div class="port-detail-art-fallback">${jogo.icone}</div>
+            <div class="port-detail-body">
+                <div class="port-detail-kicker">HTMLGAMES / ${categoriaPainel}</div>
+                <div class="port-detail-name">${jogo.nome}</div>
+                <div class="port-detail-description">${jogo.desc}</div>
+                <div class="port-detail-tags">${tags}${jogo.externo ? '<span class="external-tag">↗ EXTERNO</span>' : ''}</div>
+                <button class="port-detail-play" type="button">▶ JOGAR AGORA</button>
+                <button class="port-detail-fav" type="button">★ ADICIONAR / REMOVER FAVORITO</button>
+            </div>
+        </div>
+    `;
+
+    const detailImg = new Image();
+    detailImg.className = "port-detail-art";
+    detailImg.alt = "";
+    const extensions = [".gif", ".webp", ".png", ".jpg", ".jpeg", ".avif"];
+    const baseUrl = "https://raw.githubusercontent.com/PolaroidAwk/HTMLGames/main/arts/capsules/";
+    let extensionIndex = 0;
+    detailImg.onerror = () => {
+        if(extensionIndex < extensions.length){
+            detailImg.src = baseUrl + encodeURIComponent(jogo.capsula) + extensions[extensionIndex++];
+        }else{
+            detailImg.remove();
+        }
+    };
+    detailImg.onload = () => {
+        const fallback = panel.querySelector(".port-detail-art-fallback");
+        if(fallback) fallback.replaceWith(detailImg);
+    };
+    detailImg.src = baseUrl + encodeURIComponent(jogo.capsula) + extensions[extensionIndex++];
+
+    panel.querySelector(".port-detail-play").addEventListener("click", () => abrirJogo(jogo));
+    panel.querySelector(".port-detail-fav").addEventListener("click", () => alternarFavorito(jogo.id));
+}
+
+
+function abrirJogo(jogo){
+
+    playSound("click");
+
+    setTimeout(
+        () => {
+
+            if(jogo.externo){
+
+                window.open(
+                    jogo.url,
+                    "_blank"
+                );
+
+            }else{
+
+                window.location.href =
+                    jogo.url;
+            }
+
+        },
+        80
+    );
+}
+
+
+/* =========================================================
+   ABAS
+========================================================= */
+
+function mudarAba(aba){
+    playSound("click");
+    abaAtual = aba;
+    selectedIndex = 0;
+    if(aba === "ports") filtroPortsAtual = "all";
+    if(aba !== "ports"){
+        const menu = document.getElementById("portFilterMenu");
+        if(menu) menu.hidden = true;
+        const button = document.getElementById("tabPorts");
+        if(button) button.setAttribute("aria-expanded", "false");
+    }
+    atualizarPainelFavoritos();
+    renderizarJogos();
+    filtrarJogos();
+}
+
+
+function mudarOrdenacao(){
+
+    playSound("click");
+
+    ordemAtual =
+        sortSelect.value;
+
+    selectedIndex =
+        0;
+
+    renderizarJogos();
+}
+
+
+function limparBusca(){
+
+    search.value = "";
+
+    searchClear.style.display =
+        "none";
+
+    selectedIndex =
+        0;
+
+    filtrarJogos();
+
+    search.focus();
+}
+
+
+search.addEventListener(
+    "input",
+    () => {
+
+        searchClear.style.display =
+            search.value
+                ? "block"
+                : "none";
+
+        selectedIndex =
+        0;
+
+        filtrarJogos();
+    }
+);
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key ===
+            "Escape"
+        ){
+
+            if(
+                profileModal.classList.contains(
+                    "open"
+                )
+            ){
+
+                fecharPerfil();
+
+                return;
+            }
+
+            if(
+                folderModal.classList.contains(
+                    "open"
+                )
+            ){
+
+                fecharModalPasta();
+
+                return;
+            }
+
+            if(
+                moveModal.classList.contains(
+                    "open"
+                )
+            ){
+
+                fecharMoverFavorito();
+
+                return;
+            }
+
+            if(
+                document.activeElement ===
+                search
+            ){
+
+                search.blur();
+
+            }else{
+
+                limparBusca();
+            }
+        }
+    }
+);
+
+
+function filtrarJogos(){
+
+    const termo =
+        search.value
+            .trim()
+            .toLowerCase();
+
+    let visiveis = 0;
+
+    const favoritosIds =
+        obterFavoritosIds();
+
+    files.forEach(
+        file => {
+
+            const id =
+                file.dataset.id;
+
+            const categoria =
+                file.dataset.categoria;
+
+            const nome =
+                file.dataset.name;
+
+            let passaAba = false;
+
+            if(abaAtual === "gemini")
+                passaAba = categoria === "gemini";
+
+            else if(abaAtual === "ports"){
+                const jogo = listaDeJogosOriginal.find(item => item.id === id);
+                passaAba = categoria === "ports" && jogoPassaFiltroPorts(jogo);
+            }
+
+            else if(abaAtual === "favoritos"){
+
+                const favoritado =
+                    favoritosIds.includes(id);
+
+                const naPasta =
+                    jogoPertenceAPasta(id);
+
+                passaAba =
+                    favoritado && naPasta;
+            }
+
+            const passaBusca =
+                !termo ||
+                nome.includes(termo);
+
+            const exibir =
+                passaAba && passaBusca;
+
+            const portsBrowser = document.getElementById("portsBrowser");
+            const modoCapsules = portsBrowser && portsBrowser.classList.contains("active");
+            file.style.display =
+                exibir
+                    ? (modoCapsules && file.classList.contains("port-card") ? "block" : "flex")
+                    : "none";
+
+            if(exibir)
+                visiveis++;
+        }
+    );
+
+    empty.style.display =
+        visiveis === 0
+            ? "block"
+            : "none";
+
+    gameCount.textContent =
+        visiveis +
+        (visiveis === 1 ? " JOGO" : " JOGOS");
+
+    const breadcrumb = document.querySelector(".game-info > div:first-child");
+    if(breadcrumb){
+        const label = breadcrumb.dataset.baseLabel || (abaAtual === "gemini" ? "GEMINI" : abaAtual === "favoritos" ? "FAVORITOS" : "PORTS");
+        breadcrumb.firstChild.textContent = label + " / ";
+    }
+
+    atualizarSelecaoTeclado();
+}
+
+
+function atualizarSelecaoTeclado(){
+
+    const visiveis =
+        Array.from(files).filter(
+            file =>
+                file.style.display !==
+                "none"
+        );
+
+    if(visiveis.length === 0)
+        return;
+
+    if(
+        selectedIndex >=
+        visiveis.length
+    )
+        selectedIndex =
+            visiveis.length - 1;
+
+    if(selectedIndex < 0)
+        selectedIndex = 0;
+
+    files.forEach(
+        file =>
+            file.classList.remove(
+                "selected"
+            )
+    );
+
+    const selecionado =
+        visiveis[selectedIndex];
+
+    if(selecionado){
+
+        selecionado.classList.add(
+            "selected"
+        );
+
+        if(abaAtual === "ports"){
+            const jogoSelecionado = listaDeJogosOriginal.find(jogo => jogo.id === selecionado.dataset.id);
+            if(jogoSelecionado) selecionarPort(jogoSelecionado);
+        }
+
+        selecionado.scrollIntoView({
+            block:"nearest",
+            behavior:"smooth"
+        });
+    }
+}
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            document.activeElement ===
+                search ||
+            profileModal.classList.contains(
+                "open"
+            ) ||
+            folderModal.classList.contains(
+                "open"
+            ) ||
+            moveModal.classList.contains(
+                "open"
+            ) ||
+            document.activeElement ===
+                authEmail ||
+            document.activeElement ===
+                authPassword ||
+            document.activeElement ===
+                profileNameInput ||
+            document.activeElement ===
+                profileEmailInput ||
+            document.activeElement ===
+                profilePasswordInput ||
+            document.activeElement ===
+                folderNameInput
+        )
+            return;
+
+        const visiveis =
+            Array.from(files).filter(
+                file =>
+                    file.style.display !==
+                    "none"
+            );
+
+        if(visiveis.length === 0)
+            return;
+
+        if(
+            event.key ===
+            "ArrowDown"
+        ){
+
+            event.preventDefault();
+
+            selectedIndex++;
+
+            if(
+                selectedIndex >=
+                visiveis.length
+            )
+                selectedIndex =
+                    visiveis.length - 1;
+
+            atualizarSelecaoTeclado();
+
+            playSound("hover");
+
+        }else if(
+            event.key ===
+            "ArrowUp"
+        ){
+
+            event.preventDefault();
+
+            selectedIndex--;
+
+            if(selectedIndex < 0)
+                selectedIndex = 0;
+
+            atualizarSelecaoTeclado();
+
+            playSound("hover");
+
+        }else if(
+            event.key ===
+            "Enter"
+        ){
+
+            event.preventDefault();
+
+            const selecionado =
+                visiveis[selectedIndex];
+
+            if(selecionado){
+
+                const jogo =
+                    listaDeJogosOriginal.find(
+                        item =>
+                            item.id ===
+                            selecionado.dataset.id
+                    );
+
+                if(jogo)
+                    abrirJogo(jogo);
+            }
+        }
+    }
+);
+
+
+/* =========================================================
+   VERSÃO DO SITE
+   Atualize o número manualmente a cada nova publicação.
+========================================================= */
+
+
+
+/* =========================================================
+   MOSTRAR SITE
+========================================================= */
+
+function mostrarSite(){
+
+    authScreen.style.display =
+        "none";
+
+    siteContent.style.display =
+        "block";
+
+    atualizarInterfacePerfil();
+    abaAtual = "ports";
+    renderizarJogos();
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function fazerLogout(){
+
+    if(!modoConvidadoLocal){
+        try{ await supabaseClient.auth.signOut(); }catch(error){}
+    }
+    modoConvidadoLocal = false;
+
+    usuarioAtual =
+        null;
+
+    favoritosConta =
+        [];
+
+    pastasFavoritos =
+        [];
+
+    pastaFavoritosAtual =
+        null;
+
+    siteContent.style.display =
+        "none";
+
+    authScreen.style.display =
+        "flex";
+
+    authPassword.value = "";
+
+    mostrarMensagemAuth("");
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO AO CARREGAR
+========================================================= */
+
+window.addEventListener(
+    "load",
+    async () => {
+        try {
+            const {data} = await Promise.race([
+                supabaseClient.auth.getSession(),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error("SUPABASE_TIMEOUT")),7000))
+            ]);
+            atualizarStatusSupabase(true);
+            if(data && data.session && data.session.user){
+                usuarioAtual = data.session.user;
+                modoConvidadoLocal = !!usuarioAtual.is_anonymous;
+                await inicializarPerfil(usuarioAtual);
+                await carregarDadosFavoritos();
+                mostrarSite();
+            }
+        } catch(error) {
+            console.warn("SUPABASE indisponível:",error);
+            atualizarStatusSupabase(false,error.message==="SUPABASE_TIMEOUT"?"TEMPO DE RESPOSTA ESGOTADO.":"");
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>

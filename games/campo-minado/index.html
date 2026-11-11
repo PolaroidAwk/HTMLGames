@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Campo Minado Pro</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Tema Escuro Baseado no Padrão do Modelo */
+            --bg-dark: #05070f;
+            --card-bg: rgba(13, 17, 28, 0.65);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.56), 0 18px 36px -18px rgba(0, 0, 0, 0.65);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --accent-color: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.08);
+
+            --cell-bg: rgba(255, 255, 255, 0.05);
+            --cell-hover: rgba(255, 255, 255, 0.1);
+            --cell-revealed: rgba(15, 23, 42, 0.4);
+            --cell-border: rgba(255, 255, 255, 0.06);
+
+            --display-bg: #020617;
+            --display-text: #38bdf8;
+
+            --radius-lg: 32px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
+            --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0,0,0,0) 70%);
+            --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(0,0,0,0) 70%);
+        }
+
+        [data-theme="light"] {
+            /* Tema Claro Baseado no Padrão do Modelo */
+            --bg-dark: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --card-border: rgba(255, 255, 255, 0.8);
+            --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.15), 0 0 15px rgba(255, 255, 255, 0.7);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            
+            --accent-color: #4f46e5;
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+            --accent-glow: rgba(79, 70, 229, 0.25);
+
+            --panel-bg: rgba(0, 0, 0, 0.03);
+            --panel-border: rgba(0, 0, 0, 0.06);
+
+            --cell-bg: rgba(0, 0, 0, 0.05);
+            --cell-hover: rgba(0, 0, 0, 0.09);
+            --cell-revealed: rgba(255, 255, 255, 0.6);
+            --cell-border: rgba(0, 0, 0, 0.06);
+
+            --display-bg: #0f172a;
+            --display-text: #38bdf8;
+            
+            --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0,0,0,0) 70%);
+            --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(0,0,0,0) 70%);
+            --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0) 70%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Orbes Animados de Fundo */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: floatOrb 20s ease-in-out infinite alternate;
+        }
+
+        .orb-1 { width: 600px; height: 600px; background: var(--orb-1); top: -10%; left: -10%; }
+        .orb-2 { width: 500px; height: 500px; background: var(--orb-2); bottom: -10%; right: -10%; animation-delay: -7s; }
+        .orb-3 { width: 400px; height: 400px; background: var(--orb-3); top: 40%; left: 60%; animation-delay: -14s; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, 40px) scale(1.1); }
+            100% { transform: translate(-40px, 80px) scale(0.95); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.92) translateY(20px); opacity: 0; filter: blur(10px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--card-shadow);
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-icon {
+            font-size: 28px;
+            background: rgba(99, 102, 241, 0.15);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select, .btn-action {
+            height: 42px;
+            padding: 0 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--card-border);
+            background: var(--panel-bg);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        select:hover, .btn-action:hover {
+            border-color: var(--accent-color);
+            background: var(--cell-hover);
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 20px -4px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px -4px var(--accent-glow);
+        }
+
+        .btn-theme {
+            width: 42px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .status-panel {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 16px;
+            background: var(--panel-bg);
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--panel-border);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .counter, .timer {
+            background: var(--display-bg);
+            color: var(--display-text);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 2px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+            width: fit-content;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .timer {
+            justify-self: end;
+        }
+
+        .face-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--panel-bg);
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            justify-self: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .face-btn:hover {
+            transform: scale(1.12);
+            border-color: var(--accent-color);
+        }
+
+        .face-btn:active {
+            transform: scale(0.92);
+        }
+
+        .board-wrapper {
+            width: 100%;
+            overflow: auto;
+            background: var(--panel-bg);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            border: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            max-height: 50vh;
+        }
+
+        .board {
+            display: grid;
+            gap: 5px;
+        }
+
+        .cell {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--cell-bg);
+            border: 1px solid var(--cell-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .cell:hover:not(.revealed) {
+            background: var(--cell-hover);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .cell.revealed {
+            background: var(--cell-revealed);
+            border-color: transparent;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+            cursor: default;
+        }
+
+        .cell.mine {
+            background: #ef4444 !important;
+            color: white;
+            animation: pulseMine 0.3s ease;
+        }
+
+        .cell.exploded {
+            background: #991b1b !important;
+        }
+
+        @keyframes pulseMine {
+            0% { transform: scale(0.7); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        /* Cores vibrantes alinhadas ao design system para os números */
+        .number-1 { color: #38bdf8; }
+        .number-2 { color: #4ade80; }
+        .number-3 { color: #f87171; }
+        .number-4 { color: #c084fc; }
+        .number-5 { color: #fbbf24; }
+        .number-6 { color: #2dd4bf; }
+        .number-7 { color: #f472b6; }
+        .number-8 { color: #94a3b8; }
+
+        .message {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-height: 24px;
+        }
+
+        .rules {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 650px) {
+            body { padding: 10px; }
+            .game-container { padding: 16px; border-radius: var(--radius-md); }
+            .header { flex-direction: column; align-items: stretch; }
+            .controls { justify-content: space-between; }
+            .cell { width: 32px; height: 32px; font-size: 14px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Fundo Ambientes com Orbes Fluctuantes -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="game-container">
+        <div class="header">
+            <div class="title-group">
+                <span class="title-icon">💣</span>
+                <div>
+                    <div class="title">Campo Minado</div>
+                    <div class="subtitle">Revele o campo sem detonar nenhuma mina.</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-action btn-theme" id="themeToggle" title="Alternar tema">🌙</button>
+                <select id="difficulty">
+                    <option value="easy">Fácil — 9×9 / 10</option>
+                    <option value="medium" selected>Médio — 16×16 / 40</option>
+                    <option value="hard">Difícil — 30×16 / 99</option>
+                </select>
+                <button class="btn-action btn-primary" id="resetButton">Novo Jogo</button>
+            </div>
+        </div>
+
+        <div class="status-panel">
+            <div class="counter" id="mineCounter">040</div>
+            <button class="face-btn" id="face" title="Reiniciar">🙂</button>
+            <div class="timer" id="timer">000</div>
+        </div>
+
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div class="message" id="message">Clique em uma célula para iniciar</div>
+
+        <div class="rules">
+            <span>🖱️ Esquerdo: Revelar</span>
+            <span>🚩 Direito: Marcar Mina</span>
+            <span>🎯 Limpe para vencer</span>
+        </div>
+    </div>
+
+<script>
+    /* Configuração de Temas & Persistência Simples */
+    const themeToggleBtn = document.getElementById("themeToggle");
+    const htmlElement = document.documentElement;
+
+    function setTheme(theme) {
+        htmlElement.setAttribute("data-theme", theme);
+        themeToggleBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+        localStorage.setItem("minesweeper_theme", theme);
+    }
+
+    const savedTheme = localStorage.getItem("minesweeper_theme") || "dark";
+    setTheme(savedTheme);
+
+    themeToggleBtn.addEventListener("click", () => {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        setTheme(currentTheme === "dark" ? "light" : "dark");
+    });
+
+    /* Lógica do Jogo Campo Minado */
+    const difficulties = {
+        easy: { rows: 9, cols: 9, mines: 10 },
+        medium: { rows: 16, cols: 16, mines: 40 },
+        hard: { rows: 16, cols: 30, mines: 99 }
+    };
+
+    let currentDifficulty = "medium";
+    let rows = 16, cols = 16, mineCount = 40;
+    let board = [], gameStarted = false, gameOver = false;
+    let flags = 0, revealedCells = 0, timer = 0, timerInterval = null;
+
+    const boardElement = document.getElementById("board");
+    const mineCounter = document.getElementById("mineCounter");
+    const timerElement = document.getElementById("timer");
+    const messageElement = document.getElementById("message");
+    const faceElement = document.getElementById("face");
+    const resetButton = document.getElementById("resetButton");
+    const difficultyElement = document.getElementById("difficulty");
+
+    function newGame() {
+        clearInterval(timerInterval);
+        const config = difficulties[currentDifficulty];
+        rows = config.rows; cols = config.cols; mineCount = config.mines;
+        board = []; gameStarted = false; gameOver = false;
+        flags = 0; revealedCells = 0; timer = 0;
+
+        timerElement.textContent = "000";
+        mineCounter.textContent = String(mineCount).padStart(3, "0");
+        faceElement.textContent = "🙂";
+        messageElement.textContent = "Clique em uma célula para iniciar";
+
+        for (let y = 0; y < rows; y++) {
+            board[y] = [];
+            for (let x = 0; x < cols; x++) {
+                board[y][x] = { mine: false, revealed: false, flagged: false, number: 0 };
+            }
+        }
+
+        boardElement.innerHTML = "";
+        boardElement.style.gridTemplateColumns = `repeat(${cols}, 36px)`;
+
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const element = document.createElement("div");
+                element.className = "cell";
+                element.addEventListener("click", () => reveal(x, y));
+                element.addEventListener("contextmenu", (e) => { e.preventDefault(); toggleFlag(x, y); });
+                boardElement.appendChild(element);
+            }
+        }
+    }
+
+    function startGame(firstX, firstY) {
+        gameStarted = true;
+        placeMines(firstX, firstY);
+        calculateNumbers();
+        startTimer();
+        messageElement.textContent = "Partida em andamento. Boa sorte!";
+    }
+
+    function placeMines(safeX, safeY) {
+        const forbidden = new Set();
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const x = safeX + dx, y = safeY + dy;
+                if (x >= 0 && x < cols && y >= 0 && y < rows) forbidden.add(`${x},${y}`);
+            }
+        }
+
+        let placed = 0;
+        while (placed < mineCount) {
+            const x = Math.floor(Math.random() * cols);
+            const y = Math.floor(Math.random() * rows);
+            if (!forbidden.has(`${x},${y}`) && !board[y][x].mine) {
+                board[y][x].mine = true;
+                placed++;
+            }
+        }
+    }
+
+    function calculateNumbers() {
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (!board[y][x].mine) board[y][x].number = countAdjacentMines(x, y);
+            }
+        }
+    }
+
+    function countAdjacentMines(x, y) {
+        let count = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && board[ny][nx].mine) count++;
+            }
+        }
+        return count;
+    }
+
+    function reveal(x, y) {
+        if (gameOver) return;
+        const cell = board[y][x];
+        if (cell.revealed || cell.flagged) return;
+
+        if (!gameStarted) startGame(x, y);
+
+        if (cell.mine) {
+            cell.revealed = true;
+            const el = getElement(x, y);
+            el.classList.add("revealed", "mine", "exploded");
+            el.textContent = "💣";
+            loseGame();
+            return;
+        }
+
+        floodReveal(x, y);
+        checkWin();
+    }
+
+    function floodReveal(startX, startY) {
+        const queue = [[startX, startY]];
+        const visited = new Set();
+
+        while (queue.length > 0) {
+            const [x, y] = queue.shift();
+            const key = `${x},${y}`;
+            if (visited.has(key)) continue;
+            visited.add(key);
+
+            if (x < 0 || x >= cols || y < 0 || y >= rows) continue;
+            const cell = board[y][x];
+            if (cell.revealed || cell.flagged || cell.mine) continue;
+
+            cell.revealed = true;
+            revealedCells++;
+            const el = getElement(x, y);
+            el.classList.add("revealed");
+
+            if (cell.number > 0) {
+                el.textContent = cell.number;
+                el.classList.add(`number-${cell.number}`);
+            } else {
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx !== 0 || dy !== 0) queue.push([x + dx, y + dy]);
+                    }
+                }
+            }
+        }
+    }
+
+    function toggleFlag(x, y) {
+        if (gameOver) return;
+        const cell = board[y][x];
+        if (cell.revealed) return;
+
+        if (!cell.flagged) {
+            if (flags >= mineCount) return;
+            cell.flagged = true; flags++;
+        } else {
+            cell.flagged = false; flags--;
+        }
+
+        const el = getElement(x, y);
+        el.textContent = cell.flagged ? "🚩" : "";
+        mineCounter.textContent = String(mineCount - flags).padStart(3, "0");
+    }
+
+    function getElement(x, y) { return boardElement.children[y * cols + x]; }
+
+    function loseGame() {
+        gameOver = true;
+        clearInterval(timerInterval);
+        faceElement.textContent = "😵";
+        messageElement.textContent = "💥 Fim de jogo! Você atingiu uma mina.";
+
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (board[y][x].mine) {
+                    const el = getElement(x, y);
+                    el.classList.add("revealed", "mine");
+                    if (!el.classList.contains("exploded")) el.textContent = "💣";
+                }
+            }
+        }
+    }
+
+    function checkWin() {
+        if (revealedCells !== (rows * cols - mineCount)) return;
+        gameOver = true;
+        clearInterval(timerInterval);
+        faceElement.textContent = "😎";
+        messageElement.textContent = "🎉 Parabéns! Você limpou o campo com sucesso!";
+        mineCounter.textContent = "000";
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timer = Math.min(timer + 1, 999);
+            timerElement.textContent = String(timer).padStart(3, "0");
+        }, 1000);
+    }
+
+    resetButton.addEventListener("click", newGame);
+    faceElement.addEventListener("click", newGame);
+    difficultyElement.addEventListener("change", (e) => { currentDifficulty = e.target.value; newGame(); });
+
+    newGame();
+</script>
+</body>
+</html>

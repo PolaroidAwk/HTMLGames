@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DÚVIDO - Jogo de Percepção Temporal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti Library para Efeitos Visuais na Vitória -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #05070f;
+      --card-bg: rgba(13, 17, 28, 0.78);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.65), 0 18px 36px -18px rgba(0, 0, 0, 0.75);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --accent-color: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --accent-glow: rgba(99, 102, 241, 0.45);
+      
+      --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+      --gold-glow: rgba(245, 158, 11, 0.5);
+
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      
+      --radius-lg: 32px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      --glass-surface: rgba(255, 255, 255, 0.04);
+      --glass-surface-hover: rgba(255, 255, 255, 0.09);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.38) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(0,0,0,0) 70%);
+    }
+
+    [data-theme="light"] {
+      --bg-dark: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(255, 255, 255, 0.85);
+      --card-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.18), 0 0 20px rgba(255, 255, 255, 0.8);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      
+      --accent-color: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+      --accent-glow: rgba(79, 70, 229, 0.28);
+      
+      --glass-surface: rgba(255, 255, 255, 0.65);
+      --glass-surface-hover: rgba(255, 255, 255, 0.95);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      
+      --orb-1: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(0,0,0,0) 70%);
+      --orb-2: radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, rgba(0,0,0,0) 70%);
+      --orb-3: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 70%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 20px;
+      position: relative;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: floatOrb 20s ease-in-out infinite alternate;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: var(--orb-1); top: -10%; left: -10%; }
+    .orb-2 { width: 500px; height: 500px; background: var(--orb-2); bottom: -10%; right: -10%; animation-delay: -7s; }
+    .orb-3 { width: 400px; height: 400px; background: var(--orb-3); top: 40%; left: 60%; animation-delay: -14s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.1); }
+      100% { transform: translate(-40px, 80px) scale(0.95); }
+    }
+
+    /* Titulo Estilizado */
+    .game-title {
+      font-size: 3.2rem;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      text-transform: uppercase;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 6px 18px var(--accent-glow));
+      line-height: 1.1;
+      position: relative;
+      display: inline-block;
+    }
+
+    .game-title::after {
+      content: '⚡';
+      font-size: 1.2rem;
+      position: absolute;
+      top: -5px;
+      right: -25px;
+      filter: drop-shadow(0 0 8px var(--warning));
+    }
+
+    h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .w-100 { width: 100%; }
+
+    @keyframes popIn {
+      0% { transform: scale(0.92) translateY(20px); opacity: 0; filter: blur(10px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+    }
+
+    @keyframes pulseTimer {
+      0%, 100% { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+      50% { border-color: rgba(245, 158, 11, 1); box-shadow: 0 0 35px rgba(245, 158, 11, 0.5); }
+    }
+
+    @keyframes crownFloat {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-8px) rotate(5deg); }
+    }
+
+    @keyframes victoryGlow {
+      0%, 100% { box-shadow: 0 0 30px var(--gold-glow), inset 0 0 15px var(--gold-glow); }
+      50% { box-shadow: 0 0 60px var(--gold-glow), inset 0 0 30px var(--gold-glow); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .shake-anim { animation: shake 0.4s ease-in-out; }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--card-shadow);
+      animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .btn {
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:active { transform: scale(0.96) !important; }
+    .btn:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 15px 30px -5px var(--accent-glow);
+    }
+
+    .btn-gold {
+      background: var(--gold-gradient);
+      color: #000;
+      box-shadow: 0 10px 25px -5px var(--gold-glow);
+    }
+    .btn-gold:hover {
+      box-shadow: 0 15px 30px -5px var(--gold-glow);
+    }
+
+    .btn-secondary {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      box-shadow: none;
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: var(--glass-surface-hover);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4);
+    }
+    .btn-danger:hover { box-shadow: 0 15px 30px -5px rgba(239, 68, 68, 0.6); }
+
+    .menu-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 24px 0 16px 0;
+    }
+
+    .btn-exit {
+      margin-top: auto;
+      border-color: rgba(239, 68, 68, 0.3);
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .btn-exit:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    .menu-section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 16px 0 10px 4px;
+      text-align: left;
+    }
+
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      padding-right: 4px;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      transition: all 0.2s ease;
+    }
+
+    .player-row:focus-within {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .emoji-trigger {
+      font-size: 1.5rem;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .emoji-trigger:hover {
+      transform: scale(1.15) rotate(5deg);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .player-row input[type="text"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 700;
+      outline: none;
+      font-family: var(--font);
+    }
+
+    .btn-remove-p {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--danger);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    .btn-remove-p:hover { background: var(--danger); color: #fff; }
+
+    .emoji-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .emoji-option {
+      font-size: 1.8rem;
+      padding: 10px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .emoji-option:hover {
+      transform: scale(1.2);
+      background: var(--glass-surface-hover);
+      border-color: var(--accent-color);
+    }
+
+    .target-badge {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .target-badge span {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent-color);
+      display: block;
+      margin-top: 2px;
+      text-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .current-turn-card {
+      background: var(--glass-surface-hover);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .player-avatar-large {
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .mystic-timer-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .mystic-timer-box.running { animation: pulseTimer 1.5s infinite; }
+
+    .mystic-digits {
+      font-family: monospace, var(--font);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .mystic-timer-box.running .mystic-digits {
+      color: var(--warning);
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+    }
+
+    /* Modal / Overlay Genérico */
+    .feedback-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 7, 15, 0.92);
+      backdrop-filter: blur(20px);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    /* Tela de Vitória Customizada */
+    .victory-card {
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #f59e0b;
+      border-radius: var(--radius-lg);
+      padding: 28px 20px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      animation: victoryGlow 3s infinite;
+    }
+
+    .crown-icon {
+      font-size: 3.5rem;
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: crownFloat 2s ease-in-out infinite;
+      filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.6));
+    }
+
+    .winner-avatar-badge {
+      width: 100px;
+      height: 100px;
+      margin: 20px auto 12px auto;
+      background: var(--gold-gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.8rem;
+      box-shadow: 0 10px 30px var(--gold-glow);
+    }
+
+    .winner-title-text {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--glass-border);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .toggle-switch {
+      width: 48px;
+      height: 24px;
+      accent-color: var(--accent-color);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- ==================== MENU PRINCIPAL ==================== -->
+    <div id="screen-menu" class="card text-center" style="min-height: 480px;">
+      <h1 class="game-title">DÚVIDO</h1>
+      <p class="subtitle">Percepção Temporal &amp; Bluff</p>
+
+      <div class="menu-nav-list">
+        <button class="btn w-100" onclick="game.showModes()">🎮 Jogar</button>
+        <button class="btn btn-secondary w-100" onclick="game.showStats()">📊 Estatísticas</button>
+        <button class="btn btn-secondary w-100" onclick="game.showLeaderboard()">🏆 Ranking</button>
+        <button class="btn btn-secondary w-100" onclick="game.showOptions()">⚙️ Opções</button>
+      </div>
+
+      <a href="https://polaroidawk.github.io/HTMLGames/" class="btn btn-secondary btn-exit w-100">
+        🚪 Sair para Início
+      </a>
+    </div>
+
+    <!-- ==================== CONFIGURAÇÃO DE JOGADORES ==================== -->
+    <div id="screen-modes" class="card hidden">
+      <h2>Jogadores</h2>
+      <p class="subtitle">Configure os participantes da partida</p>
+
+      <div class="menu-section-title">Lista de Participantes</div>
+      <div id="players-list" class="players-list"></div>
+
+      <button class="btn btn-secondary w-100" style="margin-bottom: 12px;" onclick="game.addPlayerInput()">➕ Adicionar Jogador</button>
+      <button class="btn w-100" onclick="game.startMatch()">🚀 Iniciar Partida</button>
+      <button class="btn btn-secondary w-100" style="margin-top: 10px;" onclick="game.showMenu()">❮ Voltar</button>
+    </div>
+
+    <!-- ==================== TELA DO JOGO ==================== -->
+    <div id="screen-game" class="card hidden">
+      
+      <!-- Overlay de Resultado Regular da Rodada -->
+      <div id="feedback-overlay" class="feedback-overlay hidden">
+        <div id="fb-icon" style="font-size: 4rem; margin-bottom: 12px;">🔥</div>
+        <h2 id="fb-title">O TEMPO PASSOU!</h2>
+        <p id="fb-desc" class="subtitle" style="margin-bottom: 24px; max-width: 320px;">Detalhes do resultado...</p>
+        <button class="btn w-100" onclick="game.dismissFeedback()">Continuar ➔</button>
+      </div>
+
+      <!-- Overlay Especial de Vitória -->
+      <div id="victory-overlay" class="feedback-overlay hidden">
+        <div class="victory-card">
+          <div class="crown-icon">👑</div>
+          <div id="winner-avatar" class="winner-avatar-badge">🦊</div>
+          <div class="winner-title-text">VITÓRIA!</div>
+          <p id="winner-name" style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-top: 4px;">Player 1</p>
+          <p class="subtitle" style="margin-bottom: 20px;">Mestre Supremo do Tempo &amp; do Bluff!</p>
+          <button class="btn btn-gold w-100" onclick="game.closeVictoryScreen()">🏆 Salvar Glória &amp; Voltar</button>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <button class="btn btn-secondary" style="padding: 6px 12px; font-size:0.8rem;" onclick="game.showMenu()">❮ Menu</button>
+        <span id="round-info" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted);">Sobreviventes: 0</span>
+      </div>
+
+      <div class="target-badge">
+        Tempo Alvo Oculto
+        <span id="target-time-display">-- seg</span>
+      </div>
+
+      <div id="current-turn-card" class="current-turn-card">
+        <div id="turn-avatar" class="player-avatar-large">🎲</div>
+        <h2 id="turn-name">Aguardando...</h2>
+        <p id="turn-status" class="subtitle">Sua vez de manipular o tempo!</p>
+      </div>
+
+      <div id="mystic-box" class="mystic-timer-box">
+        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Status do Cronômetro</div>
+        <div id="mystic-digits" class="mystic-digits">00:00:00</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button id="btn-timer" class="btn w-100" onclick="game.handleTimerClick()">⏱️ Iniciar Cronômetro</button>
+        <button id="btn-duvido" class="btn btn-danger w-100" onclick="game.handleDuvido()">🔥 DÚVIDO!</button>
+      </div>
+    </div>
+
+    <!-- ==================== MODAL SELEÇÃO EMOJI ==================== -->
+    <div id="screen-emoji-modal" class="card hidden">
+      <h2>Escolha seu Emoji</h2>
+      <p class="subtitle">Selecione um ícone para seu perfil</p>
+      <div id="emoji-picker-container" class="emoji-picker-grid"></div>
+      <button class="btn btn-secondary w-100" style="margin-top: 20px;" onclick="game.closeEmojiModal()">Cancelar</button>
+    </div>
+
+    <!-- ==================== STATS COMPLETO ==================== -->
+    <div id="screen-stats" class="card hidden">
+      <h2>Estatísticas Gerais</h2>
+      <p class="subtitle" style="margin-bottom: 16px;">Métricas detalhadas do jogador</p>
+
+      <div class="stat-row"><span>Partidas Jogadas:</span><strong id="st-total">0</strong></div>
+      <div class="stat-row"><span>Acusações Certas (Dúvidos):</span><strong id="st-correct" style="color: var(--success);">0</strong></div>
+      <div class="stat-row"><span>Acusações Erradas:</span><strong id="st-wrong" style="color: var(--danger);">0</strong></div>
+      <div class="stat-row"><span>Precisão nas Acusações:</span><strong id="st-accuracy" style="color: var(--accent-color);">0%</strong></div>
+      <div class="stat-row"><span>Eliminações Totais:</span><strong id="st-eliminations">0</strong></div>
+
+      <button class="btn btn-secondary w-100" style="margin-top: 24px;" onclick="game.showMenu()">❮ Voltar</button>
+    </div>
+
+    <!-- ==================== RANKING ==================== -->
+    <div id="screen-leaderboard" class="card hidden">
+      <h2>🏆 Ranking Local</h2>
+      <p class="subtitle" style="margin-bottom: 16px;">Placar de Campeões</p>
+
+      <div id="ranking-list"></div>
+
+      <button class="btn btn-secondary w-100" style="margin-top: 24px;" onclick="game.showMenu()">❮ Voltar</button>
+    </div>
+
+    <!-- ==================== OPÇÕES ==================== -->
+    <div id="screen-options" class="card hidden">
+      <h2>Opções</h2>
+      <p class="subtitle" style="margin-bottom: 16px;">Ajustes de som e preferências</p>
+
+      <div class="setting-item">
+        <span>Efeitos Sonoros</span>
+        <input type="checkbox" id="toggle-sound" class="toggle-switch" checked onchange="game.toggleSound(this.checked)">
+      </div>
+
+      <div class="setting-item">
+        <span>Tema Escuro</span>
+        <input type="checkbox" id="toggle-theme" class="toggle-switch" checked onchange="game.toggleTheme(this.checked)">
+      </div>
+
+      <button class="btn btn-secondary w-100" style="color: var(--danger); margin-top: 20px;" onclick="game.resetData()">Limpar Dados Guardados</button>
+      <button class="btn btn-secondary w-100" style="margin-top: 10px;" onclick="game.showMenu()">❮ Voltar</button>
+    </div>
+
+  </div>
+
+  <script>
+    class SoundManager {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      }
+
+      playClick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.08);
+
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+
+      playStart() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+      }
+
+      playDuvido() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(90, this.ctx.currentTime + 0.3);
+
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.3);
+      }
+
+      playWin() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+
+          const start = this.ctx.currentTime + (idx * 0.12);
+          gain.gain.setValueAtTime(0.35, start);
+          gain.gain.linearRampToValueAtTime(0.01, start + 0.3);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.3);
+        });
+      }
+    }
+
+    const EMOJI_PALETTE = ['🦊', '🐯', '🦁', '🐸', '🐼', '🤖', '💀', '👽', '👑', '⚡', '👻', '🐉', '👺', '🎭', '🔮', '🚀', '💣', '🔥', '🎲', '🎯'];
+
+    class DuvidoGame {
+      constructor() {
+        this.sound = new SoundManager();
+        this.playersSetup = [
+          { name: 'Player 1', emoji: '🦊' },
+          { name: 'Player 2', emoji: '🐯' }
+        ];
+        this.activePlayers = [];
+        this.currentIndex = 0;
+        this.targetTime = 0;
+        this.startTime = null;
+        this.elapsedAccumulated = 0;
+        this.isTimerRunning = false;
+        this.lastPlayerToTouchTimer = null;
+        this.editingEmojiIndex = null;
+        this.mysticInterval = null;
+        this.pendingElimination = null;
+
+        this.data = JSON.parse(localStorage.getItem('duvido_data_v2')) || {
+          totalGames: 0,
+          eliminations: 0,
+          correctAccusations: 0,
+          wrongAccusations: 0,
+          ranking: {},
+          theme: 'dark',
+          sound: true
+        };
+
+        this.init();
+      }
+
+      init() {
+        this.applyTheme(this.data.theme);
+        this.sound.enabled = this.data.sound !== false;
+        document.getElementById('toggle-sound').checked = this.sound.enabled;
+      }
+
+      hideAllScreens() {
+        ['screen-menu', 'screen-modes', 'screen-game', 'screen-stats', 'screen-leaderboard', 'screen-options', 'screen-emoji-modal'].forEach(id => {
+          document.getElementById(id).classList.add('hidden');
+        });
+        this.stopMysticAnimation();
+      }
+
+      showMenu() {
+        this.hideAllScreens();
+        document.getElementById('screen-menu').classList.remove('hidden');
+      }
+
+      showModes() {
+        this.hideAllScreens();
+        this.renderPlayersSetup();
+        document.getElementById('screen-modes').classList.remove('hidden');
+      }
+
+      showStats() {
+        this.hideAllScreens();
+        document.getElementById('st-total').innerText = this.data.totalGames;
+        document.getElementById('st-correct').innerText = this.data.correctAccusations || 0;
+        document.getElementById('st-wrong').innerText = this.data.wrongAccusations || 0;
+        document.getElementById('st-eliminations').innerText = this.data.eliminations;
+
+        const totalAcc = (this.data.correctAccusations || 0) + (this.data.wrongAccusations || 0);
+        const accPercentage = totalAcc > 0 ? Math.round(((this.data.correctAccusations || 0) / totalAcc) * 100) : 0;
+        document.getElementById('st-accuracy').innerText = `${accPercentage}%`;
+
+        document.getElementById('screen-stats').classList.remove('hidden');
+      }
+
+      showLeaderboard() {
+        this.hideAllScreens();
+        const container = document.getElementById('ranking-list');
+        container.innerHTML = '';
+        
+        const sorted = Object.entries(this.data.ranking).sort((a, b) => b[1] - a[1]);
+        if (sorted.length === 0) {
+          container.innerHTML = '<p class="subtitle text-center">Nenhum campeão registrado ainda.</p>';
+        } else {
+          sorted.forEach(([name, wins], index) => {
+            container.innerHTML += `
+              <div class="stat-row"><span>#${index + 1} ${name}</span><strong>${wins} vitórias</strong></div>
+            `;
+          });
+        }
+        document.getElementById('screen-leaderboard').classList.remove('hidden');
+      }
+
+      showOptions() {
+        this.hideAllScreens();
+        document.getElementById('screen-options').classList.remove('hidden');
+      }
+
+      renderPlayersSetup() {
+        const container = document.getElementById('players-list');
+        container.innerHTML = '';
+
+        this.playersSetup.forEach((p, index) => {
+          const row = document.createElement('div');
+          row.className = 'player-row';
+
+          row.innerHTML = `
+            <div class="emoji-trigger" onclick="game.openEmojiModal(${index})">${p.emoji}</div>
+            <input type="text" value="${p.name}" onchange="game.updatePlayerName(${index}, this.value)" placeholder="Nome do Jogador">
+            ${this.playersSetup.length > 2 ? `<div class="btn-remove-p" onclick="game.removePlayerInput(${index})">✕</div>` : ''}
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      addPlayerInput() {
+        this.sound.playClick();
+        const nextNum = this.playersSetup.length + 1;
+        const randomEmoji = EMOJI_PALETTE[Math.floor(Math.random() * EMOJI_PALETTE.length)];
+        this.playersSetup.push({ name: `Player ${nextNum}`, emoji: randomEmoji });
+        this.renderPlayersSetup();
+      }
+
+      removePlayerInput(index) {
+        this.sound.playClick();
+        if (this.playersSetup.length > 2) {
+          this.playersSetup.splice(index, 1);
+          this.renderPlayersSetup();
+        }
+      }
+
+      updatePlayerName(index, name) {
+        this.playersSetup[index].name = name.trim() || `Player ${index + 1}`;
+      }
+
+      openEmojiModal(index) {
+        this.sound.playClick();
+        this.editingEmojiIndex = index;
+        const container = document.getElementById('emoji-picker-container');
+        container.innerHTML = EMOJI_PALETTE.map(e => `<div class="emoji-option" onclick="game.selectEmoji('${e}')">${e}</div>`).join('');
+        this.hideAllScreens();
+        document.getElementById('screen-emoji-modal').classList.remove('hidden');
+      }
+
+      closeEmojiModal() {
+        this.sound.playClick();
+        this.showModes();
+      }
+
+      selectEmoji(emoji) {
+        this.sound.playClick();
+        if (this.editingEmojiIndex !== null) {
+          this.playersSetup[this.editingEmojiIndex].emoji = emoji;
+        }
+        this.closeEmojiModal();
+      }
+
+      startMatch() {
+        this.sound.playStart();
+        this.activePlayers = JSON.parse(JSON.stringify(this.playersSetup));
+        this.data.totalGames++;
+        this.saveData();
+        this.hideAllScreens();
+        document.getElementById('screen-game').classList.remove('hidden');
+        this.startNewRound();
+      }
+
+      startNewRound() {
+        this.targetTime = Math.floor(Math.random() * 11) + 10;
+        this.elapsedAccumulated = 0;
+        this.isTimerRunning = false;
+        this.startTime = null;
+        this.lastPlayerToTouchTimer = null;
+        this.currentIndex = 0;
+
+        document.getElementById('target-time-display').innerText = `${this.targetTime} seg`;
+        this.updateTurnUI();
+      }
+
+      startMysticAnimation() {
+        const box = document.getElementById('mystic-box');
+        const digits = document.getElementById('mystic-digits');
+        box.classList.add('running');
+
+        const chars = '0123456789ABCDEF';
+        this.stopMysticAnimation();
+
+        this.mysticInterval = setInterval(() => {
+          let str = '';
+          for (let i = 0; i < 6; i++) {
+            if (i === 2 || i === 4) str += ':';
+            str += chars[Math.floor(Math.random() * chars.length)];
+          }
+          digits.innerText = str;
+        }, 80);
+      }
+
+      stopMysticAnimation() {
+        if (this.mysticInterval) clearInterval(this.mysticInterval);
+        this.mysticInterval = null;
+        const box = document.getElementById('mystic-box');
+        const digits = document.getElementById('mystic-digits');
+        if (box) box.classList.remove('running');
+        if (digits) digits.innerText = '00:00:00';
+      }
+
+      updateTurnUI() {
+        const currentPlayer = this.activePlayers[this.currentIndex];
+        document.getElementById('round-info').innerText = `Sobreviventes: ${this.activePlayers.length}`;
+        
+        const avatarEl = document.getElementById('turn-avatar');
+        avatarEl.style.transform = 'scale(0.5)';
+        setTimeout(() => {
+          avatarEl.innerText = currentPlayer.emoji;
+          avatarEl.style.transform = 'scale(1)';
+        }, 150);
+
+        document.getElementById('turn-name').innerText = currentPlayer.name;
+
+        const btnTimer = document.getElementById('btn-timer');
+        const btnDuvido = document.getElementById('btn-duvido');
+
+        if (this.isTimerRunning) {
+          btnTimer.innerText = "🛑 Parar Cronômetro";
+          btnTimer.style.background = "var(--warning)";
+        } else {
+          btnTimer.innerText = "⏱️ Iniciar Cronômetro";
+          btnTimer.style.background = "var(--accent-gradient)";
+        }
+
+        if (this.lastPlayerToTouchTimer === currentPlayer || !this.lastPlayerToTouchTimer) {
+          btnDuvido.disabled = true;
+          btnDuvido.style.opacity = "0.35";
+          btnDuvido.style.cursor = "not-allowed";
+        } else {
+          btnDuvido.disabled = false;
+          btnDuvido.style.opacity = "1";
+          btnDuvido.style.cursor = "pointer";
+        }
+      }
+
+      handleTimerClick() {
+        const now = Date.now();
+
+        if (!this.isTimerRunning) {
+          this.sound.playStart();
+          this.isTimerRunning = true;
+          this.startTime = now;
+          this.lastPlayerToTouchTimer = this.activePlayers[this.currentIndex];
+          this.startMysticAnimation();
+        } else {
+          this.sound.playClick();
+          this.isTimerRunning = false;
+          const elapsed = (now - this.startTime) / 1000;
+          this.elapsedAccumulated += elapsed;
+          this.startTime = null;
+          this.stopMysticAnimation();
+          this.nextTurn();
+        }
+
+        this.updateTurnUI();
+      }
+
+      nextTurn() {
+        this.currentIndex = (this.currentIndex + 1) % this.activePlayers.length;
+        this.updateTurnUI();
+      }
+
+      handleDuvido() {
+        this.sound.playDuvido();
+        let totalElapsed = this.elapsedAccumulated;
+        if (this.isTimerRunning && this.startTime) {
+          totalElapsed += (Date.now() - this.startTime) / 1000;
+        }
+
+        this.stopMysticAnimation();
+
+        const doubtingPlayer = this.activePlayers[this.currentIndex];
+        const accusedPlayer = this.lastPlayerToTouchTimer;
+        let eliminatedPlayer = null;
+
+        const passed = totalElapsed > this.targetTime;
+
+        const overlay = document.getElementById('feedback-overlay');
+        const fbIcon = document.getElementById('fb-icon');
+        const fbTitle = document.getElementById('fb-title');
+        const fbDesc = document.getElementById('fb-desc');
+
+        if (passed) {
+          eliminatedPlayer = accusedPlayer;
+          this.data.correctAccusations = (this.data.correctAccusations || 0) + 1;
+          fbIcon.innerText = '🔥';
+          fbTitle.innerText = 'ACUSAÇÃO CERTA!';
+          fbDesc.innerHTML = `Tempo decorrido: <strong>${totalElapsed.toFixed(1)}s</strong> (Alvo: ${this.targetTime}s)<br><br><span style="color:var(--danger)">${accusedPlayer.emoji} ${accusedPlayer.name}</span> ultrapassou o tempo e foi ELIMINADO!`;
+        } else {
+          eliminatedPlayer = doubtingPlayer;
+          this.data.wrongAccusations = (this.data.wrongAccusations || 0) + 1;
+          fbIcon.innerText = '❌';
+          fbTitle.innerText = 'ACUSAÇÃO ERRADA!';
+          fbDesc.innerHTML = `Tempo decorrido: <strong>${totalElapsed.toFixed(1)}s</strong> (Alvo: ${this.targetTime}s)<br><br><span style="color:var(--danger)">${doubtingPlayer.emoji} ${doubtingPlayer.name}</span> duvidou precipitado e foi ELIMINADO!`;
+        }
+
+        this.data.eliminations++;
+        this.saveData();
+
+        this.pendingElimination = eliminatedPlayer;
+        overlay.classList.remove('hidden');
+
+        const card = document.getElementById('screen-game');
+        card.classList.add('shake-anim');
+        setTimeout(() => card.classList.remove('shake-anim'), 400);
+      }
+
+      dismissFeedback() {
+        this.sound.playClick();
+        document.getElementById('feedback-overlay').classList.add('hidden');
+        if (this.pendingElimination) {
+          const p = this.pendingElimination;
+          this.pendingElimination = null;
+          this.eliminatePlayer(p);
+        }
+      }
+
+      triggerVictoryEffects() {
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          setTimeout(() => confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } }), 200);
+          setTimeout(() => confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } }), 400);
+        }
+      }
+
+      eliminatePlayer(player) {
+        this.activePlayers = this.activePlayers.filter(p => p !== player);
+
+        if (this.activePlayers.length === 1) {
+          const winner = this.activePlayers[0];
+          this.sound.playWin();
+          this.triggerVictoryEffects();
+
+          document.getElementById('winner-avatar').innerText = winner.emoji;
+          document.getElementById('winner-name').innerText = winner.name;
+
+          document.getElementById('victory-overlay').classList.remove('hidden');
+
+          this.data.ranking[winner.name] = (this.data.ranking[winner.name] || 0) + 1;
+          this.saveData();
+        } else {
+          this.startNewRound();
+        }
+      }
+
+      closeVictoryScreen() {
+        this.sound.playClick();
+        document.getElementById('victory-overlay').classList.add('hidden');
+        this.showMenu();
+      }
+
+      toggleSound(isSound) {
+        this.sound.enabled = isSound;
+        this.data.sound = isSound;
+        this.saveData();
+      }
+
+      toggleTheme(isDark) {
+        const theme = isDark ? 'dark' : 'light';
+        this.applyTheme(theme);
+        this.data.theme = theme;
+        this.saveData();
+      }
+
+      applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+
+      resetData() {
+        if (confirm('Tem certeza que deseja apagar todos os dados acumulados?')) {
+          localStorage.removeItem('duvido_data_v2');
+          this.data = { totalGames: 0, eliminations: 0, correctAccusations: 0, wrongAccusations: 0, ranking: {}, theme: 'dark', sound: true };
+          alert('Dados reiniciados com sucesso!');
+          this.showMenu();
+        }
+      }
+
+      saveData() {
+        localStorage.setItem('duvido_data_v2', JSON.stringify(this.data));
+      }
+    }
+
+    const game = new DuvidoGame();
+  </script>
+</body>
+</html>

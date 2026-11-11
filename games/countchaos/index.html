@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COUNT CHAOS</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --panel-border: #334155;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .light-mode {
+            --bg-color: #f1f5f9;
+            --panel-bg: #ffffff;
+            --panel-border: #cbd5e1;
+            --accent-primary: #4f46e5;
+            --accent-hover: #4338ca;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .screen { display: none; width: 100%; }
+        .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            margin: 8px 0;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .btn-secondary { background: transparent; border: 2px solid var(--panel-border); color: var(--text-main); }
+        .btn-secondary:hover { background: var(--panel-border); }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #dc2626; }
+
+        .menu-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            letter-spacing: -1px;
+        }
+
+        .menu-subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 1.2rem; text-align: center; }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 24px;
+        }
+
+        .mode-card {
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .mode-card:hover, .mode-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .mode-card h3 { margin-bottom: 6px; color: var(--text-main); }
+        .mode-card p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            width: 100%;
+        }
+
+        @media (max-width: 850px) { .game-layout { grid-template-columns: 1fr; } }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+            background: var(--panel-bg);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .hud-item { display: flex; flex-direction: column; align-items: center; }
+        .hud-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .hud-value { font-size: 1.4rem; font-weight: 800; }
+        .lives-container { color: var(--danger); font-size: 1.2rem; letter-spacing: 2px; }
+
+        .play-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        .timer-bar-container {
+            width: 100%; height: 6px; background: var(--panel-border); border-radius: 3px; overflow: hidden; position: absolute; top: 0; left: 0;
+        }
+
+        .timer-bar { height: 100%; background: var(--accent-primary); width: 100%; transition: width 0.1s linear; }
+
+        .target-label {
+            font-size: 1.2rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 20px;
+        }
+
+        .hidden-number-box {
+            font-size: 4rem; font-weight: 900; margin: 10px 0 25px 0; color: var(--accent-primary); letter-spacing: 4px;
+        }
+
+        .input-group { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 10px; }
+
+        .game-input {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 2px solid var(--panel-border);
+            color: var(--text-main);
+            padding: 16px;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-weight: 700;
+        }
+
+        .game-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+
+        .feedback-message { min-height: 24px; font-weight: 700; text-align: center; font-size: 1rem; margin-top: 5px; }
+        .feedback-correct { color: var(--success); }
+        .feedback-wrong { color: var(--danger); }
+
+        .rules-panel { display: flex; flex-direction: column; max-height: 500px; }
+
+        .rules-header {
+            font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .rules-count { background: var(--accent-primary); color: white; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; }
+
+        .rule-box {
+            background: rgba(0, 0, 0, 0.2); border-left: 4px solid var(--accent-primary); padding: 16px; border-radius: 0 8px 8px 0; font-size: 1rem; line-height: 1.4;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal {
+            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; padding: 30px; max-width: 480px; width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+        }
+
+        .error-details {
+            background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left; font-size: 0.95rem;
+        }
+
+        .error-details div { margin-bottom: 6px; }
+
+        #particles-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; text-align: left; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--panel-border); font-size: 0.9rem; }
+        th { color: var(--text-muted); }
+
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--panel-border); width: 100%; }
+
+        .toggle-switch {
+            position: relative; width: 50px; height: 26px; background: var(--panel-border); border-radius: 13px; cursor: pointer; transition: background 0.3s;
+        }
+
+        .toggle-switch.active { background: var(--accent-primary); }
+
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after { transform: translateX(24px); }
+
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-muted); }
+        .form-group select, .form-group input {
+            width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); color: var(--text-main); border-radius: 8px; outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="container">
+
+        <!-- MENU SCREEN -->
+        <div id="screen-menu" class="screen active">
+            <h1 class="menu-title">COUNT CHAOS</h1>
+            <p class="menu-subtitle">Conte até 10 de cabeça lembrando de TODAS as regras!</p>
+
+            <div class="mode-selector">
+                <div class="mode-card selected" onclick="selectMode('CLASSIC', this)">
+                    <h3>CLÁSSICO</h3>
+                    <p>3 Vidas. O número fica oculto! Regras cumulativas na memória.</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('CUSTOM_RULE', this)">
+                    <h3>CRIE SUA REGRA</h3>
+                    <p>Você define como escrever um número específico a cada rodada.</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('EXTREME', this)">
+                    <h3>EXTREMO</h3>
+                    <p>1 Vida, 5 segundos para responder e número oculto.</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('REVERSE', this)">
+                    <h3>INVERTIDO</h3>
+                    <p>Você precisa contar do 10 até o 1, com número oculto!</p>
+                </div>
+            </div>
+
+            <button class="btn" onclick="startGame()">JOGAR</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-how-to')">COMO JOGAR</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-leaderboard')">PLACAR</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-stats')">ESTATÍSTICAS</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-settings')">OPÇÕES</button>
+        </div>
+
+        <!-- HOW TO PLAY SCREEN -->
+        <div id="screen-how-to" class="screen">
+            <div class="card" style="max-width: 600px;">
+                <h2 style="margin-bottom: 15px; text-align: center;">COMO JOGAR</h2>
+                <p style="margin-bottom: 10px; color: var(--text-muted);">
+                    O objetivo é contar de <strong>1 até 10</strong> mentalmente (o número atual fica oculto no display!).
+                </p>
+                <p style="margin-bottom: 10px; color: var(--text-muted);">
+                    Você pode responder com algarismos (1, 2, 3...) ou por extenso (um, dois, três...). O jogo aceita respostas com ou sem acento!
+                </p>
+                <p style="margin-bottom: 10px; color: var(--text-muted);">
+                    A cada rodada completa, uma IA inteligente adiciona uma nova regra que faz sentido com as regras atuais.
+                </p>
+                <p style="margin-bottom: 15px; color: var(--text-muted);">
+                    <strong>Atenção:</strong> Apenas a ÚLTIMA regra adicionada aparecerá na tela. Todas as regras anteriores continuam valendo em segredo!
+                </p>
+                <button class="btn" onclick="showScreen('screen-menu')">VOLTAR</button>
+            </div>
+        </div>
+
+        <!-- LEADERBOARD SCREEN -->
+        <div id="screen-leaderboard" class="screen">
+            <div class="card" style="max-width: 600px;">
+                <h2 style="margin-bottom: 15px; text-align: center;">RECORDES LOCAIS</h2>
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>MODO</th>
+                            <th>RODADA</th>
+                            <th>PONTOS</th>
+                            <th>COMBO</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button class="btn" onclick="showScreen('screen-menu')" style="margin-top: 15px;">VOLTAR</button>
+            </div>
+        </div>
+
+        <!-- STATS SCREEN -->
+        <div id="screen-stats" class="screen">
+            <div class="card" style="max-width: 600px;">
+                <h2 style="margin-bottom: 15px; text-align: center;">ESTATÍSTICAS</h2>
+                <div id="stats-content"></div>
+                <button class="btn" onclick="showScreen('screen-menu')" style="margin-top: 15px;">VOLTAR</button>
+            </div>
+        </div>
+
+        <!-- SETTINGS SCREEN -->
+        <div id="screen-settings" class="screen">
+            <div class="card" style="max-width: 500px;">
+                <h2 style="margin-bottom: 20px; text-align: center;">CONFIGURAÇÕES</h2>
+                <div class="setting-row">
+                    <span>Efeitos Sonoros</span>
+                    <div id="toggle-sound" class="toggle-switch active" onclick="toggleSetting('sound')"></div>
+                </div>
+                <div class="setting-row">
+                    <span>Animações / Partículas</span>
+                    <div id="toggle-particles" class="toggle-switch active" onclick="toggleSetting('particles')"></div>
+                </div>
+                <div class="setting-row">
+                    <span>Modo Claro</span>
+                    <div id="toggle-theme" class="toggle-switch" onclick="toggleSetting('theme')"></div>
+                </div>
+                <button class="btn btn-danger" onclick="clearData()" style="margin-top: 25px;">ZERAR DADOS</button>
+                <button class="btn btn-secondary" onclick="showScreen('screen-menu')">VOLTAR</button>
+            </div>
+        </div>
+
+        <!-- GAMEPLAY SCREEN -->
+        <div id="screen-game" class="screen">
+            <div class="hud">
+                <div class="hud-item">
+                    <span class="hud-label">RODADA</span>
+                    <span id="hud-round" class="hud-value">1</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">PONTOS</span>
+                    <span id="hud-score" class="hud-value">0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">COMBO</span>
+                    <span id="hud-combo" class="hud-value">x0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">VIDAS</span>
+                    <span id="hud-lives" class="hud-value lives-container">♥♥♥</span>
+                </div>
+            </div>
+
+            <div class="game-layout">
+                <div class="card play-area">
+                    <div class="timer-bar-container">
+                        <div id="timer-bar" class="timer-bar"></div>
+                    </div>
+
+                    <span class="target-label">QUAL É O PRÓXIMO NÚMERO?</span>
+                    <div id="target-number" class="hidden-number-box">???</div>
+
+                    <div class="input-group">
+                        <input type="text" id="game-input" class="game-input" placeholder="DIGITE E APERTE ENTER..." autocomplete="off">
+                        <div id="feedback" class="feedback-message"></div>
+                    </div>
+                </div>
+
+                <div class="card rules-panel">
+                    <div class="rules-header">
+                        <span>ÚLTIMA REGRA ADICIONADA</span>
+                        <span id="rules-count" class="rules-count">0 Ativas</span>
+                    </div>
+                    <div id="latest-rule-box" class="rule-box">
+                        Nenhuma regra ativa no momento. Digite o número normalmente!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL CUSTOM RULE -->
+    <div id="modal-custom-rule" class="overlay">
+        <div class="modal">
+            <h2>CRIE A PRÓXIMA REGRA</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">
+                Escolha um número e defina uma palavra/substituição para ele.
+            </p>
+            <div class="form-group">
+                <label>Número (1 a 10):</label>
+                <select id="custom-num">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Substituir por / Forma de escrever:</label>
+                <input type="text" id="custom-text" placeholder="Ex: FOGO, BANANA, PUM...">
+            </div>
+            <button class="btn" onclick="submitCustomRule()">APLICAR REGRA</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE ERRO -->
+    <div id="modal-error" class="overlay">
+        <div class="modal">
+            <h2 style="color: var(--danger);">INCORRETO!</h2>
+            <div class="error-details">
+                <div>Sua resposta: <strong id="err-user" style="color: var(--text-main);"></strong></div>
+                <div>Resposta esperada: <strong id="err-expected" style="color: var(--success);"></strong></div>
+                <div style="margin-top: 10px;"><span style="font-weight: bold; color: var(--danger);">Regra Quebrada:</span></div>
+                <div id="err-rule" style="font-style: italic; color: var(--text-main);"></div>
+            </div>
+            <button class="btn" onclick="closeErrorModal()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- MODAL GAME OVER -->
+    <div id="modal-gameover" class="overlay">
+        <div class="modal">
+            <h2 style="color: var(--danger);">FIM DE JOGO</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Sua memória ou contagem falhou!</p>
+            <div style="margin-bottom: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <p>Rodada Alcançada: <strong id="go-round">0</strong></p>
+                <p>Pontuação Final: <strong id="go-score">0</strong></p>
+                <p>Maior Combo: <strong id="go-combo">0</strong></p>
+            </div>
+            <button class="btn" onclick="startGame()">JOGAR NOVAMENTE</button>
+            <button class="btn btn-secondary" onclick="showScreen('screen-menu'); closeModal('modal-gameover');">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+<script>
+class SoundEffects {
+    constructor() { this.ctx = null; }
+    init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+    playCorrect() {
+        if (!settings.sound || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+    }
+    playWrong() {
+        if (!settings.sound || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(90, this.ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.25);
+    }
+    playNewRule() {
+        if (!settings.sound || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+    }
+}
+const sounds = new SoundEffects();
+
+// Normalização para remover acentos e caracteres especiais
+function removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function numberToWordsPT(num) {
+    const units = ["zero", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"];
+    return units[num] || String(num);
+}
+
+function parseWordToNumber(text) {
+    const clean = removeAccents(text.trim().toLowerCase());
+    const words = ["zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"];
+    const index = words.indexOf(clean);
+    if (index !== -1) return index;
+    const num = parseInt(clean);
+    return isNaN(num) ? null : num;
+}
+
+const RULE_DATABASE = [
+    { id: "sub_7_fogo", type: "substitution", requiresText: true, description: "7 agora é FOGO.", tags: ["sub_7"], transform: (t, n) => n === 7 ? "FOGO" : t },
+    { id: "sub_3_pum", type: "substitution", requiresText: true, description: "3 agora é PUM.", tags: ["sub_3"], transform: (t, n) => n === 3 ? "PUM" : t },
+    { id: "sub_5_azul", type: "substitution", requiresText: true, description: "5 agora é AZUL.", tags: ["sub_5"], transform: (t, n) => n === 5 ? "AZUL" : t },
+    { id: "sub_10_explosao", type: "substitution", requiresText: true, description: "10 agora é EXPLOSÃO.", tags: ["sub_10"], transform: (t, n) => n === 10 ? "EXPLOSÃO" : t },
+    { id: "spec_mult_3_fogo", type: "substitution", requiresText: true, description: "Múltiplos de 3 viram FOGO.", tags: ["mult_3"], transform: (t, n) => n % 3 === 0 ? "FOGO" : t },
+    { id: "spec_mult_5_agua", type: "substitution", requiresText: true, description: "Múltiplos de 5 viram ÁGUA.", tags: ["mult_5"], transform: (t, n) => n % 5 === 0 ? "ÁGUA" : t },
+    { id: "banana_4_8", type: "substitution", requiresText: true, description: "Nos números 4 e 8, escreva BANANA.", tags: ["mult_4"], transform: (t, n) => (n === 4 || n === 8) ? "BANANA" : t },
+    { id: "inv_even_extenso", type: "substitution", requiresText: true, description: "Números PARES devem ser escritos por extenso.", tags: ["even_transform"], transform: (t, n) => n % 2 === 0 ? numberToWordsPT(n) : t },
+    { id: "inv_odd_extenso", type: "substitution", requiresText: true, description: "Números ÍMPARES devem ser escritos por extenso.", tags: ["odd_transform"], transform: (t, n) => n % 2 !== 0 ? numberToWordsPT(n) : t },
+    { id: "fmt_exclamation", type: "formatting", description: "Adicione ! no final de cada resposta.", tags: ["ending"], transform: (t) => t.endsWith("!") ? t : t + "!" },
+    { id: "fmt_upper", type: "formatting", description: "Digite tudo em LETRAS MAIÚSCULAS.", tags: ["case"], transform: (t) => t.toUpperCase() },
+    { id: "fmt_lower", type: "formatting", description: "Digite tudo em letras minúsculas.", tags: ["case"], transform: (t) => t.toLowerCase() },
+    { id: "fmt_spaces", type: "formatting", description: "Coloque um espaço entre cada letra da resposta.", tags: ["spacing"], transform: (t) => t.split("").join(" ") },
+    { id: "fmt_reverse_text", type: "formatting", description: "Escreva a resposta completamente AO CONTRÁRIO.", tags: ["reverse"], transform: (t) => t.split("").reverse().join("") },
+    { id: "no_letter_a", type: "filter", letter: "a", description: "Proibido usar a letra 'A'.", tags: ["no_a"], transform: (t) => t },
+    { id: "starts_with_c", type: "formatting", description: "Todas as respostas precisam começar com a letra 'C'.", tags: ["starts_c"], transform: (t) => t.toUpperCase().startsWith("C") ? t : "C" + t }
+];
+
+/* ============================================================
+   SISTEMA DE IA PARA SELEÇÃO INTELIGENTE DE REGRAS
+   ============================================================ */
+function evaluateRuleSuitability(candidateRule, activeRules) {
+    // 1. Incompatibilidade básica de tags
+    for (let active of activeRules) {
+        if (active.id === candidateRule.id) return false;
+        if (active.tags && candidateRule.tags) {
+            const hasConflict = active.tags.some(t => candidateRule.tags.includes(t));
+            if (hasConflict) return false;
+        }
+    }
+
+    // Simulador para verificar que tipos de saídas as regras atuais geram (do 1 ao 10)
+    let generatedAnswers = [];
+    for (let n = 1; n <= 10; n++) {
+        generatedAnswers.push(computeExpectedAnswer(n, activeRules));
+    }
+
+    const hasTextualOutput = generatedAnswers.some(ans => /[a-zA-Z]/.test(removeAccents(ans)));
+
+    // 2. IA: Não adicionar regras de filtro de letras se ainda só existirem números puros!
+    if (candidateRule.type === "filter" && !hasTextualOutput) {
+        return false;
+    }
+
+    // 3. IA: Evitar contradições no caso de letras proibidas
+    if (candidateRule.type === "filter") {
+        const forbiddenLetter = candidateRule.letter;
+        for (let ans of generatedAnswers) {
+            const cleanAns = removeAccents(ans.toLowerCase());
+            if (cleanAns.includes(forbiddenLetter)) {
+                return false; // A regra tornaria o jogo impossível de responder!
+            }
+        }
+    }
+
+    return true;
+}
+
+let settings = { sound: true, particles: true, theme: 'dark' };
+
+let gameState = {
+    mode: 'CLASSIC',
+    round: 1,
+    currentNumber: 1,
+    score: 0,
+    combo: 0,
+    maxCombo: 0,
+    lives: 3,
+    activeRules: [],
+    timer: null,
+    timeLeft: 10,
+    maxTime: 10,
+    stats: { totalGames: 0, bestRound: 0, totalCorrect: 0, totalWrong: 0, bestCombo: 0, rulesSurvived: 0 }
+};
+
+function computeExpectedAnswer(num, rules) {
+    let result = String(num);
+
+    for (let rule of rules) {
+        if (rule.transform && (rule.type === 'substitution' || rule.isCustom)) {
+            result = rule.transform(result, num);
+        }
+    }
+
+    for (let rule of rules) {
+        if (rule.id === 'fmt_upper') result = result.toUpperCase();
+        if (rule.id === 'fmt_lower') result = result.toLowerCase();
+    }
+
+    for (let rule of rules) {
+        if (rule.id === 'fmt_spaces') result = result.split("").join(" ");
+        if (rule.id === 'fmt_reverse_text') result = result.split("").reverse().join("");
+    }
+
+    for (let rule of rules) {
+        if (rule.id === 'fmt_exclamation' && !result.endsWith('!')) result += '!';
+        if (rule.id === 'starts_with_c' && !result.toUpperCase().startsWith('C')) result = 'C' + result;
+    }
+
+    return result;
+}
+
+function validateAnswer(userAns, num, rules) {
+    const trimmedUser = userAns.trim();
+    const expected = computeExpectedAnswer(num, rules);
+
+    // Normalização ignora acentos e maiúsculas/minúsculas para validação inteligente
+    const normUser = removeAccents(trimmedUser.toLowerCase());
+    const normExpected = removeAccents(expected.toLowerCase());
+
+    // Se o resultado esperado for um número puro (ex: "5"), aceita também a palavra equivalente por extenso ("cinco")
+    let isEquivalentNumber = false;
+    if (rules.length === 0 || normExpected === String(num)) {
+        const userAsNum = parseWordToNumber(trimmedUser);
+        if (userAsNum === num) {
+            isEquivalentNumber = true;
+        }
+    }
+
+    if (!isEquivalentNumber && normUser !== normExpected) {
+        const brokenRule = rules[rules.length - 1] || { description: "Sequência Numérica Padrão" };
+        return { valid: false, brokenRule, expected };
+    }
+
+    return { valid: true };
+}
+
+function loadStorage() {
+    const localSet = localStorage.getItem('count_chaos_settings');
+    if (localSet) settings = JSON.parse(localSet);
+
+    const localStats = localStorage.getItem('count_chaos_stats');
+    if (localStats) gameState.stats = JSON.parse(localStats);
+
+    applySettings();
+}
+
+function saveStorage() {
+    localStorage.setItem('count_chaos_settings', JSON.stringify(settings));
+    localStorage.setItem('count_chaos_stats', JSON.stringify(gameState.stats));
+}
+
+function applySettings() {
+    document.getElementById('toggle-sound').classList.toggle('active', settings.sound);
+    document.getElementById('toggle-particles').classList.toggle('active', settings.particles);
+    document.getElementById('toggle-theme').classList.toggle('active', settings.theme === 'light');
+    if (settings.theme === 'light') document.body.classList.add('light-mode');
+    else document.body.classList.remove('light-mode');
+}
+
+function toggleSetting(key) {
+    if (key === 'sound') settings.sound = !settings.sound;
+    if (key === 'particles') settings.particles = !settings.particles;
+    if (key === 'theme') settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+    saveStorage();
+    applySettings();
+}
+
+function selectMode(mode, element) {
+    gameState.mode = mode;
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+}
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screen-leaderboard') renderLeaderboard();
+    if (screenId === 'screen-stats') renderStats();
+}
+
+function startGame() {
+    sounds.init();
+    closeModal('modal-gameover');
+    closeModal('modal-error');
+
+    gameState.round = 1;
+    gameState.currentNumber = gameState.mode === 'REVERSE' ? 10 : 1;
+    gameState.score = 0;
+    gameState.combo = 0;
+    gameState.maxCombo = 0;
+    gameState.lives = gameState.mode === 'EXTREME' ? 1 : 3;
+    gameState.activeRules = [];
+
+    gameState.stats.totalGames++;
+    saveStorage();
+
+    showScreen('screen-game');
+    updateHUD();
+    renderLatestRule();
+
+    if (gameState.mode === 'CUSTOM_RULE') {
+        openCustomRuleModal();
+    } else {
+        nextTurn();
+    }
+}
+
+function openCustomRuleModal() {
+    document.getElementById('custom-text').value = '';
+    document.getElementById('modal-custom-rule').classList.add('active');
+}
+
+function submitCustomRule() {
+    const num = parseInt(document.getElementById('custom-num').value);
+    const text = document.getElementById('custom-text').value.trim();
+
+    if (!text) return;
+
+    const customRule = {
+        id: "custom_" + Date.now(),
+        type: "substitution",
+        description: `O número ${num} deve ser escrito como '${text.toUpperCase()}'.`,
+        isCustom: true,
+        transform: (t, n) => n === num ? text : t
+    };
+
+    gameState.activeRules.push(customRule);
+    closeModal('modal-custom-rule');
+    renderLatestRule();
+    nextTurn();
+}
+
+function nextTurn() {
+    const input = document.getElementById('game-input');
+    input.value = '';
+    input.focus();
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(gameState.timer);
+    const timerBar = document.getElementById('timer-bar');
+
+    gameState.maxTime = gameState.mode === 'EXTREME' ? 5 : 10;
+    gameState.timeLeft = gameState.maxTime;
+    timerBar.style.width = '100%';
+
+    gameState.timer = setInterval(() => {
+        gameState.timeLeft -= 0.1;
+        const pct = (gameState.timeLeft / gameState.maxTime) * 100;
+        timerBar.style.width = Math.max(0, pct) + '%';
+
+        if (gameState.timeLeft <= 0) {
+            clearInterval(gameState.timer);
+            handleTimeOut();
+        }
+    }, 100);
+}
+
+function handleTimeOut() {
+    sounds.playWrong();
+    gameState.combo = 0;
+    gameState.lives--;
+    gameState.stats.totalWrong++;
+    updateHUD();
+
+    showErrorModal("TEMPO ESGOTADO!", computeExpectedAnswer(gameState.currentNumber, gameState.activeRules), "Tempo limite atingido.");
+}
+
+function handleInputSubmit() {
+    const input = document.getElementById('game-input');
+    const val = input.value;
+
+    if (!val.trim()) return;
+
+    clearInterval(gameState.timer);
+    const validation = validateAnswer(val, gameState.currentNumber, gameState.activeRules);
+
+    if (validation.valid) {
+        sounds.playCorrect();
+        createParticles(window.innerWidth / 2, window.innerHeight / 2);
+
+        gameState.combo++;
+        if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+        if (gameState.combo > gameState.stats.bestCombo) gameState.stats.bestCombo = gameState.combo;
+
+        gameState.score += 100 + (gameState.combo * 10) + (gameState.activeRules.length * 50);
+        gameState.stats.totalCorrect++;
+
+        showFeedback("✓ CORRETO", true);
+
+        if (gameState.mode === 'REVERSE') {
+            gameState.currentNumber--;
+            if (gameState.currentNumber < 1) {
+                gameState.currentNumber = 10;
+                finishRound();
+                return;
+            }
+        } else {
+            gameState.currentNumber++;
+            if (gameState.currentNumber > 10) {
+                gameState.currentNumber = 1;
+                finishRound();
+                return;
+            }
+        }
+
+        updateHUD();
+        setTimeout(nextTurn, 200);
+
+    } else {
+        sounds.playWrong();
+        gameState.combo = 0;
+        gameState.lives--;
+        gameState.stats.totalWrong++;
+        updateHUD();
+
+        showFeedback("✗ INCORRETO", false);
+        showErrorModal(val, validation.expected, validation.brokenRule.description);
+    }
+}
+
+function finishRound() {
+    gameState.round++;
+    if (gameState.round > gameState.stats.bestRound) gameState.stats.bestRound = gameState.round;
+
+    if (gameState.mode === 'CUSTOM_RULE') {
+        openCustomRuleModal();
+    } else {
+        addNewSmartRule();
+        nextTurn();
+    }
+    updateHUD();
+}
+
+function addNewSmartRule() {
+    // A IA analisa e filtra candidatos compatíveis
+    const candidates = RULE_DATABASE.filter(rule => evaluateRuleSuitability(rule, gameState.activeRules));
+
+    if (candidates.length === 0) return;
+
+    const selected = candidates[Math.floor(Math.random() * candidates.length)];
+    gameState.activeRules.push(selected);
+    gameState.stats.rulesSurvived++;
+
+    sounds.playNewRule();
+    renderLatestRule();
+}
+
+function renderLatestRule() {
+    const box = document.getElementById('latest-rule-box');
+    const count = document.getElementById('rules-count');
+
+    count.innerText = `${gameState.activeRules.length} Ativa(s)`;
+
+    if (gameState.activeRules.length === 0) {
+        box.innerText = "Nenhuma regra ativa no momento. Digite a sequência normal!";
+    } else {
+        const latest = gameState.activeRules[gameState.activeRules.length - 1];
+        box.innerHTML = `<strong>Regra Recente:</strong><br>${latest.description}`;
+    }
+}
+
+function updateHUD() {
+    document.getElementById('hud-round').innerText = gameState.round;
+    document.getElementById('hud-score').innerText = gameState.score;
+    document.getElementById('hud-combo').innerText = 'x' + gameState.combo;
+
+    let hearts = '';
+    for (let i = 0; i < gameState.lives; i++) hearts += '♥';
+    document.getElementById('hud-lives').innerText = hearts || '☠';
+}
+
+function showFeedback(msg, isCorrect) {
+    const fb = document.getElementById('feedback');
+    fb.innerText = msg;
+    fb.className = 'feedback-message ' + (isCorrect ? 'feedback-correct' : 'feedback-wrong');
+    setTimeout(() => fb.innerText = '', 800);
+}
+
+function showErrorModal(userAns, expected, ruleDesc) {
+    document.getElementById('err-user').innerText = userAns;
+    document.getElementById('err-expected').innerText = expected;
+    document.getElementById('err-rule').innerText = ruleDesc;
+    document.getElementById('modal-error').classList.add('active');
+}
+
+function closeErrorModal() {
+    document.getElementById('modal-error').classList.remove('active');
+    if (gameState.lives <= 0) {
+        showGameOver();
+    } else {
+        nextTurn();
+    }
+}
+
+function showGameOver() {
+    saveLeaderboard();
+    saveStorage();
+
+    document.getElementById('go-round').innerText = gameState.round;
+    document.getElementById('go-score').innerText = gameState.score;
+    document.getElementById('go-combo').innerText = gameState.maxCombo;
+
+    document.getElementById('modal-gameover').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function saveLeaderboard() {
+    let leaderboard = JSON.parse(localStorage.getItem('count_chaos_leaderboard') || '[]');
+    leaderboard.push({
+        mode: gameState.mode,
+        round: gameState.round,
+        score: gameState.score,
+        combo: gameState.maxCombo
+    });
+
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 10);
+    localStorage.setItem('count_chaos_leaderboard', JSON.stringify(leaderboard));
+}
+
+function renderLeaderboard() {
+    const tbody = document.querySelector('#leaderboard-table tbody');
+    const leaderboard = JSON.parse(localStorage.getItem('count_chaos_leaderboard') || '[]');
+
+    tbody.innerHTML = '';
+    if (leaderboard.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum registro.</td></tr>';
+        return;
+    }
+
+    leaderboard.forEach(entry => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${entry.mode}</td><td>${entry.round}</td><td>${entry.score}</td><td>x${entry.combo}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderStats() {
+    const container = document.getElementById('stats-content');
+    const s = gameState.stats;
+    container.innerHTML = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; text-align:left;">
+            <div>Total de Jogos: <strong>${s.totalGames}</strong></div>
+            <div>Melhor Rodada: <strong>${s.bestRound}</strong></div>
+            <div>Respostas Certas: <strong>${s.totalCorrect}</strong></div>
+            <div>Respostas Erradas: <strong>${s.totalWrong}</strong></div>
+            <div>Maior Combo: <strong>x${s.bestCombo}</strong></div>
+            <div>Regras Sobrevividas: <strong>${s.rulesSurvived}</strong></div>
+        </div>
+    `;
+}
+
+function clearData() {
+    if (confirm("Zerar todos os dados?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function createParticles(x, y) {
+    if (!settings.particles) return;
+    for (let i = 0; i < 15; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.5) * 8,
+            radius: Math.random() * 4 + 2,
+            color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+            alpha: 1,
+            life: 0.04
+        });
+    }
+}
+
+function updateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.life;
+
+        if (p.alpha <= 0) {
+            particles.splice(i, 1);
+        } else {
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+    requestAnimationFrame(updateParticles);
+}
+updateParticles();
+
+document.getElementById('game-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleInputSubmit();
+});
+
+loadStorage();
+</script>
+</body>
+</html>
