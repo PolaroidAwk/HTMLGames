@@ -34,7 +34,7 @@ if errorlevel 1 (
 
 echo.
 echo Enviando para o GitHub...
-git push
+git push --force origin main
 
 if errorlevel 1 (
     echo.
