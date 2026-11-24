@@ -6,7 +6,9 @@
 
 <title>HTMLGames</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
@@ -3267,7 +3269,7 @@ body{
                         >
 
                         <div class="profile-note">
-                            Alterar o email pode exigir uma confirmação enviada pelo Supabase.
+                            Alterar o email pode exigir uma confirmação enviada pelo Firebase.
                         </div>
 
                     </div>
@@ -3460,29 +3462,32 @@ async function atualizarVersaoSite(){
 atualizarVersaoSite();
 
 /* =========================================================
-   SUPABASE
+   FIREBASE
 ========================================================= */
 
-const SUPABASE_URL =
-    "https://xsbbgoohvlgpprhqevyo.supabase.co";
+const firebaseConfig = {
+    apiKey: "AIzaSyDZZymwPeOaXVQsC1GoYzBCjzCDtsRrCSk",
+    authDomain: "htmlgames-66407.firebaseapp.com",
+    projectId: "htmlgames-66407",
+    storageBucket: "htmlgames-66407.firebasestorage.app",
+    messagingSenderId: "528814816056",
+    appId: "1:528814816056:web:1452c4b166afdfaa839fcd",
+    measurementId: "G-NVFL9BK7SY"
+};
 
-const SUPABASE_KEY =
-    "sb_publishable_QsPz3adZO_MsaaQCdFrJNA_CzVu-ALy";
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
-
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const firebaseAuth = firebase.auth();
+const firebaseDB = firebase.firestore();
 
 /* =========================================================
+   ESTADO
+========================================================= *//* =========================================================
    ESTADO
 ========================================================= */
 
 let usuarioAtual = null;
 let modoConvidadoLocal = false;
-let supabaseDisponivel = true;
+let firebaseDisponivel = true;
 
 let avatarDraft = {
     type:"emoji",
@@ -3648,10 +3653,7 @@ const moveMessage =
    METADATA DO USUÁRIO
 ========================================================= */
 
-function obterMetadata(user){
-
-    return user?.user_metadata || {};
-}
+function obterMetadata(user){ return user?.user_metadata || {}; }
 
 
 function obterPerfilDoUsuario(user){
@@ -3717,54 +3719,16 @@ function mostrarMensagemPerfil(texto,tipo=""){
 
 
 function traduzirErro(error){
-
-    const msg =
-        String(
-            error?.message ||
-            error ||
-            ""
-        ).toLowerCase();
-
-    if(msg.includes("invalid login credentials"))
-        return "EMAIL OU SENHA INCORRETOS.";
-
-    if(msg.includes("user already registered"))
-        return "ESTE EMAIL JÁ POSSUI UMA CONTA.";
-
-    if(msg.includes("email not confirmed"))
-        return "ESTE EMAIL AINDA NÃO FOI CONFIRMADO.";
-
-    if(msg.includes("anonymous sign-ins"))
-        return "O LOGIN SEM PERFIL NÃO ESTÁ ATIVADO NO SUPABASE.";
-
-    if(msg.includes("password should be at least"))
-        return "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.";
-
-    if(msg.includes("invalid email"))
-        return "O EMAIL INFORMADO NÃO É VÁLIDO.";
-
-    if(msg.includes("same password"))
-        return "A NOVA SENHA PRECISA SER DIFERENTE.";
-
-    if(msg.includes("rate limit"))
-        return "MUITAS TENTATIVAS. AGUARDE UM POUCO.";
-
-    if(msg.includes("failed to fetch") || msg.includes("timeout") || msg.includes("network"))
-        return "SUPABASE INDISPONÍVEL OU DESATIVADO. USE O MODO CONVIDADO LOCAL.";
-
-    if(msg.includes("row-level security"))
-        return "O SUPABASE BLOQUEOU ESTA OPERAÇÃO.";
-
-    if(msg.includes("duplicate key"))
-        return "ESTE FAVORITO JÁ ESTÁ NESSA PASTA.";
-
-    if(msg.includes("bucket"))
-        return "NÃO FOI POSSÍVEL ACESSAR O ARMAZENAMENTO.";
-
-    return String(
-        error?.message ||
-        "OCORREU UM ERRO."
-    ).toUpperCase();
+ const code=String(error?.code||"").toLowerCase(), msg=String(error?.message||error||"").toLowerCase();
+ if(code.includes("invalid-credential")||code.includes("wrong-password")||code.includes("user-not-found"))return "EMAIL OU SENHA INCORRETOS.";
+ if(code.includes("email-already-in-use"))return "ESTE EMAIL JÁ POSSUI UMA CONTA.";
+ if(code.includes("invalid-email"))return "O EMAIL INFORMADO NÃO É VÁLIDO.";
+ if(code.includes("weak-password"))return "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.";
+ if(code.includes("too-many-requests"))return "MUITAS TENTATIVAS. AGUARDE UM POUCO.";
+ if(code.includes("requires-recent-login"))return "POR SEGURANÇA, SAIA E ENTRE NOVAMENTE ANTES DE ALTERAR ESSE DADO.";
+ if(code.includes("permission-denied")||msg.includes("missing or insufficient permissions"))return "O FIRESTORE BLOQUEOU ESTA OPERAÇÃO. VERIFIQUE AS REGRAS DO BANCO.";
+ if(code.includes("unavailable")||msg.includes("network")||msg.includes("failed to fetch"))return "FIREBASE INDISPONÍVEL. TENTE NOVAMENTE OU USE O MODO CONVIDADO LOCAL.";
+ return String(error?.message||"OCORREU UM ERRO.").toUpperCase();
 }
 
 
@@ -3818,141 +3782,30 @@ authSwitchButton.addEventListener(
 );
 
 
-authForm.addEventListener(
-    "submit",
-    async event => {
-
-        event.preventDefault();
-
-        const email =
-            authEmail.value.trim();
-
-        const password =
-            authPassword.value;
-
-        if(!email || !password){
-
-            mostrarMensagemAuth(
-                "PREENCHA EMAIL E SENHA.",
-                "error"
-            );
-
-            return;
-        }
-
-        if(password.length < 6){
-
-            mostrarMensagemAuth(
-                "A SENHA PRECISA TER PELO MENOS 6 CARACTERES.",
-                "error"
-            );
-
-            return;
-        }
-
-        authSubmit.disabled = true;
-
-        try{
-
-            if(modoCadastro){
-
-                authSubmit.textContent =
-                    "CRIANDO...";
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.signUp({
-                        email,
-                        password
-                    });
-
-                if(error)
-                    throw error;
-
-                if(!data.user)
-                    throw new Error(
-                        "A conta não foi criada."
-                    );
-
-                if(data.session){
-
-                    usuarioAtual =
-                        data.user;
-
-                    await inicializarPerfil(
-                        usuarioAtual
-                    );
-
-                    await carregarDadosFavoritos();
-
-                    mostrarSite();
-
-                }else{
-
-                    mostrarMensagemAuth(
-                        "CONTA CRIADA. CONFIRME O EMAIL SE NECESSÁRIO E DEPOIS ENTRE.",
-                        "success"
-                    );
-
-                }
-
-            }else{
-
-                authSubmit.textContent =
-                    "ENTRANDO...";
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.signInWithPassword({
-                        email,
-                        password
-                    });
-
-                if(error)
-                    throw error;
-
-                usuarioAtual =
-                    data.user;
-
-                await inicializarPerfil(
-                    usuarioAtual
-                );
-
-                await carregarDadosFavoritos();
-
-                mostrarSite();
-            }
-
-        }catch(error){
-
-            console.error(
-                "AUTH ERROR:",
-                error
-            );
-
-            mostrarMensagemAuth(
-                traduzirErro(error),
-                "error"
-            );
-
-        }finally{
-
-            authSubmit.disabled = false;
-
-            authSubmit.textContent =
-                modoCadastro
-                    ? "CRIAR CONTA"
-                    : "ENTRAR";
-        }
-    }
-);
+authForm.addEventListener("submit",async event=>{
+ event.preventDefault();
+ const email=authEmail.value.trim(), password=authPassword.value;
+ if(!email||!password){mostrarMensagemAuth("PREENCHA EMAIL E SENHA.","error");return;}
+ if(password.length<6){mostrarMensagemAuth("A SENHA PRECISA TER PELO MENOS 6 CARACTERES.","error");return;}
+ authSubmit.disabled=true;
+ try{
+  authSubmit.textContent=modoCadastro?"CRIANDO...":"ENTRANDO...";
+  const credential=modoCadastro
+   ? await firebaseAuth.createUserWithEmailAndPassword(email,password)
+   : await firebaseAuth.signInWithEmailAndPassword(email,password);
+  modoConvidadoLocal=false;
+  usuarioAtual=await prepararUsuario(credential.user);
+  await inicializarPerfil(usuarioAtual);
+  await carregarDadosFavoritos();
+  mostrarSite();
+ }catch(error){console.error("AUTH ERROR:",error);mostrarMensagemAuth(traduzirErro(error),"error");}
+ finally{authSubmit.disabled=false;authSubmit.textContent=modoCadastro?"CRIAR CONTA":"ENTRAR";}
+});
 
 
 /* =========================================================
+   CONVIDADO
+========================================================= *//* =========================================================
    CONVIDADO
 ========================================================= */
 
@@ -3962,18 +3815,11 @@ guestButton.addEventListener(
 );
 
 
-function atualizarStatusSupabase(disponivel, detalhe=""){
-    supabaseDisponivel = disponivel;
-    const authStatus = document.getElementById("serviceStatus");
-    const siteStatus = document.getElementById("siteServiceStatus");
-    const texto = disponivel
-        ? "SUPABASE ONLINE. CONTAS E SINCRONIZAÇÃO DISPONÍVEIS."
-        : "⚠ SUPABASE INDISPONÍVEL/DESATIVADO. O MODO CONVIDADO LOCAL FUNCIONA, MAS CONTAS E DADOS NA NUVEM NÃO ESTÃO DISPONÍVEIS." +
-          (detalhe ? " " + detalhe : "");
-    authStatus.textContent = texto;
-    authStatus.classList.toggle("visible", !disponivel);
-    siteStatus.textContent = texto;
-    siteStatus.style.display = disponivel ? "none" : "block";
+function atualizarStatusFirebase(disponivel,detalhe=""){
+ firebaseDisponivel=disponivel;
+ const a=document.getElementById("serviceStatus"),s=document.getElementById("siteServiceStatus");
+ const t=disponivel?"FIREBASE ONLINE. CONTAS E SINCRONIZAÇÃO DISPONÍVEIS.":"⚠ FIREBASE INDISPONÍVEL. O MODO CONVIDADO LOCAL FUNCIONA, MAS CONTAS E DADOS NA NUVEM NÃO ESTÃO DISPONÍVEIS."+(detalhe?" "+detalhe:"");
+ a.textContent=t;a.classList.toggle("visible",!disponivel);s.textContent=t;s.style.display=disponivel?"none":"block";
 }
 
 function obterPerfilConvidadoLocal(){
@@ -4000,36 +3846,16 @@ function entrarConvidadoLocal(){
 }
 
 async function entrarComoConvidado(){
-    guestButton.disabled = true;
-    guestButton.textContent = "VERIFICANDO SERVIÇO...";
-    try {
-        const {data,error} = await Promise.race([
-            supabaseClient.auth.signInAnonymously(),
-            new Promise((_,reject)=>setTimeout(()=>reject(new Error("SUPABASE_TIMEOUT")),7000))
-        ]);
-        if(error) throw error;
-        modoConvidadoLocal = false;
-        usuarioAtual = data.user;
-        try { await inicializarPerfil(usuarioAtual); }
-        catch(profileError) {
-            console.warn("Falha ao inicializar perfil remoto:",profileError);
-            entrarConvidadoLocal();
-            atualizarStatusSupabase(false,"O serviço respondeu, mas não permitiu inicializar o perfil.");
-            mostrarMensagemAuth("SUPABASE COM PROBLEMAS. ENTRANDO EM MODO CONVIDADO LOCAL.","success");
-            return;
-        }
-        carregarDadosFavoritosLocais();
-        atualizarStatusSupabase(true);
-        mostrarSite();
-    } catch(error) {
-        console.warn("SUPABASE indisponível; usando convidado local:",error);
-        atualizarStatusSupabase(false,error.message==="SUPABASE_TIMEOUT"?"TEMPO DE RESPOSTA ESGOTADO.":"");
-        entrarConvidadoLocal();
-        mostrarMensagemAuth("SUPABASE INDISPONÍVEL. VOCÊ ENTROU EM MODO LOCAL; PERFIL E FAVORITOS FICAM SALVOS NESTE NAVEGADOR.","success");
-    } finally {
-        guestButton.disabled = false;
-        guestButton.textContent = "CONTINUAR SEM PERFIL";
-    }
+ guestButton.disabled=true;guestButton.textContent="CONECTANDO...";
+ try{
+  const credential=await firebaseAuth.signInAnonymously();
+  modoConvidadoLocal=false;usuarioAtual=await prepararUsuario(credential.user);
+  await inicializarPerfil(usuarioAtual);await carregarDadosFavoritos();atualizarStatusFirebase(true);mostrarSite();
+ }catch(error){
+  console.warn("Firebase indisponível; usando convidado local:",error);
+  atualizarStatusFirebase(false);entrarConvidadoLocal();
+  mostrarMensagemAuth("FIREBASE INDISPONÍVEL. VOCÊ ENTROU EM MODO LOCAL; PERFIL E FAVORITOS FICAM SALVOS NESTE NAVEGADOR.","success");
+ }finally{guestButton.disabled=false;guestButton.textContent="CONTINUAR SEM PERFIL";}
 }
 
 /* =========================================================
@@ -4037,48 +3863,22 @@ async function entrarComoConvidado(){
 ========================================================= */
 
 async function inicializarPerfil(user){
+ if(!user||modoConvidadoLocal)return;
+ const ref=firebaseDB.collection("users").doc(user.uid), snap=await ref.get();
+ const defaults={display_name:user.isAnonymous?"GUEST":"PLAYER",avatar_type:"emoji",avatar_face:"😀",avatar_accessory:"",avatar_extra:"",avatar_url:null};
+ if(!snap.exists){
+  await ref.set({...defaults,email:user.email||null,created_at:firebase.firestore.FieldValue.serverTimestamp(),updated_at:firebase.firestore.FieldValue.serverTimestamp()});
+  user.user_metadata=defaults;
+ }else user.user_metadata={...defaults,...snap.data()};
+ usuarioAtual=await prepararUsuario(user);
+}
 
-    if(!user || modoConvidadoLocal)
-        return;
-
-    const metadata =
-        obterMetadata(user);
-
-    const precisaInicializar =
-        !metadata.display_name;
-
-    if(!precisaInicializar)
-        return;
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.updateUser({
-            data:{
-                display_name:
-                    user.is_anonymous
-                        ? "GUEST"
-                        : "PLAYER",
-
-                avatar_type:"emoji",
-
-                avatar_face:"😀",
-
-                avatar_accessory:"",
-
-                avatar_extra:"",
-
-                avatar_url:null
-            }
-        });
-
-    if(error)
-        throw error;
-
-    if(data?.user)
-        usuarioAtual =
-            data.user;
+async function prepararUsuario(user){
+ if(!user)return null;
+ const snap=await firebaseDB.collection("users").doc(user.uid).get(),p=snap.exists?snap.data():{};
+ user.id=user.uid;user.is_anonymous=!!user.isAnonymous;
+ user.user_metadata={display_name:p.display_name||(user.isAnonymous?"GUEST":"PLAYER"),avatar_type:p.avatar_type||"emoji",avatar_face:p.avatar_face||"😀",avatar_accessory:p.avatar_accessory||"",avatar_extra:p.avatar_extra||"",avatar_url:p.avatar_url||null};
+ return user;
 }
 
 
@@ -4639,68 +4439,15 @@ avatarFileInput.addEventListener(
 ========================================================= */
 
 async function enviarFotoAvatar(file){
-
-    if(!usuarioAtual)
-        throw new Error(
-            "NENHUM USUÁRIO CONECTADO."
-        );
-
-    const extensaoOriginal =
-        file.name
-            .split(".")
-            .pop()
-            .toLowerCase();
-
-    const extensao =
-        ["png","jpg","jpeg","webp"]
-            .includes(extensaoOriginal)
-            ? extensaoOriginal
-            : "png";
-
-    const nomeArquivo =
-        `avatar_${Date.now()}.${extensao}`;
-
-    const caminho =
-        `${usuarioAtual.id}/${nomeArquivo}`;
-
-    const {
-        error
-    } =
-        await supabaseClient
-            .storage
-            .from("avatars")
-            .upload(
-                caminho,
-                file,
-                {
-                    upsert:false,
-                    contentType:file.type,
-                    cacheControl:"3600"
-                }
-            );
-
-    if(error)
-        throw error;
-
-    const {
-        data
-    } =
-        supabaseClient
-            .storage
-            .from("avatars")
-            .getPublicUrl(
-                caminho
-            );
-
-    if(
-        !data ||
-        !data.publicUrl
-    )
-        throw new Error(
-            "NÃO FOI POSSÍVEL OBTER A URL DA FOTO."
-        );
-
-    return data.publicUrl;
+ if(!file)return null;
+ const src=await arquivoParaDataURL(file),img=new Image();
+ await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new Error("NÃO FOI POSSÍVEL ABRIR A IMAGEM."));img.src=src;});
+ const scale=Math.min(1,256/Math.max(img.width,img.height)),canvas=document.createElement("canvas");
+ canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
+ canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+ const data=canvas.toDataURL("image/jpeg",0.72);
+ if(data.length>700000)throw new Error("A FOTO CONTINUA MUITO GRANDE. ESCOLHA OUTRA IMAGEM.");
+ return data;
 }
 
 
@@ -4728,192 +4475,27 @@ document
 
 
 async function salvarPerfil(){
-
-    if(!usuarioAtual)
-        return;
-
-    const nome =
-        profileNameInput.value.trim();
-
-    if(!nome){
-
-        mostrarMensagemPerfil(
-            "ESCOLHA UM NOME.",
-            "error"
-        );
-
-        return;
-    }
-
-    if(nome.length > 24){
-
-        mostrarMensagemPerfil(
-            "O NOME PODE TER NO MÁXIMO 24 CARACTERES.",
-            "error"
-        );
-
-        return;
-    }
-
-    const novaSenha =
-        profilePasswordInput.value;
-
-    if(
-        !usuarioAtual.is_anonymous &&
-        novaSenha &&
-        novaSenha.length < 6
-    ){
-
-        mostrarMensagemPerfil(
-            "A NOVA SENHA PRECISA TER PELO MENOS 6 CARACTERES.",
-            "error"
-        );
-
-        return;
-    }
-
-    const botao =
-        document.getElementById(
-            "saveProfileButton"
-        );
-
-    botao.disabled = true;
-
-    botao.textContent =
-        "SALVANDO...";
-
-    try{
-
-        if(modoConvidadoLocal){
-            const perfilLocal = {
-                display_name:nome,
-                avatar_type:avatarDraft.type,
-                avatar_face:avatarDraft.face,
-                avatar_accessory:avatarDraft.accessory,
-                avatar_extra:avatarDraft.extra,
-                avatar_url:avatarDraft.type === "photo" && avatarDraft.file
-                    ? await arquivoParaDataURL(avatarDraft.file)
-                    : (avatarDraft.type === "photo" ? avatarDraft.url : null)
-            };
-            localStorage.setItem("htmlgames_guest_profile",JSON.stringify(perfilLocal));
-            usuarioAtual.user_metadata = perfilLocal;
-            avatarDraft.file = null;
-            avatarFileInput.value = "";
-            avatarFileName.textContent = "NENHUMA FOTO SELECIONADA.";
-            atualizarInterfacePerfil();
-            mostrarMensagemPerfil("PERFIL SALVO NESTE NAVEGADOR.","success");
-            playSound("fav");
-            return;
-        }
-
-        let avatarUrl =
-            avatarDraft.url;
-
-        if(
-            avatarDraft.type === "photo" &&
-            avatarDraft.file
-        ){
-
-            avatarUrl =
-                await enviarFotoAvatar(
-                    avatarDraft.file
-                );
-        }
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.updateUser({
-
-                email:
-                    !usuarioAtual.is_anonymous
-                    ? profileEmailInput.value.trim()
-                    : undefined,
-
-                password:
-                    !usuarioAtual.is_anonymous &&
-                    novaSenha
-                    ? novaSenha
-                    : undefined,
-
-                data:{
-
-                    display_name:
-                        nome,
-
-                    avatar_type:
-                        avatarDraft.type,
-
-                    avatar_face:
-                        avatarDraft.face,
-
-                    avatar_accessory:
-                        avatarDraft.accessory,
-
-                    avatar_extra:
-                        avatarDraft.extra,
-
-                    avatar_url:
-                        avatarDraft.type === "photo"
-                            ? avatarUrl
-                            : null
-                }
-            });
-
-        if(error)
-            throw error;
-
-        if(!data?.user)
-            throw new Error(
-                "O SUPABASE NÃO RETORNOU O USUÁRIO ATUALIZADO."
-            );
-
-        usuarioAtual =
-            data.user;
-
-        profilePasswordInput.value =
-            "";
-
-        avatarDraft.file =
-            null;
-
-        avatarFileInput.value =
-            "";
-
-        avatarFileName.textContent =
-            "NENHUMA FOTO SELECIONADA.";
-
-        atualizarInterfacePerfil();
-
-        mostrarMensagemPerfil(
-            "ALTERAÇÕES SALVAS COM SUCESSO.",
-            "success"
-        );
-
-        playSound("fav");
-
-    }catch(error){
-
-        console.error(
-            "PROFILE SAVE ERROR:",
-            error
-        );
-
-        mostrarMensagemPerfil(
-            "ERRO AO SALVAR: " +
-            traduzirErro(error),
-            "error"
-        );
-
-    }finally{
-
-        botao.disabled =
-            false;
-
-        botao.textContent =
-            "SALVAR ALTERAÇÕES";
-    }
+ if(!usuarioAtual)return;
+ const nome=profileNameInput.value.trim(),senha=profilePasswordInput.value;
+ if(!nome){mostrarMensagemPerfil("ESCOLHA UM NOME.","error");return;}
+ if(nome.length>24){mostrarMensagemPerfil("O NOME PODE TER NO MÁXIMO 24 CARACTERES.","error");return;}
+ if(!usuarioAtual.is_anonymous&&senha&&senha.length<6){mostrarMensagemPerfil("A NOVA SENHA PRECISA TER PELO MENOS 6 CARACTERES.","error");return;}
+ const botao=document.getElementById("saveProfileButton");botao.disabled=true;botao.textContent="SALVANDO...";
+ try{
+  if(modoConvidadoLocal){
+   const p={display_name:nome,avatar_type:avatarDraft.type,avatar_face:avatarDraft.face,avatar_accessory:avatarDraft.accessory,avatar_extra:avatarDraft.extra,avatar_url:avatarDraft.type==="photo"?(avatarDraft.file?await enviarFotoAvatar(avatarDraft.file):avatarDraft.url):null};
+   localStorage.setItem("htmlgames_guest_profile",JSON.stringify(p));usuarioAtual.user_metadata=p;
+  }else{
+   const email=profileEmailInput.value.trim();
+   if(!usuarioAtual.is_anonymous&&email&&email!==(usuarioAtual.email||""))await usuarioAtual.updateEmail(email);
+   if(!usuarioAtual.is_anonymous&&senha)await usuarioAtual.updatePassword(senha);
+   const p={display_name:nome,avatar_type:avatarDraft.type,avatar_face:avatarDraft.face,avatar_accessory:avatarDraft.accessory,avatar_extra:avatarDraft.extra,avatar_url:avatarDraft.type==="photo"?(avatarDraft.file?await enviarFotoAvatar(avatarDraft.file):avatarDraft.url):null,email:usuarioAtual.email||null,updated_at:firebase.firestore.FieldValue.serverTimestamp()};
+   await firebaseDB.collection("users").doc(usuarioAtual.uid).set(p,{merge:true});usuarioAtual.user_metadata=p;
+  }
+  profilePasswordInput.value="";avatarDraft.file=null;avatarFileInput.value="";avatarFileName.textContent="NENHUMA FOTO SELECIONADA.";
+  atualizarInterfacePerfil();mostrarMensagemPerfil(modoConvidadoLocal?"PERFIL SALVO NESTE NAVEGADOR.":"ALTERAÇÕES SALVAS COM SUCESSO.","success");playSound("fav");
+ }catch(error){console.error("PROFILE SAVE ERROR:",error);mostrarMensagemPerfil("ERRO AO SALVAR: "+traduzirErro(error),"error");}
+ finally{botao.disabled=false;botao.textContent="SALVAR ALTERAÇÕES";}
 }
 
 
@@ -4973,81 +4555,16 @@ function carregarDadosFavoritosLocais(){
 
 
 /* =========================================================
-   FAVORITOS — SUPABASE
+   FAVORITOS — FIREBASE
 ========================================================= */
 
 async function carregarDadosFavoritos(){
-
-    if(
-        !usuarioAtual ||
-        usuarioAtual.is_anonymous
-    ){
-
-        carregarDadosFavoritosLocais();
-
-        return;
-    }
-
-    const [
-        favoritosResult,
-        pastasResult
-    ] =
-        await Promise.all([
-
-            supabaseClient
-                .from("favorites")
-                .select(
-                    "id,user_id,game_id,folder_id,created_at"
-                )
-                .eq(
-                    "user_id",
-                    usuarioAtual.id
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending:true
-                    }
-                ),
-
-            supabaseClient
-                .from("favorite_folders")
-                .select(
-                    "id,user_id,name,created_at"
-                )
-                .eq(
-                    "user_id",
-                    usuarioAtual.id
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending:true
-                    }
-                )
-        ]);
-
-    if(favoritosResult.error)
-        throw favoritosResult.error;
-
-    if(pastasResult.error)
-        throw pastasResult.error;
-
-    favoritosConta =
-        favoritosResult.data || [];
-
-    pastasFavoritos =
-        pastasResult.data || [];
-
-    /*
-        A pasta atual volta para a principal
-        quando uma nova sessão é carregada.
-    */
-
-    pastaFavoritosAtual =
-        null;
-
-    renderizarPastas();
+ if(!usuarioAtual||modoConvidadoLocal){carregarDadosFavoritosLocais();return;}
+ const ref=firebaseDB.collection("users").doc(usuarioAtual.uid);
+ const [fs,ps]=await Promise.all([ref.collection("favorites").get(),ref.collection("favorite_folders").get()]);
+ favoritosConta=fs.docs.map(d=>({id:d.id,user_id:usuarioAtual.uid,game_id:d.id,folder_id:d.data().folder_id||null,created_at:d.data().created_at||0}));
+ pastasFavoritos=ps.docs.map(d=>({id:d.id,user_id:usuarioAtual.uid,name:d.data().name||"PASTA",created_at:d.data().created_at||0})).sort((a,b)=>(a.created_at||0)-(b.created_at||0));
+ pastaFavoritosAtual=null;renderizarPastas();
 }
 
 
@@ -5087,119 +4604,17 @@ function favoritoDoJogo(id){
 ========================================================= */
 
 async function alternarFavorito(id){
-
-    if(!usuarioAtual)
-        return;
-
-    const existente =
-        favoritoDoJogo(id);
-
-    try{
-
-        if(
-            usuarioAtual.is_anonymous
-        ){
-
-            let favoritos =
-                obterFavoritosLocais();
-
-            if(
-                favoritos.includes(id)
-            ){
-
-                favoritos =
-                    favoritos.filter(
-                        item =>
-                            item !== id
-                    );
-
-            }else{
-
-                favoritos.push(id);
-            }
-
-            salvarFavoritosLocais(
-                favoritos
-            );
-
-            carregarDadosFavoritosLocais();
-
-        }else{
-
-            if(existente){
-
-                const {
-                    error
-                } =
-                    await supabaseClient
-                        .from("favorites")
-                        .delete()
-                        .eq(
-                            "id",
-                            existente.id
-                        )
-                        .eq(
-                            "user_id",
-                            usuarioAtual.id
-                        );
-
-                if(error)
-                    throw error;
-
-                favoritosConta =
-                    favoritosConta.filter(
-                        item =>
-                            item.id !==
-                            existente.id
-                    );
-
-            }else{
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient
-                        .from("favorites")
-                        .insert({
-                            user_id:
-                                usuarioAtual.id,
-
-                            game_id:
-                                id,
-
-                            folder_id:
-                                pastaFavoritosAtual
-                        })
-                        .select()
-                        .single();
-
-                if(error)
-                    throw error;
-
-                favoritosConta.push(
-                    data
-                );
-            }
-        }
-
-        playSound("fav");
-
-        carregarFavoritos();
-        filtrarJogos();
-
-    }catch(error){
-
-        console.error(
-            "FAVORITE ERROR:",
-            error
-        );
-
-        alert(
-            "ERRO AO ALTERAR FAVORITO:\n\n" +
-            traduzirErro(error)
-        );
-    }
+ if(!usuarioAtual)return;const old=favoritoDoJogo(id);
+ try{
+  if(modoConvidadoLocal){
+   let favs=obterFavoritosLocais();favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];salvarFavoritosLocais(favs);carregarDadosFavoritosLocais();
+  }else{
+   const ref=firebaseDB.collection("users").doc(usuarioAtual.uid).collection("favorites").doc(String(id));
+   if(old){await ref.delete();favoritosConta=favoritosConta.filter(x=>x.game_id!==id);}
+   else{const data={folder_id:pastaFavoritosAtual||null,created_at:Date.now()};await ref.set(data);favoritosConta.push({id:String(id),user_id:usuarioAtual.uid,game_id:id,...data});}
+  }
+  playSound("fav");carregarFavoritos();filtrarJogos();
+ }catch(error){console.error("FAVORITE ERROR:",error);alert("ERRO AO ALTERAR FAVORITO:\n\n"+traduzirErro(error));}
 }
 
 
@@ -5392,176 +4807,24 @@ function fecharModalPasta(){
 
 
 async function confirmarPasta(){
-
-    const nome =
-        folderNameInput.value.trim();
-
-    if(!nome){
-
-        folderModalMessage.textContent =
-            "DIGITE UM NOME PARA A PASTA.";
-
-        return;
-    }
-
-    if(nome.length > 32){
-
-        folderModalMessage.textContent =
-            "O NOME PODE TER NO MÁXIMO 32 CARACTERES.";
-
-        return;
-    }
-
-    if(
-        !usuarioAtual ||
-        usuarioAtual.is_anonymous
-    ){
-
-        folderModalMessage.textContent =
-            "ENTRE EM UMA CONTA PARA CRIAR PASTAS.";
-
-        return;
-    }
-
-    folderModalConfirm.disabled =
-        true;
-
-    try{
-
-        if(
-            pastaModalModo ===
-            "criar"
-        ){
-
-            const existe =
-                pastasFavoritos.some(
-                    pasta =>
-                        pasta.name
-                            .toLowerCase() ===
-                        nome.toLowerCase()
-                );
-
-            if(existe){
-
-                folderModalMessage.textContent =
-                    "JÁ EXISTE UMA PASTA COM ESSE NOME.";
-
-                return;
-            }
-
-            const {
-                data,
-                error
-            } =
-                await supabaseClient
-                    .from(
-                        "favorite_folders"
-                    )
-                    .insert({
-                        user_id:
-                            usuarioAtual.id,
-
-                        name:
-                            nome
-                    })
-                    .select()
-                    .single();
-
-            if(error)
-                throw error;
-
-            pastasFavoritos.push(
-                data
-            );
-
-            pastaFavoritosAtual =
-                data.id;
-
-        }else{
-
-            const pasta =
-                pastasFavoritos.find(
-                    item =>
-                        item.id ===
-                        pastaModalId
-                );
-
-            if(!pasta)
-                throw new Error(
-                    "PASTA NÃO ENCONTRADA."
-                );
-
-            const existe =
-                pastasFavoritos.some(
-                    item =>
-                        item.id !== pasta.id &&
-                        item.name
-                            .toLowerCase() ===
-                        nome.toLowerCase()
-                );
-
-            if(existe){
-
-                folderModalMessage.textContent =
-                    "JÁ EXISTE UMA PASTA COM ESSE NOME.";
-
-                return;
-            }
-
-            const {
-                data,
-                error
-            } =
-                await supabaseClient
-                    .from(
-                        "favorite_folders"
-                    )
-                    .update({
-                        name:
-                            nome
-                    })
-                    .eq(
-                        "id",
-                        pasta.id
-                    )
-                    .eq(
-                        "user_id",
-                        usuarioAtual.id
-                    )
-                    .select()
-                    .single();
-
-            if(error)
-                throw error;
-
-            Object.assign(
-                pasta,
-                data
-            );
-        }
-
-        fecharModalPasta();
-
-        renderizarPastas();
-        filtrarJogos();
-
-        playSound("fav");
-
-    }catch(error){
-
-        console.error(
-            "FOLDER ERROR:",
-            error
-        );
-
-        folderModalMessage.textContent =
-            traduzirErro(error);
-
-    }finally{
-
-        folderModalConfirm.disabled =
-            false;
-    }
+ const nome=folderNameInput.value.trim();
+ if(!nome){folderModalMessage.textContent="DIGITE UM NOME PARA A PASTA.";return;}
+ if(nome.length>32){folderModalMessage.textContent="O NOME PODE TER NO MÁXIMO 32 CARACTERES.";return;}
+ if(!usuarioAtual||usuarioAtual.is_anonymous||modoConvidadoLocal){folderModalMessage.textContent="ENTRE EM UMA CONTA PARA CRIAR PASTAS.";return;}
+ folderModalConfirm.disabled=true;
+ try{
+  const ref=firebaseDB.collection("users").doc(usuarioAtual.uid).collection("favorite_folders");
+  if(pastaModalModo==="criar"){
+   if(pastasFavoritos.some(p=>p.name.toLowerCase()===nome.toLowerCase())){folderModalMessage.textContent="JÁ EXISTE UMA PASTA COM ESSE NOME.";return;}
+   const doc=ref.doc(),data={name:nome,created_at:Date.now()};await doc.set(data);pastasFavoritos.push({id:doc.id,user_id:usuarioAtual.uid,...data});pastaFavoritosAtual=doc.id;
+  }else{
+   const pasta=pastasFavoritos.find(p=>p.id===pastaModalId);if(!pasta)throw Error("PASTA NÃO ENCONTRADA.");
+   if(pastasFavoritos.some(p=>p.id!==pasta.id&&p.name.toLowerCase()===nome.toLowerCase())){folderModalMessage.textContent="JÁ EXISTE UMA PASTA COM ESSE NOME.";return;}
+   await ref.doc(pasta.id).update({name:nome});pasta.name=nome;
+  }
+  fecharModalPasta();renderizarPastas();filtrarJogos();playSound("fav");
+ }catch(error){console.error("FOLDER ERROR:",error);folderModalMessage.textContent=traduzirErro(error);}
+ finally{folderModalConfirm.disabled=false;}
 }
 
 
@@ -5707,119 +4970,18 @@ folderNameInput.addEventListener(
 ========================================================= */
 
 async function excluirPasta(){
-
-    if(
-        !pastaFavoritosAtual
-    ){
-
-        alert(
-            "SELECIONE UMA SUBPASTA PRIMEIRO."
-        );
-
-        return;
-    }
-
-    if(
-        !usuarioAtual ||
-        usuarioAtual.is_anonymous
-    ){
-
-        alert(
-            "ENTRE EM UMA CONTA PARA GERENCIAR PASTAS."
-        );
-
-        return;
-    }
-
-    const pasta =
-        pastasFavoritos.find(
-            item =>
-                item.id ===
-                pastaFavoritosAtual
-        );
-
-    if(!pasta)
-        return;
-
-    const confirmar =
-        confirm(
-            `EXCLUIR A PASTA "${pasta.name}"?\n\nOS JOGOS NÃO SERÃO APAGADOS. ELES VOLTARÃO PARA "TODOS".`
-        );
-
-    if(!confirmar)
-        return;
-
-    try{
-
-        const {
-            error
-        } =
-            await supabaseClient
-                .from(
-                    "favorite_folders"
-                )
-                .delete()
-                .eq(
-                    "id",
-                    pasta.id
-                )
-                .eq(
-                    "user_id",
-                    usuarioAtual.id
-                );
-
-        if(error)
-            throw error;
-
-        /*
-            O banco está configurado com
-            ON DELETE SET NULL.
-            Portanto os favoritos dessa pasta
-            voltam para a pasta principal.
-        */
-
-        favoritosConta =
-            favoritosConta.map(
-                favorito => {
-
-                    if(
-                        favorito.folder_id ===
-                        pasta.id
-                    )
-                        favorito.folder_id =
-                            null;
-
-                    return favorito;
-                }
-            );
-
-        pastasFavoritos =
-            pastasFavoritos.filter(
-                item =>
-                    item.id !==
-                    pasta.id
-            );
-
-        pastaFavoritosAtual =
-            null;
-
-        renderizarPastas();
-        filtrarJogos();
-
-        playSound("fav");
-
-    }catch(error){
-
-        console.error(
-            "DELETE FOLDER ERROR:",
-            error
-        );
-
-        alert(
-            "ERRO AO EXCLUIR PASTA:\n\n" +
-            traduzirErro(error)
-        );
-    }
+ if(!pastaFavoritosAtual){alert("SELECIONE UMA SUBPASTA PRIMEIRO.");return;}
+ if(!usuarioAtual||usuarioAtual.is_anonymous||modoConvidadoLocal){alert("ENTRE EM UMA CONTA PARA GERENCIAR PASTAS.");return;}
+ const pasta=pastasFavoritos.find(p=>p.id===pastaFavoritosAtual);if(!pasta)return;
+ if(!confirm('EXCLUIR A PASTA "'+pasta.name+'"?\n\nOS JOGOS NÃO SERÃO APAGADOS. ELES VOLTARÃO PARA "TODOS".'))return;
+ try{
+  const user=firebaseDB.collection("users").doc(usuarioAtual.uid),batch=firebaseDB.batch();
+  const favs=await user.collection("favorites").where("folder_id","==",pasta.id).get();
+  favs.docs.forEach(d=>batch.update(d.ref,{folder_id:null}));
+  batch.delete(user.collection("favorite_folders").doc(pasta.id));await batch.commit();
+  favoritosConta.forEach(f=>{if(f.folder_id===pasta.id)f.folder_id=null;});
+  pastasFavoritos=pastasFavoritos.filter(p=>p.id!==pasta.id);pastaFavoritosAtual=null;renderizarPastas();filtrarJogos();playSound("fav");
+ }catch(error){console.error("DELETE FOLDER ERROR:",error);alert("ERRO AO EXCLUIR PASTA:\n\n"+traduzirErro(error));}
 }
 
 
@@ -5941,72 +5103,13 @@ function fecharMoverFavorito(){
 }
 
 
-async function moverFavorito(
-    gameId,
-    folderId
-){
-
-    if(
-        !usuarioAtual ||
-        usuarioAtual.is_anonymous
-    )
-        return;
-
-    const favorito =
-        favoritoDoJogo(gameId);
-
-    if(!favorito)
-        return;
-
-    try{
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("favorites")
-                .update({
-                    folder_id:
-                        folderId
-                })
-                .eq(
-                    "id",
-                    favorito.id
-                )
-                .eq(
-                    "user_id",
-                    usuarioAtual.id
-                )
-                .select()
-                .single();
-
-        if(error)
-            throw error;
-
-        Object.assign(
-            favorito,
-            data
-        );
-
-        fecharMoverFavorito();
-
-        renderizarPastas();
-        filtrarJogos();
-
-        playSound("fav");
-
-    }catch(error){
-
-        console.error(
-            "MOVE FAVORITE ERROR:",
-            error
-        );
-
-        moveMessage.textContent =
-            "ERRO: " +
-            traduzirErro(error);
-    }
+async function moverFavorito(gameId,folderId){
+ if(!usuarioAtual||usuarioAtual.is_anonymous||modoConvidadoLocal)return;
+ const fav=favoritoDoJogo(gameId);if(!fav)return;
+ try{
+  await firebaseDB.collection("users").doc(usuarioAtual.uid).collection("favorites").doc(String(gameId)).update({folder_id:folderId||null});
+  fav.folder_id=folderId||null;fecharMoverFavorito();renderizarPastas();filtrarJogos();playSound("fav");
+ }catch(error){console.error("MOVE FAVORITE ERROR:",error);moveMessage.textContent="ERRO: "+traduzirErro(error);}
 }
 
 
@@ -7487,33 +6590,9 @@ function mostrarSite(){
 ========================================================= */
 
 async function fazerLogout(){
-
-    if(!modoConvidadoLocal){
-        try{ await supabaseClient.auth.signOut(); }catch(error){}
-    }
-    modoConvidadoLocal = false;
-
-    usuarioAtual =
-        null;
-
-    favoritosConta =
-        [];
-
-    pastasFavoritos =
-        [];
-
-    pastaFavoritosAtual =
-        null;
-
-    siteContent.style.display =
-        "none";
-
-    authScreen.style.display =
-        "flex";
-
-    authPassword.value = "";
-
-    mostrarMensagemAuth("");
+ try{if(!modoConvidadoLocal)await firebaseAuth.signOut();}catch(error){console.warn("Erro ao sair:",error);}
+ modoConvidadoLocal=false;usuarioAtual=null;favoritosConta=[];pastasFavoritos=[];pastaFavoritosAtual=null;
+ siteContent.style.display="none";authScreen.style.display="flex";authPassword.value="";mostrarMensagemAuth("");
 }
 
 
@@ -7521,28 +6600,21 @@ async function fazerLogout(){
    INICIALIZAÇÃO AO CARREGAR
 ========================================================= */
 
-window.addEventListener(
-    "load",
-    async () => {
-        try {
-            const {data} = await Promise.race([
-                supabaseClient.auth.getSession(),
-                new Promise((_,reject)=>setTimeout(()=>reject(new Error("SUPABASE_TIMEOUT")),7000))
-            ]);
-            atualizarStatusSupabase(true);
-            if(data && data.session && data.session.user){
-                usuarioAtual = data.session.user;
-                modoConvidadoLocal = !!usuarioAtual.is_anonymous;
-                await inicializarPerfil(usuarioAtual);
-                await carregarDadosFavoritos();
-                mostrarSite();
-            }
-        } catch(error) {
-            console.warn("SUPABASE indisponível:",error);
-            atualizarStatusSupabase(false,error.message==="SUPABASE_TIMEOUT"?"TEMPO DE RESPOSTA ESGOTADO.":"");
-        }
-    }
-);
+firebaseAuth.onAuthStateChanged(async user=>{
+ try{
+  atualizarStatusFirebase(true);
+  if(!user)return;
+  modoConvidadoLocal=false;
+  usuarioAtual=await prepararUsuario(user);
+  await inicializarPerfil(usuarioAtual);
+  await carregarDadosFavoritos();
+  mostrarSite();
+ }catch(error){
+  console.error("FIREBASE INITIALIZATION ERROR:",error);
+  atualizarStatusFirebase(false);
+  mostrarMensagemAuth("NÃO FOI POSSÍVEL CARREGAR SUA CONTA: "+traduzirErro(error),"error");
+ }
+});
 
 </script>
 
